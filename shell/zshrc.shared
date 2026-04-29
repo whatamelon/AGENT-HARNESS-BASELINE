@@ -86,6 +86,7 @@ __load_project_secrets() {
   for plugin in "$saas_dir"/*.sh; do
     [[ -f "$plugin" ]] || continue
     name="${${plugin:t}:r}"   # basename without .sh
+    [[ "$name" == _* ]] && continue   # _lib.sh 등 헬퍼는 스킵
     source "$plugin"
     result=$("__load_$name" 2>/dev/null)
     if [[ -n "$result" ]]; then

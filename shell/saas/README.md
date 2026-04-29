@@ -8,25 +8,54 @@
 
 예: `shell/saas/sentry.sh` → `__load_sentry()` 함수
 
+`_lib.sh`의 헬퍼를 사용:
+
 ```bash
+source "$HOME/.config/claude-sync/shell/saas/_lib.sh"
+
 __load_<name>() {
-  # 1) 마커 파일을 위로 거슬러 찾기 (프로젝트 루트 자동 감지)
-  local d="$PWD"
-  while [[ "$d" != "/" && "$d" != "$HOME" ]]; do
-    if [[ -f "$d/<MARKER>" ]]; then
+  local map="$HOME/.config/projects/<name>.json"
+  [[ -f "$map" ]] || return 0
+  __is_saas_disabled <name> && return 0
 
-      # 2) 마커에서 프로젝트 ID 추출
-      # 3) ~/.config/projects/<name>.json 매핑에서 op 참조 조회
-      # 4) op read로 시크릿 가져와서 export
+  # 1) 마커 찾기 (.claude-sync.json 우선, 없으면 자동 탐색)
+  local marker_file
+  marker_file=$(__find_marker <name> "<default-marker-suffix>" 4)
+  [[ -z "$marker_file" ]] && return 0
 
-      # 5) export한 환경변수 이름들을 공백 구분 stdout 출력
-      echo "VAR1 VAR2 VAR3"
-      break
-    fi
-    d="${d:h}"
-  done
+  # 2) 마커에서 ID 추출
+  # 3) 매핑에서 op:// 참조 조회 → op read → export
+  # 4) export한 변수명을 stdout으로 출력
+
+  echo "VAR1 VAR2 VAR3"
 }
 ```
+
+## 마커 위치 결정 규칙
+
+`__find_marker` 함수의 동작 우선순위:
+
+1. **명시적 (C)**: 프로젝트 루트의 `.claude-sync.json` 안에 `saas.<plugin>.marker` 키가 있으면 그 경로 사용 (project-root 기준 상대경로)
+2. **자동 탐색 (B)**: 프로젝트 루트에서 `-maxdepth N` 까지 `*<default-suffix>` 패턴으로 find. `node_modules`, `.git`, `dist`, `build` 디렉터리는 제외. 가장 얕은 경로 우선.
+
+**프로젝트 루트 감지**: 현재 위치에서 위로 거슬러 올라가며 다음 중 하나가 있는 첫 디렉터리:
+- `.git/` (가장 일반적)
+- `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`
+- `.claude-sync.json` (강제 지정용)
+
+## .claude-sync.json 예시 (프로젝트별 옵션)
+
+```json
+{
+  "saas": {
+    "vercel": { "marker": "fe/.vercel/project.json" },
+    "supabase": { "marker": "db/supabase/config.toml" },
+    "sentry": { "disabled": true }
+  }
+}
+```
+
+이 파일은 git commit 안전 (op 참조도 시크릿도 안 들어감, 단지 경로/플래그만).
 
 ## 출력 약속
 
