@@ -1,0 +1,16 @@
+{
+  "security.workspace.trust.untrustedFiles": "open",
+  "explorer.confirmDelete": false,
+  "explorer.confirmPasteNative": false,
+  "explorer.confirmDragAndDrop": false,
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "editor.codeActions.triggerOnFocusChange": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+  },
+  "window.systemColorTheme": "auto",
+  "workbench.colorTheme": "Visual Studio Dark",
+  "claudeCode.preferredLocation": "sidebar",
+  "claudeCode.selectedModel": "claude-opus-4-6",
+}

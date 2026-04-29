@@ -63,6 +63,8 @@ alias env-sync='~/.config/claude-sync/bin/env-sync.sh'
 alias secrets-migrate='~/.config/claude-sync/bin/migrate-secrets-to-1password.sh'
 alias saas-add='~/.config/claude-sync/bin/saas-add.sh'
 alias install-apps='~/.config/claude-sync/bin/install-apps.sh'
+alias export-desktop='~/.config/claude-sync/bin/export-desktop.sh'
+alias import-desktop='~/.config/claude-sync/bin/import-desktop.sh'
 alias mac-setup='~/.config/claude-sync/bin/mac-setup.sh'
 alias 꾸쮹='~/.config/claude-sync/bin/mac-setup.sh'
 
@@ -146,4 +148,18 @@ if [[ -z "${__CLAUDE_SYNC_CATCHUP_HOOKED:-}" ]]; then
   autoload -Uz add-zsh-hook 2>/dev/null
   add-zsh-hook precmd __claude_sync_catchup 2>/dev/null
   export __CLAUDE_SYNC_CATCHUP_HOOKED=1
+fi
+
+# ── 첫 인사 모먼트 (mac-setup 완료 후 1회) ──────────
+__maybe_greet() {
+  [[ -x "$HOME/.config/claude-sync/bin/greet.sh" ]] || return 0
+  local state="$HOME/.config/claude-sync/state/wizard-state.json"
+  [[ -f "$state" ]] || return 0
+  "$HOME/.config/claude-sync/bin/greet.sh" 2>/dev/null
+}
+
+if [[ -z "${__CLAUDE_SYNC_GREET_HOOKED:-}" ]]; then
+  autoload -Uz add-zsh-hook 2>/dev/null
+  add-zsh-hook precmd __maybe_greet 2>/dev/null
+  export __CLAUDE_SYNC_GREET_HOOKED=1
 fi

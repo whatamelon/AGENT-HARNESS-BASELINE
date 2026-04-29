@@ -1,7 +1,7 @@
 # claude-sync · 개발환경 꾸쮹
 
-두 맥북(개인/회사) 간 Claude Code + Codex + 셸 + 프로젝트 시크릿을 git으로 동기화하는 SSOT.
-**1Password 통합** + **launchd 자동 sync** + **휘황찬란한 mac-setup 마법사 (13단계)**.
+두 맥북(개인/회사) 간 Claude Code + Codex + 셸 + 프로젝트 시크릿 + GUI 앱 설정을 git으로 동기화하는 SSOT.
+**1Password 통합** + **launchd 자동 sync** + **휘황찬란한 mac-setup 마법사 (14단계)**.
 
 ## 새 맥북 한 줄 셋업
 
@@ -41,6 +41,8 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 │   ├── migrate-secrets-to-1password.sh  # 평문 토큰 → vault 이전
 │   ├── project-init.sh         # 새 프로젝트 sync 등록
 │   ├── env-sync.sh             # .env 재주입 (op inject)
+│   ├── export-desktop.sh       # ★ GUI 앱 설정 → SSOT (개인맥에서)
+│   ├── import-desktop.sh       # ★ SSOT → 새 머신 (op inject 거침)
 │   └── rebuild-agents-md.sh    # ★ ~/AGENTS.md 빌더 (Codex 글로벌)
 ├── bootstrap/
 │   ├── bootstrap-new-mac.sh    # ★ 한 줄 셋업 (비대화형)
@@ -49,6 +51,11 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 │   ├── cli-login-checklist.md  # OAuth 안내
 │   ├── install-shared-skills.sh # ~/.agents/skills 외부 풀 재구성
 │   └── install-codex-skills.sh  # CC 전용 스킬 → Codex 노출
+├── desktop/                    # ★ GUI 앱 설정 sync (iTerm/VS Code/Cursor/Claude Desktop)
+│   ├── iterm2/                 # com.googlecode.iterm2.plist + DynamicProfiles
+│   ├── vscode/                 # settings.json, keybindings.json, snippets/
+│   ├── cursor/                 # 동일
+│   └── claude-desktop/         # claude_desktop_config.tpl.json (op inject 대상)
 ├── agents/
 │   └── skill-lock.json         # 외부 출처 157개 스킬 메타 (재구성용)
 └── launchd/                    # 자동 sync plist
@@ -122,6 +129,50 @@ vercel link            # 또는 supabase link --project-ref XXX
 project-init           # 매핑 자동 추가 + 1Password 항목 자동 생성 + .env 자동 주입
 ```
 이후 `cd` 할 때마다 자동으로 그 프로젝트의 토큰이 export.
+
+## GUI 앱 설정 sync (`desktop/`)
+
+iTerm2 / VS Code / Cursor / Claude Desktop 설정을 머신 간 동기화. mac-setup 14단계 중 13단계로 자동 import.
+
+### 흐름
+```
+[개인맥]                                  [회사맥]
+export-desktop.sh ─────► SSOT git ─────► import-desktop.sh
+(plist + settings.json 등 복사)          (백업 후 덮어쓰기, op inject)
+```
+
+### 개인맥 — 변경한 설정을 SSOT에 반영
+```bash
+export-desktop                    # bin/export-desktop.sh
+cd ~/.config/claude-sync && git add desktop && git commit -m "desktop: sync" && git push
+```
+
+### 회사맥 — SSOT 설정을 적용
+```bash
+cs-sync                           # 또는 git pull
+import-desktop --all              # 자동 import (기존 파일 .bak.타임스탬프로 백업)
+# 또는 --dry로 미리보기, 인자 없으면 앱별 yes/no
+```
+또는 `mac-setup --step 13`으로 마법사가 호출.
+
+### 시크릿 처리 (Claude Desktop MCP API key 등)
+- 실제 시크릿 들어간 `claude_desktop_config.json`은 **gitignore**
+- git에는 `claude_desktop_config.tpl.json` (1Password 참조 템플릿)만 들어감
+  ```json
+  "--api-key", "{{ op://Employee/Upstash-MCP/credential }}"
+  ```
+- import 시 `op inject`로 실제 값 주입 → `~/Library/Application Support/Claude/claude_desktop_config.json`
+- 새 MCP 서버 추가 시: 1Password에 항목 만들고 `.tpl.json`에 `op://...` 참조 추가
+
+### 동기화 대상
+| 앱 | 파일 |
+|----|------|
+| iTerm2 | `com.googlecode.iterm2.plist`, `~/Library/Application Support/iTerm2/DynamicProfiles/` |
+| VS Code | `settings.json`, `keybindings.json`, `snippets/` |
+| Cursor | 동일 |
+| Claude Desktop | `claude_desktop_config.tpl.json` (MCP 서버 정의) |
+
+> Karabiner / AeroSpace / Rectangle 등 안 깐 앱은 자동 스킵.
 
 ## 검증
 ```bash

@@ -19,11 +19,29 @@ readonly R='\033[0;31m'   # red
 readonly B='\033[1;34m'   # blue
 readonly N='\033[0m'      # reset
 
-step() { echo -e "\n${B}▶${N} $*"; }
+step() {
+  echo -e "\n${B}▶${N} $*"
+  # notify-step hook — silent fail, background
+  local _label="$1"
+  local _step_num
+  _step_num=$(echo "$_label" | grep -oE '^[0-9]+' | head -1)
+  local _step_title="${_label#*. }"
+  if [[ -n "$_step_num" ]] && [[ -x "${SSOT_DIR}/bin/notify-step.sh" ]]; then
+    bash "${SSOT_DIR}/bin/notify-step.sh" update "$_step_num" "15" "🔄" "$_step_title" 2>/dev/null &
+    disown $! 2>/dev/null || true
+  fi
+}
 info() { echo -e "  ${G}✓${N} $*"; }
 warn() { echo -e "  ${Y}⚠${N} $*"; }
 err()  { echo -e "  ${R}✗${N} $*"; }
 pause() { echo -e "\n${Y}⏸  ENTER 누르면 계속${N}"; read -r; }
+
+# ─── bootstrap 시작 알림 ──────────────────────────────────────
+_bootstrap_start_ts=$(date +%s)
+if [[ -x "${SSOT_DIR}/bin/notify-step.sh" ]]; then
+  bash "${SSOT_DIR}/bin/notify-step.sh" start "15" 2>/dev/null &
+  disown $! 2>/dev/null || true
+fi
 
 # ─── 0. 사전 점검 ─────────────────────────────────────────────
 step "0. 사전 점검"
@@ -102,6 +120,10 @@ fi
 
 # ─── 7. 1Password 인증 (사람 액션) ───────────────────────────
 step "7. 1Password 인증 (★ 사람 액션 필요)"
+if [[ -x "${SSOT_DIR}/bin/notify-step.sh" ]]; then
+  bash "${SSOT_DIR}/bin/notify-step.sh" human-action "1Password CLI" "데스크톱 앱 → Settings → Developer → CLI integration ON → 새 터미널에서 op signin" 2>/dev/null &
+  disown $! 2>/dev/null || true
+fi
 if op vault list >/dev/null 2>&1; then
   info "이미 인증됨"
 else
@@ -205,6 +227,10 @@ step "14. 검증 (cs-doctor)"
 
 # ─── 15. 최종 안내 (사람 액션 체크리스트) ────────────────────
 step "15. ★ 남은 사람 액션 (CLI 로그인)"
+if [[ -x "${SSOT_DIR}/bin/notify-step.sh" ]]; then
+  bash "${SSOT_DIR}/bin/notify-step.sh" human-action "CLI OAuth 인증" "gh / gcloud / supabase / vercel / docker / firebase / claude — 각각 별도 터미널에서 로그인 필요" 2>/dev/null &
+  disown $! 2>/dev/null || true
+fi
 cat <<EOF
 
   ${Y}자동화 불가능한 OAuth 로그인들 — 한 번씩 실행:${N}
@@ -230,6 +256,13 @@ cat <<EOF
   ${Y}참고:${N} ${B}cli-login-checklist.md${N} 에 상세 가이드
 
 EOF
+
+# ─── bootstrap 완료 알림 ──────────────────────────────────────
+if [[ -x "${SSOT_DIR}/bin/notify-step.sh" ]]; then
+  _bootstrap_elapsed=$(( $(date +%s) - _bootstrap_start_ts ))
+  bash "${SSOT_DIR}/bin/notify-step.sh" done "15" "${_bootstrap_elapsed}s" 2>/dev/null &
+  disown $! 2>/dev/null || true
+fi
 
 step "✅ 부트스트랩 완료"
 cat <<EOF

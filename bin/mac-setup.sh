@@ -11,7 +11,7 @@ set -uo pipefail
 
 readonly SSOT="$HOME/.config/claude-sync"
 readonly STATE_FILE="$SSOT/state/wizard-state.json"
-readonly TOTAL_STEPS=13
+readonly TOTAL_STEPS=14
 
 source "$SSOT/shell/ui-lib.sh"
 
@@ -35,8 +35,18 @@ __reset_state() {
 }
 
 # ─── 13단계 함수들 ────────────────────────────────────────
+_notify_step() {
+  # silent-fail notify-step hook (background, no impact on mac-setup)
+  local current="$1" title="$2"
+  if [[ -x "$SSOT/bin/notify-step.sh" ]]; then
+    bash "$SSOT/bin/notify-step.sh" update "$current" "$TOTAL_STEPS" "🔄" "$title" 2>/dev/null &
+    disown $! 2>/dev/null || true
+  fi
+}
+
 step_01_system_check() {
   ui_step_header 1 $TOTAL_STEPS "시스템 사전 점검"
+  _notify_step 1 "시스템 사전 점검"
   ui_ok "macOS $(sw_vers -productVersion)"
   ui_ok "Architecture: $(uname -m)"
 
@@ -63,6 +73,7 @@ step_01_system_check() {
 
 step_02_homebrew() {
   ui_step_header 2 $TOTAL_STEPS "Homebrew + Brewfile (CLI/툴)"
+  _notify_step 2 "Homebrew + Brewfile"
 
   if command -v brew >/dev/null 2>&1; then
     ui_ok "Homebrew $(brew --version | head -1)"
@@ -84,8 +95,12 @@ step_02_homebrew() {
     ui_section "Brewfile ($count 개 항목)"
     if ui_ask_yn "    brew bundle 실행? (5~10분)" "y"; then
       ui_doing "brew bundle 실행 중 (시간 좀 걸림)"
-      brew bundle --file="$brewfile" --no-lock 2>&1 | tail -5
-      ui_ok "Brewfile 적용 완료"
+      if brew bundle --file="$brewfile" 2>&1 | tail -5; then
+        ui_ok "Brewfile 적용 완료"
+      else
+        ui_err "Brewfile 일부 실패 — 'brew bundle --file=$brewfile' 수동 재시도"
+        return
+      fi
     else
       ui_skip "Brewfile 스킵"
     fi
@@ -97,6 +112,11 @@ step_02_homebrew() {
 
 step_03_1password() {
   ui_step_header 3 $TOTAL_STEPS "1Password CLI + 인증"
+  _notify_step 3 "1Password CLI + 인증"
+  if [[ -x "$SSOT/bin/notify-step.sh" ]]; then
+    bash "$SSOT/bin/notify-step.sh" human-action "1Password CLI" "데스크톱 앱 → Settings → Developer → CLI integration ON → 새 터미널에서 op signin" 2>/dev/null &
+    disown $! 2>/dev/null || true
+  fi
 
   if command -v op >/dev/null 2>&1; then
     ui_ok "op $(op --version)"
@@ -125,6 +145,7 @@ step_03_1password() {
 
 step_04_claude_sync() {
   ui_step_header 4 $TOTAL_STEPS "claude-sync clone + install.sh"
+  _notify_step 4 "claude-sync clone + install.sh"
 
   if [[ -d "$SSOT/.git" ]]; then
     ui_ok "이미 clone됨 — git pull"
@@ -143,6 +164,7 @@ step_04_claude_sync() {
 
 step_05_codex() {
   ui_step_header 5 $TOTAL_STEPS "공유 자산 통합 (외부 스킬 풀 + Codex + 글로벌 AGENTS.md)"
+  _notify_step 5 "공유 자산 통합"
 
   # (1) 외부 출처 스킬 157개 재구성 — CC와 Codex 둘 다 의존
   if [[ -f "$SSOT/bootstrap/install-shared-skills.sh" ]]; then
@@ -176,6 +198,7 @@ step_05_codex() {
 
 step_06_secrets() {
   ui_step_header 6 $TOTAL_STEPS "시크릿 자동 주입 (1Password → settings.local.json)"
+  _notify_step 6 "시크릿 자동 주입"
 
   if ! op vault list >/dev/null 2>&1; then
     ui_warn "1Password 미인증 — 스킵 (3단계 완료 후 재시도)"
@@ -205,6 +228,7 @@ step_06_secrets() {
 
 step_07_npm_bun() {
   ui_step_header 7 $TOTAL_STEPS "npm globals + Bun"
+  _notify_step 7 "npm globals + Bun"
 
   if command -v npm >/dev/null 2>&1; then
     local list="$SSOT/bootstrap/npm-globals-names.txt"
@@ -236,6 +260,7 @@ step_07_npm_bun() {
 
 step_08_launchd() {
   ui_step_header 8 $TOTAL_STEPS "launchd 자동 sync (30분 주기)"
+  _notify_step 8 "launchd 자동 sync"
 
   local plist_src="$SSOT/launchd/com.denny.claude-sync.plist"
   local plist_dst="$HOME/Library/LaunchAgents/com.denny.claude-sync.plist"
@@ -257,6 +282,7 @@ step_08_launchd() {
 
 step_09_apps() {
   ui_step_header 9 $TOTAL_STEPS "데스크톱 앱 설치"
+  _notify_step 9 "데스크톱 앱 설치"
   ui_info "${UI_DIM}install-apps 호출 (별도 마법사)${UI_R}"
   echo
   "$SSOT/bin/install-apps.sh"
@@ -265,6 +291,7 @@ step_09_apps() {
 
 step_10_editors() {
   ui_step_header 10 $TOTAL_STEPS "VS Code / Cursor 확장"
+  _notify_step 10 "VS Code / Cursor 확장"
 
   local installed=0
   if command -v code >/dev/null 2>&1 && [[ -f "$SSOT/editors/vscode-extensions.txt" ]]; then
@@ -297,6 +324,11 @@ step_10_editors() {
 
 step_11_cli_auth() {
   ui_step_header 11 $TOTAL_STEPS "CLI 인증 (사람 액션)"
+  _notify_step 11 "CLI 인증"
+  if [[ -x "$SSOT/bin/notify-step.sh" ]]; then
+    bash "$SSOT/bin/notify-step.sh" human-action "CLI OAuth 인증" "gh / gcloud / supabase / vercel / docker / claude — 각각 별도 터미널에서 로그인 필요" 2>/dev/null &
+    disown $! 2>/dev/null || true
+  fi
   ui_info "각 명령을 별도 터미널에서 실행 후 [y/s/n] 표시"
   echo
 
@@ -328,6 +360,7 @@ step_11_cli_auth() {
 
 step_12_first_project() {
   ui_step_header 12 $TOTAL_STEPS "첫 프로젝트 등록 (선택)"
+  _notify_step 12 "첫 프로젝트 등록"
 
   if ! ui_ask_yn "    첫 프로젝트를 sync에 등록할까요?" "n"; then
     ui_skip "스킵 (나중에 ${UI_CYAN}cd <project> && project-init${UI_R})"
@@ -345,15 +378,41 @@ step_12_first_project() {
   __step_done 12
 }
 
-step_13_verify() {
-  ui_step_header 13 $TOTAL_STEPS "최종 검증 (bootstrap-doctor)"
+step_13_desktop_apps() {
+  ui_step_header 13 $TOTAL_STEPS "데스크톱 앱 설정 import (iTerm/VS Code/Cursor/Claude Desktop)"
+  _notify_step 13 "데스크톱 앱 설정 import"
+
+  if [[ ! -d "$SSOT/desktop" ]]; then
+    ui_skip "SSOT/desktop 없음 — 개인맥에서 export-desktop.sh 먼저 실행"
+    __step_done 13
+    return
+  fi
+
+  if ui_ask_yn "    데스크톱 앱 설정을 SSOT 기준으로 덮어쓸까요? (기존 파일은 .bak으로 백업)" "y"; then
+    "$SSOT/bin/import-desktop.sh" --all
+    ui_info "${UI_DIM}iTerm/VS Code/Cursor 재시작 시 적용됨${UI_R}"
+  else
+    ui_skip "스킵 (나중에 ${UI_CYAN}import-desktop --all${UI_R})"
+  fi
+  __step_done 13
+}
+
+step_14_verify() {
+  ui_step_header 14 $TOTAL_STEPS "최종 검증 (bootstrap-doctor)"
+  _notify_step 14 "최종 검증"
   echo
   "$SSOT/bin/bootstrap-doctor.sh"
-  __step_done 13
+  __step_done 14
 }
 
 # ─── 모드별 흐름 ──────────────────────────────────────────
 run_auto() {
+  local _auto_start_ts
+  _auto_start_ts=$(date +%s)
+  if [[ -x "$SSOT/bin/notify-step.sh" ]]; then
+    bash "$SSOT/bin/notify-step.sh" start "$TOTAL_STEPS" 2>/dev/null &
+    disown $! 2>/dev/null || true
+  fi
   step_01_system_check
   step_02_homebrew
   step_03_1password
@@ -366,7 +425,13 @@ run_auto() {
   step_10_editors
   step_11_cli_auth
   step_12_first_project
-  step_13_verify
+  step_13_desktop_apps
+  step_14_verify
+  if [[ -x "$SSOT/bin/notify-step.sh" ]]; then
+    local _auto_elapsed=$(( $(date +%s) - _auto_start_ts ))
+    bash "$SSOT/bin/notify-step.sh" done "$TOTAL_STEPS" "${_auto_elapsed}s" 2>/dev/null &
+    disown $! 2>/dev/null || true
+  fi
 }
 
 run_step() {
@@ -384,19 +449,20 @@ run_step() {
     10) step_10_editors ;;
     11) step_11_cli_auth ;;
     12) step_12_first_project ;;
-    13) step_13_verify ;;
-    *) ui_err "단계 1~13만 가능"; exit 1 ;;
+    13) step_13_desktop_apps ;;
+    14) step_14_verify ;;
+    *) ui_err "단계 1~14만 가능"; exit 1 ;;
   esac
 }
 
 run_step_by_step() {
-  for n in {1..13}; do
+  for n in {1..14}; do
     if __is_done $n; then
       ui_skip "단계 $n 이미 완료 — 스킵"
       continue
     fi
     run_step $n
-    if (( n < 13 )); then
+    if (( n < 14 )); then
       ui_ask_yn "    다음 단계 진행?" "y" || { ui_warn "여기서 멈춤. 'mac-setup' 재실행 시 이어서"; return; }
     fi
   done
@@ -410,7 +476,7 @@ main() {
   if [[ $# -gt 0 ]]; then
     case "$1" in
       auto)        run_auto; ui_celebrate "셋업 완료!"; return ;;
-      verify)      step_13_verify; return ;;
+      verify)      step_14_verify; return ;;
       reset)       __reset_state; ui_ok "상태 초기화"; return ;;
       --step)      run_step "$2"; return ;;
       -h|--help)
@@ -418,9 +484,9 @@ main() {
 mac-setup [모드]
   (인자 없음)   인터랙티브 모드 선택
   auto          처음부터 끝까지 자동
-  verify        검증만 (13단계)
+  verify        검증만 (14단계)
   reset         진행 상태 초기화
-  --step N      특정 단계만 (1~13)
+  --step N      특정 단계만 (1~14)
 EOF
         return ;;
     esac
@@ -430,14 +496,14 @@ EOF
   local completed
   completed=$(jq -r '.completed | length' "$STATE_FILE")
   if (( completed > 0 )); then
-    ui_info "이전에 ${UI_BOLD}${completed}/13${UI_R} 단계 완료됨"
+    ui_info "이전에 ${UI_BOLD}${completed}/14${UI_R} 단계 완료됨"
   fi
 
   ui_section "진행 모드"
   printf "      ${UI_BOLD}${UI_PURPLE}1${UI_R}) 처음부터 끝까지 ${UI_DIM}(완료된 단계 자동 스킵)${UI_R}\n"
   printf "      ${UI_BOLD}${UI_PURPLE}2${UI_R}) 단계별 확인 모드 ${UI_DIM}(각 단계마다 yes/no)${UI_R}\n"
   printf "      ${UI_BOLD}${UI_PURPLE}3${UI_R}) 특정 단계만 ${UI_DIM}(번호 입력)${UI_R}\n"
-  printf "      ${UI_BOLD}${UI_PURPLE}4${UI_R}) 검증만 ${UI_DIM}(bootstrap-doctor)${UI_R}\n"
+  printf "      ${UI_BOLD}${UI_PURPLE}4${UI_R}) 검증만 ${UI_DIM}(14단계 bootstrap-doctor)${UI_R}\n"
   printf "      ${UI_BOLD}${UI_PURPLE}r${UI_R}) 진행 상태 초기화 후 처음부터\n"
   echo
 
@@ -446,7 +512,7 @@ EOF
 
   case "$mode" in
     1)
-      for n in {1..13}; do
+      for n in {1..14}; do
         if __is_done $n; then
           ui_skip "단계 $n 이미 완료 — 스킵"
           continue
@@ -458,10 +524,10 @@ EOF
     2) run_step_by_step ;;
     3)
       local n
-      n=$(ui_ask_input "단계 번호 (1~13)" "1")
+      n=$(ui_ask_input "단계 번호 (1~14)" "1")
       run_step "$n"
       ;;
-    4) step_13_verify ;;
+    4) step_14_verify ;;
     r)
       __reset_state
       ui_ok "상태 초기화 완료"

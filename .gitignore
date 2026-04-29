@@ -8,6 +8,8 @@
 **/*.secrets.*
 **/*.pem
 **/*.key
+# 데스크톱 앱 시크릿 (실제 값 들어간 파일 — .tpl.json만 git 들어감)
+desktop/claude-desktop/claude_desktop_config.json
 
 # 로그/캐시 (혹시 모를 누수 방지)
 **/cache/
@@ -51,3 +53,6 @@ state/hud-flash.txt
 
 # 머신별 prompt 시각 마커
 state/last-prompt-ts.txt
+
+# 부트스트랩 wizard 메시지 ID (머신별, 일회용)
+state/wizard-message-id.txt

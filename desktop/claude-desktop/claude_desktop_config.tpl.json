@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "posthog": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "https://mcp.posthog.com/sse"
+      ]
+    },
+    "upstash": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/mcp-server@latest",
+        "--email",
+        "{{ op://Employee/Upstash-MCP/username }}",
+        "--api-key",
+        "{{ op://Employee/Upstash-MCP/credential }}"
+      ]
+    }
+  },
+  "preferences": {
+    "localAgentModeTrustedFolders": [
+      "/Users/denny/development/lawblaw_dev"
+    ],
+    "coworkScheduledTasksEnabled": true,
+    "ccdScheduledTasksEnabled": true,
+    "sidebarMode": "chat",
+    "coworkWebSearchEnabled": true,
+    "floatingAtollActive": true
+  }
+}

@@ -65,11 +65,23 @@ else
 fi
 
 # ─── Claude Desktop (MCP 등) ───────────────────────────
+# 주의: claude_desktop_config.json은 시크릿(API key) 포함 가능 → .tpl.json만 git에 들어감
 ui_section "Claude Desktop"
 local cd_src="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 if [[ -f "$cd_src" ]]; then
+  # gitignore된 실제 파일은 백업용으로만 보관
   cp "$cd_src" "$DEST/claude-desktop/claude_desktop_config.json"
-  ui_ok "claude_desktop_config.json"
+  ui_ok "claude_desktop_config.json (로컬 백업, gitignore됨)"
+
+  # 시크릿 검사
+  if grep -qiE 'api[_-]?key|secret|token|password' "$cd_src"; then
+    ui_warn "${UI_AMBER}시크릿 추정 필드 발견${UI_R} — git에 들어갈 .tpl.json 수동 점검 필요"
+    ui_arrow "vi $DEST/claude-desktop/claude_desktop_config.tpl.json"
+    ui_arrow "실제 값을 {{ op://Employee/항목/필드 }} 로 교체"
+  fi
+  if [[ ! -f "$DEST/claude-desktop/claude_desktop_config.tpl.json" ]]; then
+    ui_warn ".tpl.json 없음 — 처음이면 직접 만들어야 함"
+  fi
 else
   ui_skip "Claude Desktop config 없음"
 fi

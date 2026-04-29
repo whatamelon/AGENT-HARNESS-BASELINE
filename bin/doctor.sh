@@ -225,5 +225,48 @@ else
 fi
 
 echo ""
+echo "── Phase 3: 셋업 라이브 중계 + 첫 인사 ──"
+
+# helper 실행 권한
+for s in bin/notify-step.sh bin/greet.sh; do
+  if [[ -x "$SSOT/$s" ]]; then
+    echo "✓ $s"
+  else
+    echo "❌ $s 실행 권한/존재 X"; ((errors++))
+  fi
+done
+
+# wizard-state.json greeted 마커
+if [[ -f "$SSOT/state/wizard-state.json" ]]; then
+  if jq -e '.greeted' "$SSOT/state/wizard-state.json" >/dev/null 2>&1; then
+    greeted=$(jq -r '.greeted' "$SSOT/state/wizard-state.json")
+    echo "✓ wizard-state.greeted = $greeted"
+  else
+    echo "⚠ wizard-state.json 에 .greeted 필드 없음 (mac-setup 첫 실행 후 자동 추가)"
+  fi
+fi
+
+# zsh precmd greet hook
+if grep -q "__maybe_greet" "$SSOT/shell/zshrc.shared" 2>/dev/null; then
+  echo "✓ zsh precmd greet hook 등록"
+else
+  echo "❌ greet precmd hook 미등록"; ((errors++))
+fi
+
+# mac-setup notify-step 통합
+if grep -q "notify-step" "$SSOT/bin/mac-setup.sh" 2>/dev/null; then
+  echo "✓ mac-setup.sh notify-step 통합"
+else
+  echo "⚠ mac-setup.sh notify-step 미통합 — 라이브 중계 X"
+fi
+
+# bootstrap-new-mac notify-step 통합
+if grep -q "notify-step" "$SSOT/bootstrap/bootstrap-new-mac.sh" 2>/dev/null; then
+  echo "✓ bootstrap-new-mac.sh notify-step 통합"
+else
+  echo "⚠ bootstrap-new-mac.sh notify-step 미통합"
+fi
+
+echo ""
 [[ $errors -eq 0 ]] && echo "✅ All good ($errors errors)" || echo "❌ $errors errors"
 exit $errors

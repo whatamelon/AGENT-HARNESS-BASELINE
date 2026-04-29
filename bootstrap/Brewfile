@@ -23,7 +23,7 @@ brew "nvm"
 # Open source suite of directory software
 brew "openldap"
 # Cryptography and SSL/TLS Toolkit
-brew "openssl@1.1"
+brew "openssl@3"
 # Swiss-army knife of markup format conversion
 brew "pandoc"
 # PDF rendering library (based on the xpdf-3.0 code base)
