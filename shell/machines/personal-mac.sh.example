@@ -1,0 +1,8 @@
+# shell/machines/<hostname -s>.sh
+# 머신별 zshrc 추가분. hostname -s 로 자동 매칭.
+# 실제 사용 시 자기 hostname으로 파일명 변경 (예: dennys-macbook-pro.sh)
+# 주의: 시크릿은 여기 넣지 말고 ~/.zshrc.local 에 넣을 것 (gitignore 됨)
+
+# 예시:
+# alias work-vpn='sudo openconnect ...'
+# export EXTRA_PATH="..."

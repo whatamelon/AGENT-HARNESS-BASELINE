@@ -1,0 +1,37 @@
+# 시크릿
+**/settings.local.json
+**/.env
+**/.env.*
+!.env.example
+**/.envrc
+**/*-secret*
+**/*.pem
+**/*.key
+
+# 로그/캐시 (혹시 모를 누수 방지)
+**/cache/
+**/sessions/
+**/transcripts/
+**/file-history/
+**/paste-cache/
+**/image-cache/
+**/projects/
+**/todos/
+**/telemetry/
+**/usage-data/
+**/shell-snapshots/
+**/session-env/
+*.log
+history.jsonl
+.session-stats.json
+
+# OS / 에디터
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# 백업
+*.bak
+*.bak.*

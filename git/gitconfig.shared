@@ -1,0 +1,18 @@
+[user]
+	name = whatamelon
+[http]
+	postBuffer = 524288000
+[credential]
+	helper = osxkeychain
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
+[alias]
+	st = status -sb
+	co = checkout
+	br = branch
+	last = log -1 HEAD
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit

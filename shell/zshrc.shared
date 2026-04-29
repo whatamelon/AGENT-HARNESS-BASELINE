@@ -1,0 +1,128 @@
+# ~/.config/claude-sync/shell/zshrc.shared
+# 두 맥북 공유 zshrc 엔트리.
+# ~/.zshrc 는 1줄: `source ~/.config/claude-sync/shell/zshrc.shared`
+# 머신별 추가는 ~/.zshrc.local 에서.
+
+# ─── oh-my-zsh ─────────────────────────────────────────────
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+plugins=(git)
+[ -f "$ZSH/oh-my-zsh.sh" ] && source $ZSH/oh-my-zsh.sh
+
+# 커스텀 prompt (denny + 랜덤 이모지)
+prompt_context() {
+  emojis=("⚡️" "🔥" "😎" "💡" "🎉" "🌙")
+  RAND_EMOJI_N=$(( $RANDOM % ${#emojis[@]} + 1))
+  prompt_segment black default "{denny} ${emojis[$RAND_EMOJI_N]} "
+}
+
+# ─── 패키지 매니저 PATH ─────────────────────────────────────
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in *":$PNPM_HOME:"*) ;; *) export PATH="$PNPM_HOME:$PATH" ;; esac
+
+export BUN_INSTALL="$HOME/.bun"
+[ -d "$BUN_INSTALL/bin" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+[ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
+
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+
+# ─── 언어 런타임 ──────────────────────────────────────────
+alias python=/usr/bin/python3
+command -v rbenv >/dev/null && eval "$(rbenv init -)"
+
+# Google Cloud SDK
+if [ -d "$HOME/google-cloud-sdk" ]; then
+  [ -f "$HOME/google-cloud-sdk/path.zsh.inc" ] && . "$HOME/google-cloud-sdk/path.zsh.inc"
+  [ -f "$HOME/google-cloud-sdk/completion.zsh.inc" ] && . "$HOME/google-cloud-sdk/completion.zsh.inc"
+fi
+
+# Flutter pub-cache
+[ -d "$HOME/.pub-cache" ] && export PATH="$PATH:$HOME/.pub-cache/bin"
+
+# Java (Android Studio JBR — 머신에 있을 때만)
+if [ -d "/Applications/Android Studio.app/Contents/jbr/Contents/Home" ]; then
+  export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
+# Antigravity (개인 맥북에만 있을 수 있음)
+[ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+
+# opencode
+[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
+
+# ─── alias ────────────────────────────────────────────────
+alias fvrun='flutter run -d C6B43525-A483-4D8D-AC91-BCDCA67A2B1C'
+alias claude-mem='bun "$HOME/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
+alias cs='cd ~/.config/claude-sync'
+alias cs-sync='cd ~/.config/claude-sync && git pull --rebase --autostash && git diff --quiet || (git add . && git commit -m "auto: $(hostname -s) $(date +%FT%T)" && git push)'
+alias cs-doctor='~/.config/claude-sync/bin/doctor.sh'
+
+# ─── 프로젝트별 시크릿 자동 로딩 (1Password 기반) ──────────
+__load_project_secrets() {
+  unset VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID
+  unset SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_REF SUPABASE_DB_PASSWORD
+
+  local d="$PWD"
+  local map_v="$HOME/.config/projects/vercel.json"
+  local map_s="$HOME/.config/projects/supabase.json"
+
+  # Vercel: .vercel/project.json 찾기
+  while [[ "$d" != "/" && "$d" != "$HOME" ]]; do
+    if [[ -f "$d/.vercel/project.json" ]]; then
+      if [[ -f "$map_v" ]]; then
+        local pid
+        pid=$(jq -r .projectId "$d/.vercel/project.json" 2>/dev/null)
+        local ref
+        ref=$(jq -r --arg k "$pid" '.[$k] // empty' "$map_v" 2>/dev/null)
+        if [[ -n "$ref" ]] && command -v op >/dev/null; then
+          export VERCEL_TOKEN=$(op read "$ref" 2>/dev/null)
+        fi
+      fi
+      break
+    fi
+    d="${d:h}"
+  done
+
+  # Supabase: supabase/config.toml 찾기
+  d="$PWD"
+  while [[ "$d" != "/" && "$d" != "$HOME" ]]; do
+    if [[ -f "$d/supabase/config.toml" ]]; then
+      if [[ -f "$map_s" ]]; then
+        local pref
+        pref=$(grep -E '^project_id' "$d/supabase/config.toml" 2>/dev/null | head -1 | sed 's/.*"\(.*\)".*/\1/')
+        if [[ -n "$pref" ]]; then
+          local cfg
+          cfg=$(jq --arg k "$pref" '.[$k] // empty' "$map_s" 2>/dev/null)
+          if [[ -n "$cfg" && "$cfg" != "null" && "$cfg" != "empty" ]]; then
+            export SUPABASE_PROJECT_REF="$pref"
+            local tref
+            tref=$(echo "$cfg" | jq -r '.token // empty')
+            if [[ -n "$tref" ]] && command -v op >/dev/null; then
+              export SUPABASE_ACCESS_TOKEN=$(op read "$tref" 2>/dev/null)
+            fi
+          fi
+        fi
+      fi
+      break
+    fi
+    d="${d:h}"
+  done
+}
+autoload -U add-zsh-hook
+add-zsh-hook chpwd __load_project_secrets
+
+# ─── 머신별 분기 ──────────────────────────────────────────
+case "$(hostname -s)" in
+  *)
+    [ -f "$HOME/.config/claude-sync/shell/machines/$(hostname -s).sh" ] && \
+      source "$HOME/.config/claude-sync/shell/machines/$(hostname -s).sh"
+    ;;
+esac
+
+# ─── 로컬 머신 전용 (시크릿 등) ─────────────────────────
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+
+# 셸 시작 시 1회 실행
+__load_project_secrets

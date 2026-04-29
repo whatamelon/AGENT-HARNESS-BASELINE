@@ -1,0 +1,6 @@
+# ~/.config/claude-sync/shell/zprofile.shared
+eval "$(/opt/homebrew/bin/brew shellenv)"
+command -v rbenv >/dev/null && eval "$(rbenv init - --no-rehash zsh)"
+
+# 백그라운드 자동 pull (셸 부팅을 막지 않음)
+(cd ~/.config/claude-sync && git pull --quiet --rebase --autostash 2>/dev/null) &!

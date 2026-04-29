@@ -1,0 +1,8 @@
+{
+  "env": {
+    "TELEGRAM_TOKEN": "$(op read 'op://Personal/Claude-Telegram-Bot/token')",
+    "TELEGRAM_CHAT_ID": "$(op read 'op://Personal/Claude-Telegram-Bot/chat-id')",
+    "SLACK_BOT_TOKEN": "$(op read 'op://Personal/Claude-Slack-Bot/token')",
+    "SLACK_USER_ID": "$(op read 'op://Personal/Claude-Slack-Bot/user-id')"
+  }
+}
