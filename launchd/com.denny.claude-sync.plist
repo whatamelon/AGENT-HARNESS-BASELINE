@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.denny.claude-sync</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>$HOME/.config/claude-sync/bin/sync.sh</string>
+  </array>
+
+  <!-- 30분(1800초)마다 -->
+  <key>StartInterval</key>
+  <integer>1800</integer>
+
+  <!-- 부팅/로그인 직후 1회 -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- 로그 -->
+  <key>StandardOutPath</key>
+  <string>/tmp/claude-sync.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/claude-sync.err.log</string>
+
+  <!-- PATH (homebrew, gh) -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>
