@@ -1,0 +1,65 @@
+tap "hamed-elfayome/claude-usage"
+tap "supabase/tap"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
+# Browser automation CLI for AI agents
+brew "agent-browser", link: false
+# Manage multiple AI agents like Claude Code, Aider and Codex in your terminal
+brew "claude-squad"
+# C library implementing the SSH2 protocol
+brew "libssh2"
+# Get a file from an HTTP, HTTPS or FTP server
+brew "curl"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# GitHub command-line tool
+brew "gh"
+# Distributed revision control system
+brew "git"
+# Postgres C API library
+brew "libpq"
+# Manage multiple Node.js versions
+brew "nvm"
+# Open source suite of directory software
+brew "openldap"
+# Cryptography and SSL/TLS Toolkit
+brew "openssl@1.1"
+# Swiss-army knife of markup format conversion
+brew "pandoc"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
+# Object-relational database system
+brew "postgresql@16"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.11"
+# Ruby version manager
+brew "rbenv"
+# Terminal multiplexer
+brew "tmux"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
+# UNIX shell (command interpreter)
+brew "zsh"
+# Fish shell like syntax highlighting for zsh
+brew "zsh-syntax-highlighting"
+# Supabase CLI
+brew "supabase/tap/supabase"
+# Command-line interface for 1Password
+cask "1password-cli"
+# Native macOS menu bar app for monitoring Claude AI usage limits
+cask "hamed-elfayome/claude-usage/claude-usage-tracker"
+# OpenAI's coding agent that runs in your terminal
+cask "codex"
+vscode "anthropic.claude-code"
+vscode "bradlc.vscode-tailwindcss"
+vscode "dbaeumer.vscode-eslint"
+vscode "esbenp.prettier-vscode"
+vscode "github.copilot-chat"
+vscode "ms-ceintl.vscode-language-pack-ko"
+vscode "ms-python.debugpy"
+vscode "ms-python.python"
+vscode "ms-python.vscode-pylance"
+vscode "ms-python.vscode-python-envs"
+vscode "ms-vscode.vscode-typescript-next"
+vscode "nrwl.angular-console"
+vscode "vue.volar"

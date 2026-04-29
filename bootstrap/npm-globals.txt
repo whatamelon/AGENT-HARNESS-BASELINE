@@ -1,0 +1,9 @@
+@ast-grep/napi@0.40.5
+@googleworkspace/cli@0.8.0
+agent-browser@0.14.0
+firebase-tools@15.12.0
+npm@11.9.0
+nx@20.0.0
+oh-my-claude-sisyphus@3.7.16
+wrangler@4.61.1
+yarn@1.22.22

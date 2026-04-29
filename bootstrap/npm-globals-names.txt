@@ -1,0 +1,8 @@
+@ast-grep/napi
+@googleworkspace/cli
+agent-browser
+firebase-tools
+nx
+oh-my-claude-sisyphus
+wrangler
+yarn

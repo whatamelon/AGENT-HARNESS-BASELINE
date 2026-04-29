@@ -1,0 +1,13 @@
+anthropic.claude-code
+bradlc.vscode-tailwindcss
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+github.copilot-chat
+ms-ceintl.vscode-language-pack-ko
+ms-python.debugpy
+ms-python.python
+ms-python.vscode-pylance
+ms-python.vscode-python-envs
+ms-vscode.vscode-typescript-next
+nrwl.angular-console
+vue.volar
