@@ -193,6 +193,12 @@ else
   warn "cursor CLI 없음 — Cursor 설치 후 'Shell Command: Install cursor command in PATH'"
 fi
 
+# ─── 13b. 공유 자산 동기화 (스킬 풀 + 글로벌 AGENTS.md) ───────
+step "13b. 공유 자산 동기화 (CC ↔ Codex 스킬 + 글로벌 AGENTS.md)"
+"$SSOT_DIR/bootstrap/install-shared-skills.sh" || true
+"$SSOT_DIR/bootstrap/install-codex-skills.sh" || true
+"$SSOT_DIR/bin/rebuild-agents-md.sh" --quiet || true
+
 # ─── 14. 검증 ─────────────────────────────────────────────────
 step "14. 검증 (cs-doctor)"
 "$SSOT_DIR/bin/doctor.sh" || true
