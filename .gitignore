@@ -42,3 +42,12 @@ history.jsonl
 
 # 에이전트 텔레메트리 (harness가 갱신하는 transient state)
 .omc/state/
+
+# HUD 캐시 (머신별 5s TTL)
+state/hud-cache/*.txt
+
+# HUD flash 마커 (머신별)
+state/hud-flash.txt
+
+# 머신별 prompt 시각 마커
+state/last-prompt-ts.txt

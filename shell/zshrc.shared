@@ -117,5 +117,33 @@ esac
 # ─── 로컬 머신 전용 (시크릿 등) ─────────────────────────
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 
+# HUD: 두 맥북 상세 정보
+alias hudm='$HOME/.config/claude-sync/bin/hud-machines.sh --format=detail'
+
 # 셸 시작 시 1회 실행
 __load_project_secrets
+
+# ── HUD: 두 맥북 상태 RPROMPT segment ──────────────
+__claude_sync_hud_rprompt() {
+  [[ -x "$HOME/.config/claude-sync/bin/hud-machines.sh" ]] || return 0
+  "$HOME/.config/claude-sync/bin/hud-machines.sh" --format=line 2>/dev/null
+}
+
+if [[ -z "${__CLAUDE_SYNC_RPROMPT_SET:-}" ]]; then
+  RPROMPT="${RPROMPT:-}"'$(__claude_sync_hud_rprompt)'
+  export __CLAUDE_SYNC_RPROMPT_SET=1
+fi
+
+# ── HUD: 출퇴근 catchup (4시간+ 휴면 후 1회) ──────────
+__claude_sync_catchup() {
+  [[ -x "$HOME/.config/claude-sync/bin/hud-catchup.sh" ]] || return 0
+  local out
+  out=$("$HOME/.config/claude-sync/bin/hud-catchup.sh" 2>/dev/null)
+  [[ -n "$out" ]] && echo "$out"
+}
+
+if [[ -z "${__CLAUDE_SYNC_CATCHUP_HOOKED:-}" ]]; then
+  autoload -Uz add-zsh-hook 2>/dev/null
+  add-zsh-hook precmd __claude_sync_catchup 2>/dev/null
+  export __CLAUDE_SYNC_CATCHUP_HOOKED=1
+fi

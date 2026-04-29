@@ -82,7 +82,8 @@ cd "$SSOT" 2>/dev/null && {
 
 echo ""
 echo "── launchd 자동 sync ──"
-if launchctl list | grep -q "com.denny.claude-sync"; then
+launchctl_list=$(launchctl list 2>/dev/null)
+if echo "$launchctl_list" | grep -q "com.denny.claude-sync"; then
   echo "✓ launchd 등록됨 (com.denny.claude-sync)"
 else
   echo "⚠ launchd 미등록 — bin/install-launchd.sh 실행"
@@ -178,6 +179,49 @@ if command -v bats >/dev/null; then
   echo "✓ bats $(bats --version | awk '{print $2}')"
 else
   echo "⚠ bats 미설치 — 'brew install bats-core' (테스트 환경)"
+fi
+
+echo ""
+echo "── Phase 2: HUD + Stop hook + Catchup ──"
+
+# Phase 2 helper 실행 권한
+for s in bin/hud-machines.sh bin/summarize-session.sh bin/notify-session-end.sh bin/hud-catchup.sh bin/daily-digest.sh; do
+  if [[ -x "$SSOT/$s" ]]; then
+    echo "✓ $s"
+  else
+    echo "❌ $s 실행 권한/존재 X"; ((errors++))
+  fi
+done
+
+# state 디렉터리들
+[[ -d "$SSOT/state/hud-cache" ]] && echo "✓ state/hud-cache" || echo "⚠ state/hud-cache 없음"
+
+# zsh RPROMPT segment
+if grep -q "__claude_sync_hud_rprompt" "$SSOT/shell/zshrc.shared" 2>/dev/null; then
+  echo "✓ zsh RPROMPT segment 등록"
+else
+  echo "❌ RPROMPT segment 미등록"; ((errors++))
+fi
+
+# zsh precmd catchup hook
+if grep -q "__claude_sync_catchup" "$SSOT/shell/zshrc.shared" 2>/dev/null; then
+  echo "✓ zsh precmd catchup hook 등록"
+else
+  echo "⚠ precmd catchup hook 미등록"
+fi
+
+# Stop hook 등록 (notify-session-end)
+if jq -e '.hooks.Stop[]?.hooks[]? | select(.command | contains("notify-session-end"))' "$HOME/.claude/settings.json" >/dev/null 2>&1; then
+  echo "✓ Stop hook 에 notify-session-end 등록"
+else
+  echo "⚠ Stop hook trigger 미등록 — settings 확인"
+fi
+
+# launchd digest plist
+if echo "$launchctl_list" | grep -q "com.denny.claude-sync-digest"; then
+  echo "✓ launchd digest 등록 (com.denny.claude-sync-digest)"
+else
+  echo "⚠ launchd digest 미등록"
 fi
 
 echo ""
