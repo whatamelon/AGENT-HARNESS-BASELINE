@@ -163,3 +163,6 @@ if [[ -z "${__CLAUDE_SYNC_GREET_HOOKED:-}" ]]; then
   add-zsh-hook precmd __maybe_greet 2>/dev/null
   export __CLAUDE_SYNC_GREET_HOOKED=1
 fi
+
+# 두 맥북 통합 활동 대시보드
+alias activity='$HOME/.config/claude-sync/bin/activity.sh'

@@ -268,5 +268,26 @@ else
 fi
 
 echo ""
+echo "── Phase 4: 통합 대시보드 (activity) ──"
+
+if [[ -x "$SSOT/bin/activity.sh" ]]; then
+  echo "✓ bin/activity.sh"
+else
+  echo "❌ bin/activity.sh 실행 권한/존재 X"; ((errors++))
+fi
+
+if grep -q "alias activity=" "$SSOT/shell/zshrc.shared" 2>/dev/null; then
+  echo "✓ zsh alias activity 등록"
+else
+  echo "❌ alias activity 미등록"; ((errors++))
+fi
+
+if command -v fzf >/dev/null; then
+  echo "✓ fzf $(fzf --version | head -1)"
+else
+  echo "⚠ fzf 미설치 — activity --tui plain text fallback"
+fi
+
+echo ""
 [[ $errors -eq 0 ]] && echo "✅ All good ($errors errors)" || echo "❌ $errors errors"
 exit $errors
