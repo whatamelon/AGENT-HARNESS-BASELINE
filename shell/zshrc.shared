@@ -168,3 +168,26 @@ fi
 
 # 두 맥북 통합 활동 대시보드
 alias activity='$HOME/.config/claude-sync/bin/activity.sh'
+
+# ── 새 탭/셸 시작 시 백그라운드 sync (5분 throttle) ──
+# launchd 30분 주기 외에, 탭을 열 때마다 최신 상태 보장.
+# state 파일로 throttle해서 같은 머신에 탭 여러 개 열어도 1회만 실행.
+__claude_sync_tab_pull() {
+  [[ -x "$HOME/.config/claude-sync/bin/sync.sh" ]] || return 0
+  local state_file="$HOME/.config/claude-sync/state/last-tab-sync.txt"
+  local now last elapsed
+  now=$(date +%s)
+  last=0
+  [[ -f "$state_file" ]] && last=$(cat "$state_file" 2>/dev/null || echo 0)
+  elapsed=$((now - last))
+  # 5분(300초) 이내 재실행 방지
+  (( elapsed < 300 )) && return 0
+  echo "$now" > "$state_file"
+  # 완전 분리된 백그라운드 (셸 종료해도 살아있음, 출력 버림)
+  ( nohup "$HOME/.config/claude-sync/bin/sync.sh" >/dev/null 2>&1 & ) &!
+}
+
+if [[ -z "${__CLAUDE_SYNC_TAB_PULL_DONE:-}" ]]; then
+  __claude_sync_tab_pull
+  export __CLAUDE_SYNC_TAB_PULL_DONE=1
+fi
