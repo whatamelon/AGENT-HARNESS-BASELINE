@@ -8,8 +8,10 @@ cd "$SSOT" || exit 1
 # 원격 없으면 스킵
 git remote get-url origin >/dev/null 2>&1 || exit 0
 
-# Pull
-git pull --rebase --autostash --quiet 2>&1 || exit 1
+# Pull (브랜치 명시 — launchd 환경 안정성)
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo main)
+git fetch --quiet origin "$BRANCH" 2>&1 || exit 1
+git pull --rebase --autostash --quiet origin "$BRANCH" 2>&1 || exit 1
 
 # Push 할 변경 있는지
 if [[ -n "$(git status --porcelain)" ]]; then
