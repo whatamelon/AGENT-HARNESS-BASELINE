@@ -61,12 +61,13 @@ alias cs-doctor='~/.config/claude-sync/bin/doctor.sh'
 alias project-init='~/.config/claude-sync/bin/project-init.sh'
 alias env-sync='~/.config/claude-sync/bin/env-sync.sh'
 alias secrets-migrate='~/.config/claude-sync/bin/migrate-secrets-to-1password.sh'
+alias saas-add='~/.config/claude-sync/bin/saas-add.sh'
 
-# ─── 프로젝트별 시크릿 자동 로딩 (1Password 기반) ──────────
-# 매핑 디렉터리: ~/.config/projects/*.json
-# 각 파일은 외부 SaaS 매핑 정의. 프로젝트 디렉터리 안에서 cd 시 자동 export.
+# ─── 프로젝트별 시크릿 자동 로딩 (플러그인 패턴) ──────────
+# shell/saas/*.sh 안의 모든 __load_<name>() 함수 자동 호출.
+# 새 SaaS 추가: shell/saas/<name>.sh 파일 1개 만들기 (또는 saas-add <name>).
 __load_project_secrets() {
-  # 이전 export 정리 (PROJECT_SECRETS_EXPORTED에 기록해뒀던 변수들 unset)
+  # 이전 export 정리
   if [[ -n "${PROJECT_SECRETS_EXPORTED:-}" ]]; then
     for v in ${(s: :)PROJECT_SECRETS_EXPORTED}; do
       unset "$v"
@@ -75,64 +76,25 @@ __load_project_secrets() {
   fi
 
   command -v jq >/dev/null || return 0
-  local map_dir="$HOME/.config/projects"
-  [[ -d "$map_dir" ]] || return 0
+
+  local saas_dir="$HOME/.config/claude-sync/shell/saas"
+  [[ -d "$saas_dir" ]] || return 0
 
   local exported=()
+  local plugin name result
 
-  # Vercel
-  local d="$PWD"
-  while [[ "$d" != "/" && "$d" != "$HOME" ]]; do
-    if [[ -f "$d/.vercel/project.json" && -f "$map_dir/vercel.json" ]]; then
-      local pid ref
-      pid=$(jq -r .projectId "$d/.vercel/project.json" 2>/dev/null)
-      ref=$(jq -r --arg k "$pid" '.[$k] // empty' "$map_dir/vercel.json" 2>/dev/null)
-      if [[ -n "$ref" && "$ref" != "null" ]] && command -v op >/dev/null; then
-        export VERCEL_TOKEN=$(op read "$ref" 2>/dev/null)
-        export VERCEL_ORG_ID=$(jq -r .orgId "$d/.vercel/project.json" 2>/dev/null)
-        export VERCEL_PROJECT_ID="$pid"
-        exported+=(VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID)
-      fi
-      break
+  for plugin in "$saas_dir"/*.sh; do
+    [[ -f "$plugin" ]] || continue
+    name="${${plugin:t}:r}"   # basename without .sh
+    source "$plugin"
+    result=$("__load_$name" 2>/dev/null)
+    if [[ -n "$result" ]]; then
+      for v in ${(s: :)result}; do
+        exported+=("$v")
+      done
     fi
-    d="${d:h}"
   done
 
-  # Supabase
-  d="$PWD"
-  while [[ "$d" != "/" && "$d" != "$HOME" ]]; do
-    if [[ -f "$d/supabase/config.toml" && -f "$map_dir/supabase.json" ]]; then
-      local pref cfg
-      pref=$(grep -E '^project_id' "$d/supabase/config.toml" 2>/dev/null | head -1 | sed 's/.*"\(.*\)".*/\1/')
-      if [[ -n "$pref" ]]; then
-        cfg=$(jq --arg k "$pref" '.[$k] // empty' "$map_dir/supabase.json" 2>/dev/null)
-        if [[ -n "$cfg" && "$cfg" != "null" && "$cfg" != '""' ]]; then
-          export SUPABASE_PROJECT_REF="$pref"
-          exported+=(SUPABASE_PROJECT_REF)
-          local tref dbref
-          tref=$(echo "$cfg" | jq -r '.token // empty')
-          dbref=$(echo "$cfg" | jq -r '.db_password // empty')
-          if [[ -n "$tref" && "$tref" != "null" ]] && command -v op >/dev/null; then
-            export SUPABASE_ACCESS_TOKEN=$(op read "$tref" 2>/dev/null)
-            exported+=(SUPABASE_ACCESS_TOKEN)
-          fi
-          if [[ -n "$dbref" && "$dbref" != "null" ]] && command -v op >/dev/null; then
-            export SUPABASE_DB_PASSWORD=$(op read "$dbref" 2>/dev/null)
-            exported+=(SUPABASE_DB_PASSWORD)
-          fi
-        fi
-      fi
-      break
-    fi
-    d="${d:h}"
-  done
-
-  # 일반화: ~/.config/projects/*.json 중 vercel/supabase 외 매핑은
-  # marker file 패턴 (.PROJECT-NAME-marker) 으로 처리.
-  # 향후 Sentry/PostHog/Cloudflare 등 추가 시 이 영역에 케이스 추가.
-  # (지금은 vercel/supabase 둘만 — 확장 여지 남겨둠)
-
-  # 다음 cd 호출 때 unset할 수 있게 기록
   if (( ${#exported[@]} > 0 )); then
     export PROJECT_SECRETS_EXPORTED="${exported[*]}"
   fi
