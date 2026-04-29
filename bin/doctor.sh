@@ -138,5 +138,48 @@ else
 fi
 
 echo ""
+echo "── Phase 1: 두 맥북 살아있음 인프라 ──"
+
+# 페르소나
+if [[ -f "$SSOT/.machine.json" ]]; then
+  persona=$(jq -r '.persona' "$SSOT/.machine.json" 2>/dev/null)
+  emoji=$(jq -r '.emoji' "$SSOT/.machine.json" 2>/dev/null)
+  echo "✓ 페르소나: $emoji $persona"
+else
+  echo "❌ .machine.json 없음 — 'bin/persona.sh --init' 실행"; ((errors++))
+fi
+
+# 활동 ledger
+if [[ -d "$SSOT/state/activity" ]]; then
+  ledger_count=$(ls "$SSOT/state/activity"/*.jsonl 2>/dev/null | wc -l | tr -d ' ')
+  echo "✓ state/activity ($ledger_count ledger 파일)"
+else
+  echo "❌ state/activity/ 없음"; ((errors++))
+fi
+
+# helper 실행 권한
+for s in bin/persona.sh bin/ledger-append.sh bin/ledger-query.sh bin/notify-activity.sh; do
+  if [[ -x "$SSOT/$s" ]]; then
+    echo "✓ $s"
+  else
+    echo "❌ $s 실행 권한/존재 X"; ((errors++))
+  fi
+done
+
+# sync immediate 모드 인식
+if grep -q -- "--immediate" "$SSOT/bin/sync.sh" 2>/dev/null; then
+  echo "✓ sync.sh --immediate 모드 지원"
+else
+  echo "❌ sync.sh --immediate 미지원"; ((errors++))
+fi
+
+# bats 설치
+if command -v bats >/dev/null; then
+  echo "✓ bats $(bats --version | awk '{print $2}')"
+else
+  echo "⚠ bats 미설치 — 'brew install bats-core' (테스트 환경)"
+fi
+
+echo ""
 [[ $errors -eq 0 ]] && echo "✅ All good ($errors errors)" || echo "❌ $errors errors"
 exit $errors

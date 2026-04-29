@@ -63,3 +63,5 @@ vscode "ms-python.vscode-python-envs"
 vscode "ms-vscode.vscode-typescript-next"
 vscode "nrwl.angular-console"
 vscode "vue.volar"
+# Bash testing framework (used in tests/)
+brew "bats-core"

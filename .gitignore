@@ -36,3 +36,9 @@ history.jsonl
 # 백업
 *.bak
 *.bak.*
+
+# 머신 페르소나 (머신별 다름)
+.machine.json
+
+# 에이전트 텔레메트리 (harness가 갱신하는 transient state)
+.omc/state/
