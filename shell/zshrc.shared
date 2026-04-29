@@ -125,6 +125,8 @@ alias hudm='$HOME/.config/claude-sync/bin/hud-machines.sh --format=detail'
 # 셸 시작 시 1회 실행
 __load_project_secrets
 
+setopt PROMPT_SUBST
+
 # ── HUD: 두 맥북 상태 RPROMPT segment ──────────────
 __claude_sync_hud_rprompt() {
   [[ -x "$HOME/.config/claude-sync/bin/hud-machines.sh" ]] || return 0
