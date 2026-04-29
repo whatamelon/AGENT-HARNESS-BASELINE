@@ -40,12 +40,17 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 │   ├── sync.sh                 # launchd가 호출 — pull → 자동 commit/push
 │   ├── migrate-secrets-to-1password.sh  # 평문 토큰 → vault 이전
 │   ├── project-init.sh         # 새 프로젝트 sync 등록
-│   └── env-sync.sh             # .env 재주입 (op inject)
+│   ├── env-sync.sh             # .env 재주입 (op inject)
+│   └── rebuild-agents-md.sh    # ★ ~/AGENTS.md 빌더 (Codex 글로벌)
 ├── bootstrap/
-│   ├── bootstrap-new-mac.sh    # ★ 한 줄 셋업
+│   ├── bootstrap-new-mac.sh    # ★ 한 줄 셋업 (비대화형)
 │   ├── Brewfile                # brew 패키지 일괄
 │   ├── npm-globals.txt         # npm 글로벌 패키지
-│   └── cli-login-checklist.md  # OAuth 안내
+│   ├── cli-login-checklist.md  # OAuth 안내
+│   ├── install-shared-skills.sh # ~/.agents/skills 외부 풀 재구성
+│   └── install-codex-skills.sh  # CC 전용 스킬 → Codex 노출
+├── agents/
+│   └── skill-lock.json         # 외부 출처 157개 스킬 메타 (재구성용)
 └── launchd/                    # 자동 sync plist
 ```
 
@@ -74,6 +79,41 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 1. **셸 시작 시** (~/.zprofile): 백그라운드 `git pull --rebase`
 2. **30분마다** (launchd `com.denny.claude-sync`): `bin/sync.sh` 호출 → pull → 변경 있으면 자동 commit + push
 3. **수동**: `cs-sync` alias
+
+## CC ↔ Codex 통합
+
+`~/.config/claude-sync` 가 Claude Code와 Codex 양 도구의 단일 진실 원천(SSOT). 양쪽이 동일한 **스킬 풀(165개)**과 **글로벌 컨벤션(`~/AGENTS.md`)**을 공유.
+
+### 자산 출처
+| 자산 | 위치 | 출처 |
+|------|------|------|
+| 외부 스킬 157개 | `~/.agents/skills/` | `agents/skill-lock.json` 기준 6개 GitHub repo (anthropic, vercel, wshobson 등) |
+| CC 전용 스킬 7개 | `claude/skills/{react-patterns 등}` (실제 디렉터리) | 사용자 자작 |
+| 글로벌 규칙 | `claude/rules/*.md` | 양 도구 공유 |
+| 사용자 메모리 인덱스 | `~/.claude/projects/.../memory/MEMORY.md` | CC 자동 누적 |
+
+### `~/AGENTS.md` 자동 갱신 (3-trigger)
+1. **PostToolUse hook**: CC가 rules/MEMORY 수정 시 즉시 빌드
+2. **launchd sync**: 30분마다 git pull 후 빌드
+3. **bootstrap step 13b / mac-setup step 5**: 신규 머신 첫 세팅 시 1회
+
+→ rules 또는 MEMORY 만지면 양 도구가 자동 인지. **`~/AGENTS.md` 직접 편집 금지** (다음 trigger에서 덮어쓰임).
+
+### 수동 명령
+```bash
+# 외부 스킬 풀 재구성 (회사 맥북 첫 세팅 또는 lock 갱신 후)
+~/.config/claude-sync/bootstrap/install-shared-skills.sh
+
+# CC 전용 → Codex 노출
+~/.config/claude-sync/bootstrap/install-codex-skills.sh
+
+# 글로벌 컨벤션 강제 재빌드
+~/.config/claude-sync/bin/rebuild-agents-md.sh --force
+```
+
+### 한계 (Codex 미지원으로 의도된 비대칭)
+- 훅 시스템: Codex 미지원 → CC 전용 (file-tracker, quality-check)
+- 자동 메모리 누적: Codex 미지원 → 메모리는 CC → Codex **단방향**
 
 ## 새 프로젝트 등록
 ```bash
