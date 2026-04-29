@@ -142,8 +142,16 @@ step_04_claude_sync() {
 }
 
 step_05_codex() {
-  ui_step_header 5 $TOTAL_STEPS "Codex CLI 통합 (스킬 공유)"
+  ui_step_header 5 $TOTAL_STEPS "공유 자산 통합 (외부 스킬 풀 + Codex + 글로벌 AGENTS.md)"
 
+  # (1) 외부 출처 스킬 157개 재구성 — CC와 Codex 둘 다 의존
+  if [[ -f "$SSOT/bootstrap/install-shared-skills.sh" ]]; then
+    ui_doing "~/.agents/skills 재구성 (외부 157개)"
+    bash "$SSOT/bootstrap/install-shared-skills.sh" 2>&1 | tail -3
+    ui_ok "공유 스킬 풀 동기화 완료"
+  fi
+
+  # (2) Codex CLI 통합 — CC 전용 7개를 Codex 에 노출
   if command -v codex >/dev/null 2>&1 || [[ -d /Applications/Codex.app ]]; then
     if [[ -f "$SSOT/bootstrap/install-codex-skills.sh" ]]; then
       ui_doing "~/.codex/skills 심링크"
@@ -155,6 +163,14 @@ step_05_codex() {
   else
     ui_skip "Codex 미설치 — 스킵 (필요 시 brew install --cask codex)"
   fi
+
+  # (3) 글로벌 AGENTS.md 빌드 — CC ↔ Codex 공유 규칙/메모리
+  if [[ -f "$SSOT/bin/rebuild-agents-md.sh" ]]; then
+    ui_doing "~/AGENTS.md 빌드"
+    bash "$SSOT/bin/rebuild-agents-md.sh" --quiet
+    ui_ok "글로벌 컨벤션 동기화 완료"
+  fi
+
   __step_done 5
 }
 
