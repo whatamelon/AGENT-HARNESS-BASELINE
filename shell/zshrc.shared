@@ -62,6 +62,9 @@ alias project-init='~/.config/claude-sync/bin/project-init.sh'
 alias env-sync='~/.config/claude-sync/bin/env-sync.sh'
 alias secrets-migrate='~/.config/claude-sync/bin/migrate-secrets-to-1password.sh'
 alias saas-add='~/.config/claude-sync/bin/saas-add.sh'
+alias install-apps='~/.config/claude-sync/bin/install-apps.sh'
+alias mac-setup='~/.config/claude-sync/bin/mac-setup.sh'
+alias 꾸쮹='~/.config/claude-sync/bin/mac-setup.sh'
 
 # ─── 프로젝트별 시크릿 자동 로딩 (플러그인 패턴) ──────────
 # shell/saas/*.sh 안의 모든 __load_<name>() 함수 자동 호출.

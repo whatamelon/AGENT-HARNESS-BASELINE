@@ -160,6 +160,10 @@
           {
             "type": "command",
             "command": "python3 /Users/denny/.claude/hooks/file-tracker.py"
+          },
+          {
+            "type": "command",
+            "command": "bash /Users/denny/.config/claude-sync/bin/rebuild-agents-md.sh --quiet &"
           }
         ]
       }

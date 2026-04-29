@@ -1,14 +1,27 @@
-# claude-sync
+# claude-sync · 개발환경 꾸쮹
 
-두 맥북(개인/회사) 간 Claude Code + 셸 + 프로젝트 시크릿을 git으로 동기화하는 SSOT.
-**1Password 통합** + **launchd 자동 sync** + **새 맥북 한 줄 부트스트랩**.
+두 맥북(개인/회사) 간 Claude Code + Codex + 셸 + 프로젝트 시크릿을 git으로 동기화하는 SSOT.
+**1Password 통합** + **launchd 자동 sync** + **휘황찬란한 mac-setup 마법사 (13단계)**.
 
-## 한 줄 새 맥북 셋업
+## 새 맥북 한 줄 셋업
+
 ```bash
+brew install gh && gh auth login && \
 git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync && \
-  ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh
+  ~/.config/claude-sync/bin/mac-setup.sh auto
 ```
-이후 [`bootstrap/cli-login-checklist.md`](bootstrap/cli-login-checklist.md) 의 OAuth 로그인 한 번씩.
+
+또는 인터랙티브:
+```bash
+~/.config/claude-sync/bin/mac-setup.sh
+```
+
+마법사 모드:
+- `mac-setup` — 인터랙티브 (모드 선택)
+- `mac-setup auto` — 처음부터 끝까지 자동
+- `mac-setup verify` — 검증만
+- `mac-setup --step N` — 특정 단계 (1~13)
+- `mac-setup reset` — 진행 상태 초기화
 
 ## 디렉터리 구조
 ```

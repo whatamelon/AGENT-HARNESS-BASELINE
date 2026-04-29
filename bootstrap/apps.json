@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "categories": {
+    "ai": {
+      "icon": "🤖",
+      "name": "AI / 에디터",
+      "apps": [
+        { "id": "claude",      "name": "Claude",         "method": "brew", "cask": "claude" },
+        { "id": "chatgpt",     "name": "ChatGPT",        "method": "brew", "cask": "chatgpt" },
+        { "id": "cursor",      "name": "Cursor",         "method": "brew", "cask": "cursor" },
+        { "id": "vscode",      "name": "VS Code",        "method": "brew", "cask": "visual-studio-code" },
+        { "id": "perplexity",  "name": "Perplexity",     "method": "brew", "cask": "perplexity" },
+        { "id": "claude-usage","name": "Claude Usage",   "method": "brew", "cask": "claude-usage-tracker" },
+        { "id": "codex",       "name": "OpenAI Codex",   "method": "brew", "cask": "codex" },
+        { "id": "atlas",       "name": "ChatGPT Atlas",  "method": "direct", "url": "https://atlas.openai.com" },
+        { "id": "antigravity", "name": "Antigravity",    "method": "direct", "url": "https://antigravity.google" },
+        { "id": "comet",       "name": "Comet",          "method": "direct", "url": "https://comet.app" }
+      ]
+    },
+    "productivity": {
+      "icon": "📝",
+      "name": "생산성",
+      "apps": [
+        { "id": "1password",      "name": "1Password",        "method": "brew", "cask": "1password" },
+        { "id": "1password-cli",  "name": "1Password CLI",    "method": "brew", "cask": "1password-cli" },
+        { "id": "notion",         "name": "Notion",           "method": "brew", "cask": "notion" },
+        { "id": "notion-calendar","name": "Notion Calendar",  "method": "brew", "cask": "notion-calendar" },
+        { "id": "notion-mail",    "name": "Notion Mail",      "method": "brew", "cask": "notion-mail" },
+        { "id": "slack",          "name": "Slack",            "method": "brew", "cask": "slack" },
+        { "id": "obsidian",       "name": "Obsidian",         "method": "brew", "cask": "obsidian" },
+        { "id": "telegram",       "name": "Telegram",         "method": "brew", "cask": "telegram" },
+        { "id": "the-unarchiver", "name": "The Unarchiver",   "method": "brew", "cask": "the-unarchiver" }
+      ]
+    },
+    "dev": {
+      "icon": "🛠",
+      "name": "개발 도구",
+      "apps": [
+        { "id": "docker",         "name": "Docker Desktop",   "method": "brew", "cask": "docker" },
+        { "id": "sequel-ace",     "name": "Sequel Ace",       "method": "brew", "cask": "sequel-ace" },
+        { "id": "android-studio", "name": "Android Studio",   "method": "brew", "cask": "android-studio" },
+        { "id": "xcode",          "name": "Xcode",            "method": "manual", "note": "App Store에서 설치 (15GB)" }
+      ]
+    },
+    "design": {
+      "icon": "🎨",
+      "name": "디자인",
+      "apps": [
+        { "id": "figma",          "name": "Figma",            "method": "brew", "cask": "figma" }
+      ]
+    },
+    "korea": {
+      "icon": "🇰🇷",
+      "name": "한국 환경",
+      "apps": [
+        { "id": "zoom",           "name": "Zoom",             "method": "brew", "cask": "zoom" },
+        { "id": "kakaotalk",      "name": "KakaoTalk",        "method": "brew", "cask": "kakaotalk" },
+        { "id": "whale",          "name": "Whale (Naver)",    "method": "direct", "url": "https://whale.naver.com" }
+      ]
+    },
+    "browser": {
+      "icon": "🌐",
+      "name": "브라우저",
+      "apps": [
+        { "id": "google-chrome",  "name": "Google Chrome",    "method": "brew", "cask": "google-chrome" }
+      ]
+    }
+  },
+  "presets": {
+    "minimal": {
+      "name": "최소 (5개)",
+      "description": "Claude / Cursor / 1Password / Slack / Notion",
+      "apps": ["claude", "cursor", "1password", "slack", "notion"]
+    },
+    "recommended": {
+      "name": "추천 (회사 표준 17개)",
+      "description": "AI + 생산성 + 개발 + 회의",
+      "apps": [
+        "claude", "chatgpt", "cursor", "vscode", "perplexity",
+        "1password", "notion", "notion-calendar", "notion-mail", "slack", "obsidian", "telegram",
+        "docker", "sequel-ace",
+        "figma", "zoom", "google-chrome", "the-unarchiver"
+      ]
+    },
+    "full": {
+      "name": "전체 (brew cask 가능한 거 모두)",
+      "description": "AI 풀셋 + 생산성 + 개발 + 한국 + 디자인",
+      "apps": [
+        "claude", "chatgpt", "cursor", "vscode", "perplexity", "claude-usage", "codex",
+        "1password", "notion", "notion-calendar", "notion-mail", "slack", "obsidian", "telegram", "the-unarchiver",
+        "docker", "sequel-ace", "android-studio",
+        "figma",
+        "zoom", "kakaotalk",
+        "google-chrome"
+      ]
+    }
+  }
+}
