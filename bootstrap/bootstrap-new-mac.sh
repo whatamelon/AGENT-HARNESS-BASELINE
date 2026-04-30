@@ -221,6 +221,28 @@ step "13b. 공유 자산 동기화 (CC ↔ Codex 스킬 + 글로벌 AGENTS.md)"
 "$SSOT_DIR/bootstrap/install-codex-skills.sh" || true
 "$SSOT_DIR/bin/rebuild-agents-md.sh" --quiet || true
 
+# ─── 13c. Claude Code plugin marketplaces (OMC + BMAD) ────────
+# settings.shared.json 의 enabledPlugins 에는 기록돼 있지만 marketplace 자체는
+# 머신마다 수동 등록이 필요해 매번 누락된다. 멱등하므로 재실행 안전.
+step "13c. Claude Code plugins (OMC + BMAD)"
+if command -v claude >/dev/null 2>&1; then
+  # OMC: marketplace name "omc" (yeachan-heo/oh-my-claudecode)
+  claude plugin marketplace add yeachan-heo/oh-my-claudecode 2>&1 | tail -3 || warn "OMC marketplace 등록 실패"
+  claude plugin install oh-my-claudecode@omc -s user 2>&1 | tail -3 || warn "OMC plugin 설치 실패"
+  # BMAD: marketplace name "bmad-method" (bmad-code-org/BMAD-METHOD)
+  claude plugin marketplace add bmad-code-org/BMAD-METHOD 2>&1 | tail -3 || warn "BMAD marketplace 등록 실패"
+  claude plugin install bmad-pro-skills@bmad-method -s user 2>&1 | tail -3 || warn "bmad-pro-skills 설치 실패"
+  claude plugin install bmad-method-lifecycle@bmad-method -s user 2>&1 | tail -3 || warn "bmad-method-lifecycle 설치 실패"
+  info "plugins: $(claude plugin list 2>/dev/null | grep -c '^  ❯') 개"
+else
+  warn "claude CLI 없음 — npm globals 단계(10번) 후 수동 실행:"
+  warn "  claude plugin marketplace add yeachan-heo/oh-my-claudecode"
+  warn "  claude plugin install oh-my-claudecode@omc -s user"
+  warn "  claude plugin marketplace add bmad-code-org/BMAD-METHOD"
+  warn "  claude plugin install bmad-pro-skills@bmad-method -s user"
+  warn "  claude plugin install bmad-method-lifecycle@bmad-method -s user"
+fi
+
 # ─── 14. 검증 ─────────────────────────────────────────────────
 step "14. 검증 (cs-doctor)"
 "$SSOT_DIR/bin/doctor.sh" || true
