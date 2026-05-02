@@ -114,7 +114,10 @@ ensure_codex_links() {
   link_dir "$SSOT/codex/agents" "$CODEX_HOME/agents"
   link_dir "$SSOT/codex/hooks" "$CODEX_HOME/hooks"
   link_dir "$SSOT/codex/memories" "$CODEX_HOME/memories"
-  link_file "$SSOT/codex/hooks.json" "$CODEX_HOME/hooks.json"
+
+  # Codex may rewrite hooks.json as a regular file while loading hooks.
+  # Keep the SSOT copy authoritative and refresh the live file each bridge run.
+  cp "$SSOT/codex/hooks.json" "$CODEX_HOME/hooks.json"
 }
 
 frontmatter_description() {

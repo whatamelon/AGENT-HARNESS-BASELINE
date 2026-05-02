@@ -138,6 +138,31 @@ else
   echo "⚠ PostToolUse hook trigger 미등록 — rules/MEMORY 수정해도 자동 빌드 안 됨"
 fi
 
+# Codex bridge
+if [[ -x "$SSOT/bin/codex-bridge.sh" ]]; then
+  echo "✓ bin/codex-bridge.sh"
+else
+  echo "❌ bin/codex-bridge.sh 실행 권한/존재 X"; ((errors++))
+fi
+check_link "$HOME/.codex/agents" "$SSOT/codex/agents"
+check_link "$HOME/.codex/hooks" "$SSOT/codex/hooks"
+check_link "$HOME/.codex/memories" "$SSOT/codex/memories"
+if [[ -f "$HOME/.codex/hooks.json" ]] && cmp -s "$HOME/.codex/hooks.json" "$SSOT/codex/hooks.json"; then
+  echo "✓ ~/.codex/hooks.json matches SSOT copy"
+else
+  echo "⚠ ~/.codex/hooks.json differs from SSOT — run codex-bridge"
+fi
+if jq -e '.hooks.Stop[]?.hooks[]? | select(.command | contains("codex-bridge"))' "$HOME/.claude/settings.json" >/dev/null 2>&1; then
+  echo "✓ Claude Stop hook 에 codex-bridge 등록"
+else
+  echo "⚠ Claude Stop hook 에 codex-bridge 미등록"
+fi
+if jq -e '.hooks.Stop[]?.hooks[]? | select(.command | contains("codex-bridge"))' "$HOME/.codex/hooks.json" >/dev/null 2>&1; then
+  echo "✓ Codex Stop hook 에 codex-bridge 등록"
+else
+  echo "⚠ Codex Stop hook 에 codex-bridge 미등록"
+fi
+
 echo ""
 echo "── Phase 1: 두 맥북 살아있음 인프라 ──"
 
