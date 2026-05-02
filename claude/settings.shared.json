@@ -35,12 +35,10 @@
       "Bash(ruff:*)",
       "Bash(mypy:*)",
       "Bash(pnpm add:*)",
-      "Bash(git -C /Users/denny/development/lawblaw_dev/admin branch:*)",
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
       "Bash(node:*)",
       "Bash(npm info:*)",
-      "Read(//Users/denny/**)",
       "Bash(chmod:*)",
       "Bash(while ! test -f /private/tmp/claude-501/-Users-denny-development-lawblaw-dev/tasks/b897610.output)",
       "Bash(! grep -qE \"\\(problems?|error|warning|✓|✔\\)\" /private/tmp/claude-501/-Users-denny-development-lawblaw-dev/tasks/b897610.output)",
@@ -48,30 +46,6 @@
       "Bash(xargs:*)",
       "Bash(while read f)",
       "Bash(do:*)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/cases/[caseId]/chat/[conversationId]/page.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/cases/[caseId]/chat/page.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/cases/[caseId]/layout.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/cases/[caseId]/page.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/cases/layout.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/cases/page.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/api/cases/[caseId]/route.ts)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/api/cases/[caseId]/status/route.ts)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/api/cases/route.ts)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/app/api/cases/analyze-complaint/route.ts)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/home/conversion-gate.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/lib/case-context-builder.ts)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/lib/agents/complaint-analyzer-agent.ts)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/case-card.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/case-list.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/dashboard/analysis-result.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/dashboard/case-summary.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/dashboard/case-tabs.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/dashboard/deadline-alert.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/dashboard/next-action.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/dashboard/progress-timeline.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/deadline/deadline-banner.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/deadline/deadline-list.tsx)",
-      "Bash(/Users/denny/development/lawblaw_dev/fe/src/components/cases/new-case-dialog.tsx)",
       "Bash(EOF)",
       "Bash(cd:*)",
       "Bash(test:*)",
@@ -102,13 +76,11 @@
       "Bash(supabase db push:*)",
       "Bash(supabase:*)",
       "Bash(head:*)",
-      "Read(//Users/denny/development/lawblaw_dev/**)",
       "WebFetch(domain:www.threads.com)",
       "Bash(gh repo view:*)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Read(//Library/Fonts/**)",
-      "Bash(/Users/denny/development/lawblaw_dev/.omc/ralplan-state.json:*)",
       "mcp__claude_ai_supabase-lawblaw__list_edge_functions",
       "Bash(openssl rand:*)",
       "WebFetch(domain:uiux.egovframe.go.kr)",
@@ -132,24 +104,15 @@
       "Bash(/tmp/check_tokens.sh:*)",
       "Bash(/tmp/verify_documentation.txt:*)",
       "Bash(/tmp/final_summary.md:*)",
-      "Bash(/Users/denny/development/lawblaw_dev/docs/design-system/README.md:*)",
       "mcp__plugin_oh-my-claudecode_omc-tools__ast_grep_replace",
       "Bash(for f in progress-timeline.tsx case-sidebar-tips.tsx case-sidebar-tools.tsx status-action-section.tsx status-hero-banner.tsx non-prosecution-banner.tsx court-recommendation.tsx)",
-      "Bash(# Count KRDS components: the plan says \"\"39개 KRDS 컴포넌트\"\" ls /Users/denny/development/lawblaw_dev/fe/src/components/krds/**/*.tsx)",
       "mcp__plugin_claude-mem_mcp-search__timeline",
       "Bash(git -C fe status --short)"
     ],
     "deny": [],
     "additionalDirectories": [
-      "/Users/denny/development/lawblaw_dev/.claude",
-      "/Users/denny/development/lawblaw_dev/fe/src/app/api/legal-forms/[id]",
-      "/Users/denny/development/lawblaw_dev/.omc/plans",
-      "/Users/denny/development/lawblaw_dev/fe/src/app/cases",
-      "/Users/denny/development/lawblaw_dev/fe/src/app/api/cases/[caseId]",
-      "/Users/denny/development/lawblaw_dev/fe/src/app/api/cases/[caseId]/package",
       "/tmp",
-      "/tmp/supabase_temp_migrations",
-      "/Users/denny/development/lawblaw_dev/fe/src/components/krds"
+      "/tmp/supabase_temp_migrations"
     ]
   },
   "hooks": {
@@ -159,11 +122,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /Users/denny/.claude/hooks/file-tracker.py"
+            "command": "python3 $HOME/.claude/hooks/file-tracker.py"
           },
           {
             "type": "command",
-            "command": "bash /Users/denny/.config/claude-sync/bin/rebuild-agents-md.sh --quiet &"
+            "command": "bash $HOME/.config/claude-sync/bin/rebuild-agents-md.sh --quiet &"
           }
         ]
       }
@@ -174,15 +137,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /Users/denny/.claude/hooks/quality-check.py"
+            "command": "python3 $HOME/.claude/hooks/quality-check.py"
           },
           {
             "type": "command",
-            "command": "/Users/denny/.claude/notify.sh"
+            "command": "$HOME/.claude/notify.sh"
           },
           {
             "type": "command",
-            "command": "bash /Users/denny/.config/claude-sync/bin/notify-session-end.sh &"
+            "command": "bash $HOME/.config/claude-sync/bin/notify-session-end.sh &"
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.config/claude-sync/bin/codex-bridge.sh --quiet --push &"
           }
         ]
       }
@@ -193,7 +160,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/denny/.claude/notify.sh"
+            "command": "$HOME/.claude/notify.sh"
           }
         ]
       }
@@ -201,7 +168,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "node /Users/denny/.claude/hud/omc-hud.mjs"
+    "command": "node $HOME/.claude/hud/omc-hud.mjs"
   },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
