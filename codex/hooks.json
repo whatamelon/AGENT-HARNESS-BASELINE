@@ -2,17 +2,17 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 '/Users/manager/.codex/hooks/file-tracker.py'"
+            "command": "python3 $HOME/.claude/hooks/file-tracker.py"
           },
           {
             "type": "command",
             "command": "bash $HOME/.config/claude-sync/bin/rebuild-agents-md.sh --quiet &"
           }
-        ]
+        ],
+        "matcher": "Edit|Write|MultiEdit"
       }
     ],
     "Stop": [
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 '/Users/manager/.codex/hooks/quality-check.py'"
+            "command": "python3 $HOME/.claude/hooks/quality-check.py"
           },
           {
             "type": "command",
@@ -28,7 +28,7 @@
           },
           {
             "type": "command",
-            "command": "bash $HOME/.config/claude-sync/bin/notify-session-end.sh"
+            "command": "bash $HOME/.config/claude-sync/bin/notify-session-end.sh &"
           },
           {
             "type": "command",
