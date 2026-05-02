@@ -40,8 +40,6 @@
       "Bash(node:*)",
       "Bash(npm info:*)",
       "Bash(chmod:*)",
-      "Bash(while ! test -f /private/tmp/claude-501/-Users-denny-development-lawblaw-dev/tasks/b897610.output)",
-      "Bash(! grep -qE \"\\(problems?|error|warning|✓|✔\\)\" /private/tmp/claude-501/-Users-denny-development-lawblaw-dev/tasks/b897610.output)",
       "Bash(do sleep 1)",
       "Bash(xargs:*)",
       "Bash(while read f)",

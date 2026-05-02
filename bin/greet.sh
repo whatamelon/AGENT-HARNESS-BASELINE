@@ -127,8 +127,10 @@ echo ""
 skills_count=$(ls "$SSOT/claude/skills/" 2>/dev/null | wc -l | tr -d ' ')
 rules_count=$(ls "$SSOT/claude/rules/" 2>/dev/null | grep -c '\.md$' || echo 0)
 memory_lines=0
-if [[ -f "$HOME/.claude/projects/-Users-denny/memory/MEMORY.md" ]]; then
-  memory_lines=$(wc -l < "$HOME/.claude/projects/-Users-denny/memory/MEMORY.md" | tr -d ' ')
+project_key="$(printf '%s' "$HOME" | sed 's#/#-#g')"
+memory_index="$HOME/.claude/projects/$project_key/memory/MEMORY.md"
+if [[ -f "$memory_index" ]]; then
+  memory_lines=$(wc -l < "$memory_index" | tr -d ' ')
 fi
 
 echo "  자산: 스킬 ${skills_count}개 · 규칙 ${rules_count}개 · 메모리 ${memory_lines}줄"
