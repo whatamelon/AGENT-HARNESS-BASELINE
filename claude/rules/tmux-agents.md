@@ -35,6 +35,7 @@
 ## How to apply
 
 - 다중 에이전트 작업이 필요한 순간 → **첫 점검은 tmux 가용 여부**
+- `team`/`swarm`/`ultrawork`/`ultrapilot` 시작 직전 → `codex-bridge --quiet` 를 먼저 실행해 Claude Code ↔ Codex 스킬/메모리/에이전트 상태를 동기화
 - 가용하면 tmux 기반 스킬 우선 사용
 - 단일 에이전트·1회성 위임은 룰 적용 대상 아님 (일반 Task로 OK)
 - 사용자가 명시적으로 "Task로 해" 하면 그게 우선
