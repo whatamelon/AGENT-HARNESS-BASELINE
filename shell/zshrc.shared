@@ -67,6 +67,7 @@ alias export-desktop='~/.config/claude-sync/bin/export-desktop.sh'
 alias import-desktop='~/.config/claude-sync/bin/import-desktop.sh'
 alias mac-setup='~/.config/claude-sync/bin/mac-setup.sh'
 alias 꾸쮹='~/.config/claude-sync/bin/mac-setup.sh'
+alias codex-bridge='~/.config/claude-sync/bin/codex-bridge.sh'
 
 # ─── 프로젝트별 시크릿 자동 로딩 (플러그인 패턴) ──────────
 # shell/saas/*.sh 안의 모든 __load_<name>() 함수 자동 호출.

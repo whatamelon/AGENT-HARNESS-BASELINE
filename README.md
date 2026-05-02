@@ -43,7 +43,8 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 │   ├── env-sync.sh             # .env 재주입 (op inject)
 │   ├── export-desktop.sh       # ★ GUI 앱 설정 → SSOT (개인맥에서)
 │   ├── import-desktop.sh       # ★ SSOT → 새 머신 (op inject 거침)
-│   └── rebuild-agents-md.sh    # ★ ~/AGENTS.md 빌더 (Codex 글로벌)
+│   ├── rebuild-agents-md.sh    # ★ ~/AGENTS.md 빌더 (Codex 글로벌)
+│   └── codex-bridge.sh         # ★ Claude Code ↔ Codex 브리지
 ├── bootstrap/
 │   ├── bootstrap-new-mac.sh    # ★ 한 줄 셋업 (비대화형)
 │   ├── Brewfile                # brew 패키지 일괄
@@ -89,20 +90,25 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 
 ## CC ↔ Codex 통합
 
-`~/.config/claude-sync` 가 Claude Code와 Codex 양 도구의 단일 진실 원천(SSOT). 양쪽이 동일한 **스킬 풀(165개)**과 **글로벌 컨벤션(`~/AGENTS.md`)**을 공유.
+`~/.config/claude-sync` 가 Claude Code와 Codex 양 도구의 단일 진실 원천(SSOT). 양쪽이 동일한 **스킬 풀**, **글로벌 컨벤션(`~/AGENTS.md`)**, **Codex custom agents/hooks/memories**를 공유한다.
 
 ### 자산 출처
 | 자산 | 위치 | 출처 |
 |------|------|------|
-| 외부 스킬 157개 | `~/.agents/skills/` | `agents/skill-lock.json` 기준 6개 GitHub repo (anthropic, vercel, wshobson 등) |
-| CC 전용 스킬 7개 | `claude/skills/{react-patterns 등}` (실제 디렉터리) | 사용자 자작 |
+| 외부 스킬 | `~/.agents/skills/` | `agents/skill-lock.json` 기준 GitHub sources |
+| Claude slash commands | `claude/commands/*.md` → `~/.agents/skills/*/SKILL.md` | `codex-bridge.sh`가 Codex skill로 생성 |
+| CC 전용 스킬 | `claude/skills/*` | 사용자/회사 SSOT |
+| Codex custom agents | `codex/agents/` → `~/.codex/agents` | Claude subagent에서 변환, git sync |
+| Codex hooks | `codex/hooks.json`, `codex/hooks/` → `~/.codex/*` | Stop hook에서 bridge 실행 |
+| Codex memories | `codex/memories/` → `~/.codex/memories` | Claude project memory에서 생성, git sync |
 | 글로벌 규칙 | `claude/rules/*.md` | 양 도구 공유 |
 | 사용자 메모리 인덱스 | `~/.claude/projects/.../memory/MEMORY.md` | CC 자동 누적 |
 
-### `~/AGENTS.md` 자동 갱신 (3-trigger)
+### `~/AGENTS.md` 자동 갱신
 1. **PostToolUse hook**: CC가 rules/MEMORY 수정 시 즉시 빌드
-2. **launchd sync**: 30분마다 git pull 후 빌드
-3. **bootstrap step 13b / mac-setup step 5**: 신규 머신 첫 세팅 시 1회
+2. **Stop hook**: Claude Code와 Codex 모두 `codex-bridge.sh` 실행
+3. **launchd sync**: 30분마다 git pull 후 빌드
+4. **bootstrap/mac-setup**: 신규 머신 첫 세팅 시 1회
 
 → rules 또는 MEMORY 만지면 양 도구가 자동 인지. **`~/AGENTS.md` 직접 편집 금지** (다음 trigger에서 덮어쓰임).
 
@@ -116,11 +122,20 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 
 # 글로벌 컨벤션 강제 재빌드
 ~/.config/claude-sync/bin/rebuild-agents-md.sh --force
+
+# Claude Code ↔ Codex 브리지
+codex-bridge                 # 빠른 동기화
+codex-bridge --validate      # 동기화 + Codex target 검증
+codex-bridge --push          # 동기화 + claude-sync 자동 commit/push
 ```
 
-### 한계 (Codex 미지원으로 의도된 비대칭)
-- 훅 시스템: Codex 미지원 → CC 전용 (file-tracker, quality-check)
-- 자동 메모리 누적: Codex 미지원 → 메모리는 CC → Codex **단방향**
+### Team workflow
+
+OMC `team`/`swarm`/`ultrawork`를 쓰기 전에는 `codex-bridge --validate`를 먼저 실행한다. 긴 팀 작업이 끝나면 Stop hook이 bridge를 다시 실행해 Claude memories, Codex memories, custom agents, generated command skills, and `AGENTS.md`를 맞춘다.
+
+### 의도된 비대칭
+- `~/.codex/config.toml`은 Slack/Telegram/MCP 토큰 같은 시크릿을 포함할 수 있어 git에 통째로 넣지 않는다. 공유 가능한 동작은 bridge와 plugin install 상태로 맞추고, 시크릿은 1Password/env/cache로 유지한다.
+- Claude hook과 Codex hook은 런타임 의미가 완전히 같지 않다. 공통 Stop hook에는 bridge를 얹고, 도구별 품질 체크는 각 도구 hook에 둔다.
 
 ## 새 프로젝트 등록
 ```bash
