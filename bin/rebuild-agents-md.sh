@@ -17,7 +17,8 @@ set -uo pipefail
 
 CLAUDE_SYNC="$HOME/.config/claude-sync"
 RULES_DIR="$CLAUDE_SYNC/claude/rules"
-MEMORY_DIR="$HOME/.claude/projects/-Users-denny/memory"
+PROJECT_KEY="$(printf '%s' "$HOME" | sed 's#/#-#g')"
+MEMORY_DIR="$HOME/.claude/projects/$PROJECT_KEY/memory"
 OUTPUT="$HOME/AGENTS.md"
 
 FORCE=0
@@ -61,7 +62,7 @@ trap "rm -f '$TMP'" EXIT
   echo "이 파일은 자동 생성됩니다. 수정하려면 SSOT 파일을 편집하세요:"
   echo ""
   echo "- 규칙: \`~/.config/claude-sync/claude/rules/*.md\`"
-  echo "- 메모리 인덱스: \`~/.claude/projects/-Users-denny/memory/MEMORY.md\`"
+  echo "- 메모리 인덱스: \`~/.claude/projects/$PROJECT_KEY/memory/MEMORY.md\`"
   echo ""
   echo "프로젝트별 컨벤션은 프로젝트 루트의 \`AGENTS.md\` 가 이 파일을 override 합니다."
   echo ""
