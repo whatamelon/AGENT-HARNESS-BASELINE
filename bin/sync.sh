@@ -32,6 +32,12 @@ if [[ "$mode" != "--immediate" ]]; then
 
   # pull 로 rules/MEMORY 변경이 들어왔다면 ~/AGENTS.md 갱신
   "$SSOT/bin/rebuild-agents-md.sh" --quiet 2>/dev/null || true
+
+  # Claude Code ↔ Codex 공유 표면도 자동 갱신.
+  # --immediate 에서는 codex-bridge --push 가 다시 sync.sh 를 부르므로 실행하지 않는다.
+  if [[ "${CLAUDE_SYNC_SKIP_CODEX_BRIDGE:-0}" != "1" && -x "$SSOT/bin/codex-bridge.sh" ]]; then
+    CLAUDE_SYNC_SKIP_CODEX_BRIDGE=1 "$SSOT/bin/codex-bridge.sh" --quiet 2>/tmp/claude-sync-codex-bridge.err.log || true
+  fi
 fi
 
 # Push 할 변경 있는지 (양 모드 공통)

@@ -198,6 +198,11 @@ if grep -q -- "--immediate" "$SSOT/bin/sync.sh" 2>/dev/null; then
 else
   echo "❌ sync.sh --immediate 미지원"; ((errors++))
 fi
+if grep -q "codex-bridge.sh" "$SSOT/bin/sync.sh" 2>/dev/null; then
+  echo "✓ sync.sh 에 codex-bridge 자동 실행 등록"
+else
+  echo "⚠ sync.sh 에 codex-bridge 자동 실행 미등록"
+fi
 
 # bats 설치
 if command -v bats >/dev/null; then

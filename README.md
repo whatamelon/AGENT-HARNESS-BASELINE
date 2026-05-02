@@ -107,8 +107,9 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 ### `~/AGENTS.md` 자동 갱신
 1. **PostToolUse hook**: CC가 rules/MEMORY 수정 시 즉시 빌드
 2. **Stop hook**: Claude Code와 Codex 모두 `codex-bridge.sh` 실행
-3. **launchd sync**: 30분마다 git pull 후 빌드
+3. **launchd sync**: 30분마다 `sync.sh` 실행 → git pull 후 `codex-bridge.sh` 자동 실행
 4. **bootstrap/mac-setup**: 신규 머신 첫 세팅 시 1회
+5. **새 탭/셸 시작**: `zshrc.shared`가 5분 throttle로 `sync.sh` 실행 → bridge 자동 실행
 
 → rules 또는 MEMORY 만지면 양 도구가 자동 인지. **`~/AGENTS.md` 직접 편집 금지** (다음 trigger에서 덮어쓰임).
 
@@ -132,6 +133,11 @@ codex-bridge --push          # 동기화 + claude-sync 자동 commit/push
 ### Team workflow
 
 OMC `team`/`swarm`/`ultrawork`를 쓰기 전에는 `codex-bridge --validate`를 먼저 실행한다. 긴 팀 작업이 끝나면 Stop hook이 bridge를 다시 실행해 Claude memories, Codex memories, custom agents, generated command skills, and `AGENTS.md`를 맞춘다.
+
+평소에는 자동으로 돈다:
+- 셸/새 탭 시작 시 최대 5분에 한 번
+- launchd로 30분마다
+- Claude Code 또는 Codex 세션 종료 시
 
 ### 의도된 비대칭
 - `~/.codex/config.toml`은 Slack/Telegram/MCP 토큰 같은 시크릿을 포함할 수 있어 git에 통째로 넣지 않는다. 공유 가능한 동작은 bridge와 plugin install 상태로 맞추고, 시크릿은 1Password/env/cache로 유지한다.
