@@ -4,6 +4,7 @@
 # 환경변수는 settings.json 의 env 블록에서 자동 주입된다.
 
 MAX_LEN=300
+APP_NAME="${NOTIFY_APP_NAME:-Claude Code}"
 
 # --- stdin JSON 파싱 ---
 STDIN_TEXT=$(cat)
@@ -60,13 +61,13 @@ fi
 if [ -n "$LAST_MSG" ]; then
     MESSAGE="${LAST_MSG:0:$MAX_LEN}"
     [ "${#LAST_MSG}" -gt "$MAX_LEN" ] && MESSAGE="${MESSAGE}..."
-    TITLE="Claude Code - Done"
+    TITLE="$APP_NAME - Done"
 elif [ -n "$HOOK_MSG" ]; then
     MESSAGE="$HOOK_MSG"
-    TITLE="${HOOK_TITLE:-Claude Code}"
+    TITLE="${HOOK_TITLE:-$APP_NAME}"
 else
     MESSAGE="Task completed!"
-    TITLE="Claude Code"
+    TITLE="$APP_NAME"
 fi
 
 FULL_MESSAGE="[$TITLE] $MESSAGE"

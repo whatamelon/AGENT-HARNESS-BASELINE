@@ -50,6 +50,29 @@
   - 그 후 워커별 inbox.md 에 lane 별 역할 행동지침을 적어 다른 lane 의 워커 행동을 유도
   - 또는 두 개 이상의 작은 팀을 나눠 띄우기 (예: `omx team 2:designer "UI"` + `omx team 2:test-engineer "QA"`)
 
+### 5. 워커 CLI 혼합 (Claude + Codex) — 기본값으로 강제
+
+**`omx team` 의 default 는 Codex 단일 CLI 다. 명시적으로 다른 지시가 없으면 Claude 와 Codex 를 섞어서 띄운다.** 사용자가 "Codex 만" 또는 "Claude 만" 이라고 명시했을 때만 단일 CLI 사용.
+
+```bash
+# 기본 (다중 워커일 때): 교차 혼합
+OMX_TEAM_WORKER_CLI_MAP=codex,claude,codex,claude omx team 4:designer "..."
+
+# 작업 성격에 맞게 매핑:
+#   - 빠른 코드 생성·구체 구현 lane → codex
+#   - 복잡 추론·아키텍처·UX 톤 → claude
+OMX_TEAM_WORKER_CLI_MAP=codex,claude,claude,codex omx team 4:executor "..."
+
+# 전체 Claude 강제 (사용자 명시 요청 시)
+OMX_TEAM_WORKER_CLI=claude omx team 3:writer "..."
+```
+
+규칙:
+- 워커 수 ≥ 2 면 **무조건 혼합** (1대1 비율 또는 작업 성격에 맞춰)
+- map 길이는 워커 수와 정확히 일치 (모자라면 omx 가 거부; broadcast 모드는 길이 1만 허용)
+- launch 후 `omx team status` 의 `worker_panes` 출력은 CLI 종류를 알려주지 않으므로, `tmux capture-pane` 으로 각 pane 확인하면 Codex (`OpenAI Codex (vX.Y)`) vs Claude (`Claude Code`) 식별 가능
+- 단일 워커 launch (예: `omx team 1:executor`) 는 단일 CLI OK
+
 ### 5. 검증 lane 분리 (구현 lane 와 다른 워커가 맡는다)
 
 구현/테스트는 같은 워커에 맡기지 않는다. 같은 워커가 자기 코드를 검증하면 사각지대가 생긴다. 최소 1명은 `verifier` / `qa-tester` / `test-engineer` 로 분리한다.
