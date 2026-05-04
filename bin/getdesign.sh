@@ -8,6 +8,7 @@ set -euo pipefail
 SSOT="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
 GLOBAL_DESIGN="$SSOT/design/DESIGN.md"
 GLOBAL_GETDESIGN="$SSOT/design/getdesign.md"
+GLOBAL_HARNESS_DIR="$SSOT/design/harness"
 
 usage() {
   cat <<'EOF_USAGE'
@@ -16,12 +17,15 @@ Usage:
   getdesign show            Same as no args
   getdesign init [--force]  Copy shared DESIGN.md/getdesign.md into current project
   getdesign copy [--force]  Alias for init
+  getdesign init-harness [--force]
+                            Copy shared visual quality harness into current project
   getdesign add <slug>      Run: npx getdesign@latest add <slug>
   getdesign doctor          Verify shared DESIGN.md entrypoint links
 
 Examples:
   getdesign
   getdesign init
+  getdesign init-harness
   getdesign add linear.app
   getdesign add cursor
 EOF_USAGE
@@ -109,6 +113,50 @@ init_project() {
   echo "Project DESIGN.md is now local to this repo. Commit it with the project if desired."
 }
 
+init_harness() {
+  local force=0
+  while (($#)); do
+    case "$1" in
+      --force) force=1 ;;
+      *) echo "Unknown init-harness argument: $1" >&2; usage >&2; exit 2 ;;
+    esac
+    shift
+  done
+  [[ -f "$GLOBAL_HARNESS_DIR/visual-check.mjs" ]] || { echo "Missing $GLOBAL_HARNESS_DIR/visual-check.mjs" >&2; exit 1; }
+  [[ -f "$GLOBAL_HARNESS_DIR/CLAUDE_CODE_PROMPT.md" ]] || { echo "Missing $GLOBAL_HARNESS_DIR/CLAUDE_CODE_PROMPT.md" >&2; exit 1; }
+  [[ -f "$PWD/package.json" ]] || { echo "Missing package.json in $PWD; run from a JS/Next project root" >&2; exit 1; }
+
+  mkdir -p "$PWD/scripts"
+  for spec in \
+    "$GLOBAL_HARNESS_DIR/visual-check.mjs:$PWD/scripts/visual-check.mjs" \
+    "$GLOBAL_HARNESS_DIR/CLAUDE_CODE_PROMPT.md:$PWD/CLAUDE_CODE_PROMPT.md"; do
+    src="${spec%%:*}"
+    dst="${spec#*:}"
+    if [[ -e "$dst" && $force -ne 1 ]]; then
+      echo "skip: $dst exists (use --force to overwrite)"
+      continue
+    fi
+    cp "$src" "$dst"
+    echo "copied: $dst"
+  done
+
+  python3 - "$PWD/package.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text())
+data.setdefault("scripts", {})["test:visual"] = "node scripts/visual-check.mjs"
+dev = data.setdefault("devDependencies", {})
+dev.setdefault("@axe-core/playwright", "^4.11.3")
+dev.setdefault("@playwright/test", "^1.59.1")
+path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+PY
+  echo "updated: $PWD/package.json"
+  echo "Next steps: pnpm install && pnpm lint && pnpm build && pnpm test:visual"
+}
+
 add_inspiration() {
   [[ $# -eq 1 ]] || { echo "getdesign add requires a slug, e.g. cursor, linear.app, vercel" >&2; exit 2; }
   local slug="$1"
@@ -136,6 +184,19 @@ doctor_design() {
       errors=$((errors + 1))
     fi
   done
+  for f in \
+    "$GLOBAL_DESIGN" \
+    "$GLOBAL_GETDESIGN" \
+    "$GLOBAL_HARNESS_DIR/visual-check.mjs" \
+    "$GLOBAL_HARNESS_DIR/CLAUDE_CODE_PROMPT.md" \
+    "$GLOBAL_HARNESS_DIR/README.md"; do
+    if [[ -f "$f" ]]; then
+      echo "✓ exists: $f"
+    else
+      echo "✗ missing: $f"
+      errors=$((errors + 1))
+    fi
+  done
   exit "$errors"
 }
 
@@ -143,6 +204,7 @@ cmd="${1:-show}"
 case "$cmd" in
   show) shift || true; show_context "$@" ;;
   init|copy) shift; init_project "$@" ;;
+  init-harness|harness) shift; init_harness "$@" ;;
   add) shift; add_inspiration "$@" ;;
   doctor) shift || true; doctor_design "$@" ;;
   -h|--help|help) usage ;;
