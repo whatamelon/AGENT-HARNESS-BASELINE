@@ -169,3 +169,4 @@
 {"ts":"2026-05-02T22:24:45+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny","duration_min":10,"commits":0,"files_changed":0,"summary":"denny · 10분 · 0 commits · 0 files"}
 {"ts":"2026-05-02T22:27:05+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny","duration_min":10,"commits":0,"files_changed":0,"summary":"denny · 10분 · 0 commits · 0 files"}
 {"ts":"2026-05-04T22:04:28+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/.config/claude-sync","duration_min":10,"commits":0,"files_changed":0,"summary":"claude-sync · \"auto: My-Own-Macbook-Air 2026-05-04T00:31:28+0900\" · 10분 · 0 commits · 0 files"}
+{"ts":"2026-05-04T22:17:49+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/.config/claude-sync","duration_min":10,"commits":0,"files_changed":0,"summary":"claude-sync · \"auto: My-Own-Macbook-Air 2026-05-04T22:17:41+0900\" · 10분 · 0 commits · 0 files"}
