@@ -243,6 +243,28 @@ else
   warn "  claude plugin install bmad-method-lifecycle@bmad-method -s user"
 fi
 
+# ─── 13d. wishket SSOT (회사 정본 — 글로벌 심링크 타겟) ───────
+# ~/.claude/{skills,agents,rules,references}/ 의 다수 entry가 wishket-aidp/claude-settings 정본을
+# 상대경로(../../../../wishket/claude-settings/.claude/...)로 가리킨다.
+# 이 정본이 없으면 글로벌 심링크들이 broken 상태가 된다. 멱등.
+step "13d. wishket SSOT (회사 정본)"
+WISHKET_DIR="$HOME/wishket/claude-settings"
+mkdir -p "$HOME/wishket"
+if [[ -d "$WISHKET_DIR/.git" ]]; then
+  info "이미 clone됨 — git pull"
+  (cd "$WISHKET_DIR" && git pull --rebase --autostash --quiet) || warn "wishket pull 실패 (네트워크/권한?)"
+else
+  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    warn "clone 중 (private repo, gh 인증 사용)"
+    gh repo clone wishket-aidp/claude-settings "$WISHKET_DIR" 2>&1 | tail -3 \
+      && info "wishket clone 완료" \
+      || warn "wishket clone 실패 — 부트스트랩 후 수동: gh repo clone wishket-aidp/claude-settings ~/wishket/claude-settings"
+  else
+    warn "gh 미인증 — 부트스트랩 끝나고 'gh auth login' 후 수동 실행:"
+    warn "  gh repo clone wishket-aidp/claude-settings ~/wishket/claude-settings"
+  fi
+fi
+
 # ─── 14. 검증 ─────────────────────────────────────────────────
 step "14. 검증 (cs-doctor)"
 "$SSOT_DIR/bin/doctor.sh" || true
