@@ -33,6 +33,21 @@ check_link "$HOME/.claude/.mcp.json" "$SSOT/claude/mcp.shared.json"
 check_link "$HOME/.config/projects" "$SSOT/config/projects"
 
 echo ""
+echo "── DESIGN harness 상태 ──"
+for f in \
+  "$SSOT/design/DESIGN.md" \
+  "$SSOT/design/getdesign.md" \
+  "$SSOT/design/harness/visual-check.mjs" \
+  "$SSOT/design/harness/CLAUDE_CODE_PROMPT.md" \
+  "$SSOT/design/harness/README.md"; do
+  if [[ -f "$f" ]]; then
+    echo "✓ $f"
+  else
+    echo "❌ missing: $f"; ((errors++))
+  fi
+done
+
+echo ""
 echo "── settings.json 상태 ──"
 if [[ -f "$HOME/.claude/settings.local.json" ]]; then
   echo "✓ settings.local.json 존재 ($(stat -f%Sp $HOME/.claude/settings.local.json))"

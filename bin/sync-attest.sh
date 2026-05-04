@@ -29,6 +29,7 @@ Checks and records:
   - ~/.agents/skills resolves to ~/.codex/skills
   - file manifest hash for both skill surfaces
   - shared DESIGN.md/getdesign.md entrypoints are linked for home, Claude, and Codex
+  - shared DESIGN harness template files exist and are hashed
   - omx doctor reports 0 warnings / 0 failed, unless --skip-doctor is used
 
 Writes a machine-local JSON attestation to:
@@ -268,6 +269,21 @@ for link, target in design_expected.items():
 add_check("shared_design_entrypoints_linked", all(x["is_symlink"] and x["resolves"] and x["target_exists"] for x in design_links),
           design_links=design_links)
 
+harness_expected = [
+    design_root / "harness" / "visual-check.mjs",
+    design_root / "harness" / "CLAUDE_CODE_PROMPT.md",
+    design_root / "harness" / "README.md",
+]
+harness_files = []
+for path in harness_expected:
+    harness_files.append({
+        "path": str(path),
+        "exists": path.is_file(),
+        "sha256": sha256_bytes(path.read_bytes()) if path.is_file() else None,
+    })
+add_check("shared_design_harness_available", all(item["exists"] for item in harness_files),
+          harness_files=harness_files)
+
 doctor = {"skipped": skip_doctor}
 if not skip_doctor:
     proc = run(["omx", "doctor"], cwd=Path.home())
@@ -313,6 +329,7 @@ attestation = {
         "links": design_links,
         "design_sha256": sha256_bytes((design_root / "DESIGN.md").read_bytes()) if (design_root / "DESIGN.md").is_file() else None,
         "getdesign_sha256": sha256_bytes((design_root / "getdesign.md").read_bytes()) if (design_root / "getdesign.md").is_file() else None,
+        "harness_files": harness_files,
     },
     "runtime": {
         "omx_doctor": doctor,
@@ -338,6 +355,8 @@ print(f"name set sha256: {attestation['skills']['name_set_sha256']}")
 print(f"manifest sha256: {manifest['combined_sha256']}")
 print(f"design sha256: {attestation['design']['design_sha256']}")
 print(f"getdesign sha256: {attestation['design']['getdesign_sha256']}")
+for item in attestation["design"]["harness_files"]:
+    print(f"harness {Path(item['path']).name}: {item['sha256']}")
 if not skip_doctor:
     summary = doctor.get("summary", {})
     print(f"omx doctor: {summary.get('passed')} passed, {summary.get('warnings')} warnings, {summary.get('failed')} failed")
