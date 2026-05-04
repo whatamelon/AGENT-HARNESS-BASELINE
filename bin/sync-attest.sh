@@ -64,7 +64,7 @@ if (( skip_generate == 0 )); then
     "$SSOT/bootstrap/install-codex-skills.sh" >/dev/null
   fi
   if [[ -x "$SSOT/bin/codex-bridge.sh" ]]; then
-    "$SSOT/bin/codex-bridge.sh" --quiet >/dev/null 2>&1 || true
+    "$SSOT/bin/codex-bridge.sh" --quiet --no-memories >/dev/null 2>&1 || true
   fi
   if [[ -x "$SSOT/bootstrap/install-claude-codex-skills.sh" ]]; then
     "$SSOT/bootstrap/install-claude-codex-skills.sh" >/dev/null

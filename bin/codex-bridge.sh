@@ -12,15 +12,16 @@ quiet=0
 validate=0
 push=0
 link=1
+sync_memories_enabled=1
 
 usage() {
   cat <<'EOF'
-Usage: codex-bridge.sh [--quiet] [--validate] [--push] [--no-link]
+Usage: codex-bridge.sh [--quiet] [--validate] [--push] [--no-link] [--no-memories]
 
 Synchronizes:
   - Claude slash commands -> Codex skills in ~/.codex/skills
   - malformed Claude setup-notify-hooks skill -> valid Codex skill
-  - Claude project memories -> Codex memories
+  - Claude project memories -> Codex memories (unless --no-memories)
   - Claude subagents -> Codex custom agents
   - ~/AGENTS.md global instructions
   - Codex agents/hooks/skills/memories through ~/.config/claude-sync/codex
@@ -41,6 +42,7 @@ while (($#)); do
     --validate) validate=1 ;;
     --push) push=1 ;;
     --no-link) link=0 ;;
+    --no-memories) sync_memories_enabled=0 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -323,7 +325,9 @@ validate_codex() {
 (( link == 1 )) && ensure_codex_links
 sync_commands_to_skills
 sync_setup_notify_skill
-sync_memories
+if (( sync_memories_enabled == 1 )); then
+  sync_memories
+fi
 sync_subagents
 rebuild_agents_md
 merge_omx_hooks_into_live_file "$CODEX_HOME/hooks.json"
