@@ -4,7 +4,7 @@
 # 같은 이름으로 사용할 수 있게 한다.
 #
 # - 멱등(idempotent): 이미 올바른 심링크면 skip, 깨진 링크는 재생성
-# - Claude skills의 실제 디렉터리와 symlink를 모두 처리
+# - Claude skills의 실제 디렉터리와 유효한 symlink 디렉터리를 모두 처리
 # - 이미 Codex canonical/legacy root로 되돌아가는 순환 링크는 skip
 # - 회사 맥북 부트스트랩 + 평소 sync 양쪽에서 호출 가능
 
@@ -88,7 +88,7 @@ while IFS= read -r src; do
   ((total+=1))
 
   if [[ ! -f "$src/SKILL.md" ]]; then
-    echo "  ⚠️  skip: $s — SKILL.md 없음 또는 깨진 링크"
+    echo "  ⚠️  skip: $s — SKILL.md 없음"
     ((invalid+=1))
     continue
   fi
@@ -123,11 +123,7 @@ while IFS= read -r src; do
     echo "  + added: $s"
     ((added+=1))
   fi
-done < <(find "$CC_SKILLS_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+done < <(find -L "$CC_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 
 echo ""
 echo "  total: $total, added: $added, relinked: $relinked, skipped: $skipped, loops: $loops, invalid: $invalid, conflicts: $conflicts"
-
-if (( conflicts > 0 || invalid > 0 )); then
-  exit 1
-fi
