@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # install-shared-skills.sh
-# claude-sync/agents/skill-lock.json 을 권위 자료로 ~/.agents/skills/ 를 재구성한다.
+# claude-sync/agents/skill-lock.json 을 권위 자료로 Codex canonical
+# ~/.codex/skills/ 를 재구성한다. 호환성을 위해 ~/.agents/skills 는
+# ~/.codex/skills 로 향하는 symlink 로 유지한다.
 #
 # - lock 파일에 기록된 GitHub repo들에서 스킬 디렉터리만 추출해 복사
 # - 멱등(idempotent): 이미 SKILL.md가 있는 스킬은 skip
-# - 새 머신 부트스트랩 후 한 번 돌리면 CC와 Codex가 같은 스킬 풀을 보게 됨
+# - 새 머신 부트스트랩 후 한 번 돌리면 Claude Code와 Codex가 같은 스킬 풀을 보게 됨
 # - 회사 맥북에서도 동일하게 작동
 #
 # 의존성: jq, git
@@ -13,7 +15,8 @@ set -euo pipefail
 
 LOCK="$HOME/.config/claude-sync/agents/skill-lock.json"
 AGENTS_DIR="$HOME/.agents"
-SKILLS_DIR="$AGENTS_DIR/skills"
+CODEX_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+SKILLS_DIR="$CODEX_SKILLS_DIR"
 CACHE="$HOME/.cache/claude-sync/skill-sources"
 
 # 의존성 체크
@@ -23,7 +26,28 @@ done
 
 [[ -f "$LOCK" ]] || { echo "❌ $LOCK 없음"; exit 1; }
 
-mkdir -p "$SKILLS_DIR" "$CACHE"
+mkdir -p "$SKILLS_DIR" "$CACHE" "$AGENTS_DIR"
+
+# Older Codex setups loaded ~/.agents/skills directly. Modern Codex/OMX uses
+# ~/.codex/skills. Keep the legacy path as a symlink to avoid duplicate skill
+# roots while preserving compatibility with tools that still probe ~/.agents.
+if [[ -L "$AGENTS_DIR/skills" ]]; then
+  if [[ "$(readlink "$AGENTS_DIR/skills")" != "$SKILLS_DIR" ]]; then
+    rm "$AGENTS_DIR/skills"
+    ln -s "$SKILLS_DIR" "$AGENTS_DIR/skills"
+  fi
+elif [[ -e "$AGENTS_DIR/skills" ]]; then
+  if [[ -z "$(find "$AGENTS_DIR/skills" -mindepth 1 -maxdepth 1 2>/dev/null | head -1)" ]]; then
+    rm -rf "$AGENTS_DIR/skills"
+  else
+    backup="$AGENTS_DIR/skills.archived-$(date +%Y%m%d-%H%M%S)"
+    mv "$AGENTS_DIR/skills" "$backup"
+    echo "  ↪ archived legacy ~/.agents/skills -> $backup"
+  fi
+  ln -s "$SKILLS_DIR" "$AGENTS_DIR/skills"
+else
+  ln -s "$SKILLS_DIR" "$AGENTS_DIR/skills"
+fi
 
 # 1) 모든 sourceUrl 추출 → 캐시에 shallow clone (없을 때만)
 echo "▶ source repo 캐시 점검"
@@ -74,4 +98,6 @@ cp "$LOCK" "$AGENTS_DIR/.skill-lock.json"
 
 echo ""
 echo "  added: $added, skipped: $skipped, missing: $missing"
+echo "  skills: $SKILLS_DIR"
+echo "  legacy: $AGENTS_DIR/skills -> $SKILLS_DIR"
 echo "  cache: $CACHE (재실행 시 git pull 안 함 — 갱신은 'rm -rf $CACHE' 후 재실행)"

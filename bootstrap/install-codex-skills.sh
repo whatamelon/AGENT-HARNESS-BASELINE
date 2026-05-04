@@ -35,25 +35,44 @@ added=0
 skipped=0
 relinked=0
 
+rel_link_target() {
+  python3 - "$1" "$2" <<'PY'
+import os, sys
+src, dst_dir = sys.argv[1], sys.argv[2]
+print(os.path.relpath(os.path.realpath(src), os.path.realpath(dst_dir)))
+PY
+}
+
+same_link_target() {
+  local link_path="$1" src_path="$2"
+  [[ -L "$link_path" ]] || return 1
+  local current
+  current="$(readlink "$link_path")"
+  case "$current" in
+    /*) [[ "$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$current")" == "$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$src_path")" ]] ;;
+    *) [[ "$(python3 -c 'import os,sys; print(os.path.realpath(os.path.join(os.path.dirname(sys.argv[1]), sys.argv[2])))' "$link_path" "$current")" == "$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$src_path")" ]] ;;
+  esac
+}
+
 for s in "${CC_ONLY[@]}"; do
   src="$CC_SKILLS_DIR/$s"
   dst="$CODEX_SKILLS_DIR/$s"
+  link_target="$(rel_link_target "$src" "$(dirname "$dst")")"
 
   if [[ -L "$dst" ]]; then
-    current=$(readlink "$dst")
-    if [[ "$current" == "$src" ]]; then
+    if same_link_target "$dst" "$src" && [[ "$(readlink "$dst")" == "$link_target" ]]; then
       ((skipped++))
       continue
     fi
     rm "$dst"
-    ln -s "$src" "$dst"
+    ln -s "$link_target" "$dst"
     echo "  ↻ relinked: $s"
     ((relinked++))
   elif [[ -e "$dst" ]]; then
     echo "  ⚠️  skip: $s — 같은 이름의 실제 파일/디렉터리가 이미 존재"
     continue
   else
-    ln -s "$src" "$dst"
+    ln -s "$link_target" "$dst"
     echo "  + added: $s"
     ((added++))
   fi
