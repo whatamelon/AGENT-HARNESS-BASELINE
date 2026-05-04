@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # install-codex-skills.sh
-# claude-sync에 보관된 CC 전용 스킬을 ~/.codex/skills/ 로 심링크해서
-# Codex CLI가 동일한 스킬을 인식하도록 한다.
+# Claude Code에서 보이는 모든 스킬을 Codex canonical ~/.codex/skills/에서도
+# 같은 이름으로 사용할 수 있게 한다.
 #
 # - 멱등(idempotent): 이미 올바른 심링크면 skip, 깨진 링크는 재생성
+# - Claude skills의 실제 디렉터리와 symlink를 모두 처리
+# - 이미 Codex canonical/legacy root로 되돌아가는 순환 링크는 skip
 # - 회사 맥북 부트스트랩 + 평소 sync 양쪽에서 호출 가능
 
 set -euo pipefail
@@ -11,29 +13,31 @@ set -euo pipefail
 CC_SKILLS_DIR="$HOME/.config/claude-sync/claude/skills"
 CODEX_SKILLS_DIR="$HOME/.codex/skills"
 
-# CC 전용(=claude-sync 안 실제 디렉터리로 보관) 스킬 자동 탐지:
-# claude-sync/claude/skills 안에서 심링크가 아닌 실제 디렉터리만 추출
-# (macOS 기본 bash 3.2 호환을 위해 mapfile 대신 while read 사용)
-CC_ONLY=()
-while IFS= read -r dir; do
-  CC_ONLY+=("$(basename "$dir")")
-done < <(find "$CC_SKILLS_DIR" -maxdepth 1 -mindepth 1 -type d -not -path "$CC_SKILLS_DIR")
-
-if [[ ${#CC_ONLY[@]} -eq 0 ]]; then
-  echo "ℹ️  CC 전용 스킬 없음 — skip"
-  exit 0
-fi
-
 if [[ ! -d "$CODEX_SKILLS_DIR" ]]; then
   echo "ℹ️  ~/.codex/skills 없음 — Codex 미설치이거나 초기화 전. skip"
   exit 0
 fi
 
-echo "▶ ${#CC_ONLY[@]}개 CC 전용 스킬을 Codex로 노출"
+if [[ ! -d "$CC_SKILLS_DIR" ]]; then
+  echo "ℹ️  Claude skills dir 없음: $CC_SKILLS_DIR — skip"
+  exit 0
+fi
+
+echo "▶ Claude Code 스킬을 Codex canonical root로 동기화"
 
 added=0
 skipped=0
 relinked=0
+conflicts=0
+invalid=0
+loops=0
+
+real_path() {
+  python3 - "$1" <<'PY'
+import os, sys
+print(os.path.realpath(sys.argv[1]))
+PY
+}
 
 rel_link_target() {
   python3 - "$1" "$2" <<'PY'
@@ -54,29 +58,76 @@ same_link_target() {
   esac
 }
 
-for s in "${CC_ONLY[@]}"; do
-  src="$CC_SKILLS_DIR/$s"
+is_under() {
+  local child="$1" parent="$2"
+  python3 - "$child" "$parent" <<'PY'
+import os, sys
+child, parent = map(os.path.realpath, sys.argv[1:3])
+try:
+    common = os.path.commonpath([child, parent])
+except ValueError:
+    sys.exit(1)
+sys.exit(0 if common == parent else 1)
+PY
+}
+
+CODEX_REAL="$(real_path "$CODEX_SKILLS_DIR")"
+AGENTS_SKILLS_DIR="$HOME/.agents/skills"
+AGENTS_REAL=""
+if [[ -e "$AGENTS_SKILLS_DIR" || -L "$AGENTS_SKILLS_DIR" ]]; then
+  AGENTS_REAL="$(real_path "$AGENTS_SKILLS_DIR")"
+fi
+
+total=0
+
+while IFS= read -r src; do
+  s="$(basename "$src")"
   dst="$CODEX_SKILLS_DIR/$s"
+
+  [[ "$s" == "." || "$s" == ".." ]] && continue
+  ((total+=1))
+
+  if [[ ! -f "$src/SKILL.md" ]]; then
+    echo "  ⚠️  skip: $s — SKILL.md 없음 또는 깨진 링크"
+    ((invalid+=1))
+    continue
+  fi
+
+  src_real="$(real_path "$src")"
+  if is_under "$src_real" "$CODEX_REAL" || { [[ -n "$AGENTS_REAL" ]] && is_under "$src_real" "$AGENTS_REAL"; }; then
+    ((loops+=1))
+    continue
+  fi
+
   link_target="$(rel_link_target "$src" "$(dirname "$dst")")"
 
   if [[ -L "$dst" ]]; then
     if same_link_target "$dst" "$src" && [[ "$(readlink "$dst")" == "$link_target" ]]; then
-      ((skipped++))
+      ((skipped+=1))
       continue
     fi
     rm "$dst"
     ln -s "$link_target" "$dst"
     echo "  ↻ relinked: $s"
-    ((relinked++))
+    ((relinked+=1))
   elif [[ -e "$dst" ]]; then
-    echo "  ⚠️  skip: $s — 같은 이름의 실제 파일/디렉터리가 이미 존재"
+    if [[ "$(real_path "$dst")" == "$src_real" ]]; then
+      ((skipped+=1))
+      continue
+    fi
+    echo "  ⚠️  conflict: $s — Codex에 같은 이름의 실제 파일/디렉터리가 이미 존재"
+    ((conflicts+=1))
     continue
   else
     ln -s "$link_target" "$dst"
     echo "  + added: $s"
-    ((added++))
+    ((added+=1))
   fi
-done
+done < <(find "$CC_SKILLS_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
 
 echo ""
-echo "  added: $added, relinked: $relinked, skipped: $skipped"
+echo "  total: $total, added: $added, relinked: $relinked, skipped: $skipped, loops: $loops, invalid: $invalid, conflicts: $conflicts"
+
+if (( conflicts > 0 || invalid > 0 )); then
+  exit 1
+fi
