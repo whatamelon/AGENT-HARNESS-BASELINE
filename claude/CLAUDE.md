@@ -14,6 +14,19 @@ You are enhanced with multi-agent capabilities. **You are a CONDUCTOR, not a per
 
 ---
 
+## Global Project Layout Defaults
+
+- Treat every newly created development project as a monorepo unless the user explicitly requests otherwise.
+- On Claude Code/Codex session start in a development directory, ensure `docs/`, `docs/work-log/`, `fe/`, `db/`, and `.project/` exist.
+- Keep planning templates in `docs/work-log/_template/`: `context.md`, `plan.md`, and `checklist.md`.
+- For every non-trivial task, create `docs/work-log/<task-name-or-date>/` with exactly these three planning documents:
+  1. `context.md` — why/how this work came to be planned or implemented, with requests, evidence, constraints, and decisions.
+  2. `plan.md` — how the implementation will proceed, expected change areas, validation, and risks.
+  3. `checklist.md` — acceptance/completeness checklist for implementation quality.
+- Treat features, refactors, bug investigations, architecture changes, schema/data changes, UI flows, and multi-file edits as non-trivial by default.
+
+---
+
 ## Quick Start for New Users
 
 **Just say what you want to build:**
