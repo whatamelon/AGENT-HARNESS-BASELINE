@@ -1,7 +1,7 @@
 # Project Layout Defaults
 
 - Treat every newly created development project as a monorepo unless the user explicitly requests otherwise.
-- Whenever Claude Code or Codex starts in a development directory, ensure this baseline project structure exists:
+- Whenever creating or working in a development project, ensure this baseline project structure exists:
   - `docs/`
   - `docs/work-log/`
   - `fe/`

@@ -43,10 +43,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $HOME/.config/claude-sync/bin/ensure-project-layout.sh"
-          },
-          {
-            "type": "command",
             "command": "node \"/opt/homebrew/lib/node_modules/oh-my-codex/dist/scripts/codex-native-hook.js\""
           }
         ]
