@@ -8,6 +8,12 @@ set -uo pipefail
 SSOT="$HOME/.config/claude-sync"
 cd "$SSOT" || exit 1
 
+# 사용자가 cs-pause 로 lock 걸어둔 동안 sync 차단 (사람-데몬 race 방지).
+# cs-resume 또는 .sync-paused 직접 삭제로 해제.
+if [[ -f "$SSOT/.sync-paused" ]]; then
+  exit 0
+fi
+
 mode="${1:-full}"
 
 # 원격 없으면 스킵

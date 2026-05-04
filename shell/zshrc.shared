@@ -69,6 +69,11 @@ alias mac-setup='~/.config/claude-sync/bin/mac-setup.sh'
 alias 꾸쮹='~/.config/claude-sync/bin/mac-setup.sh'
 alias codex-bridge='~/.config/claude-sync/bin/codex-bridge.sh'
 
+# claude-sync 자체에서 git 작업 중일 때 launchd 자동 sync 와의 race 차단.
+# cs-pause 후 작업, 끝나면 cs-resume. 잊고 cs-resume 안 해도 .sync-paused 가 있으면 sync.sh 가 즉시 skip.
+alias cs-pause='launchctl unload ~/Library/LaunchAgents/com.denny.claude-sync.plist 2>/dev/null; launchctl unload ~/Library/LaunchAgents/com.denny.claude-sync-digest.plist 2>/dev/null; touch ~/.config/claude-sync/.sync-paused; echo "claude-sync paused (cs-resume to resume)"'
+alias cs-resume='rm -f ~/.config/claude-sync/.sync-paused; launchctl load ~/Library/LaunchAgents/com.denny.claude-sync.plist 2>/dev/null; launchctl load ~/Library/LaunchAgents/com.denny.claude-sync-digest.plist 2>/dev/null; echo "claude-sync resumed"'
+
 # OMC team 계열 실행 전 Claude Code ↔ Codex 공유 상태를 먼저 맞춘다.
 omc() {
   case "${1:-}" in
