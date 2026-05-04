@@ -64,6 +64,9 @@ if (( skip_generate == 0 )); then
   if [[ -x "$SSOT/bin/codex-bridge.sh" ]]; then
     "$SSOT/bin/codex-bridge.sh" --quiet >/dev/null 2>&1 || true
   fi
+  if [[ -x "$SSOT/bootstrap/install-claude-codex-skills.sh" ]]; then
+    "$SSOT/bootstrap/install-claude-codex-skills.sh" >/dev/null
+  fi
 fi
 
 mkdir -p "$(dirname "$OUT")"
@@ -114,10 +117,9 @@ def skill_names(root: Path) -> list[str]:
         return []
     names = []
     for entry in root.iterdir():
-        if entry.name.startswith(".") and entry.name != ".system":
-            # Keep .system when present; skip other hidden local/editor entries.
-            continue
-        if entry.is_dir():
+        # Visible skills are top-level directories that contain SKILL.md.
+        # Ignore helper folders such as .system and editor/local metadata.
+        if entry.is_dir() and (entry / "SKILL.md").is_file():
             names.append(entry.name)
     return sorted(set(names))
 

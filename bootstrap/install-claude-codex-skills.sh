@@ -69,7 +69,7 @@ while IFS= read -r link_path; do
     rm -f "$link_path"
     ((removed_broken+=1))
   fi
-done < <(find "$CLAUDE_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type l | sort)
+done < <(find -L "$CLAUDE_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type l | sort)
 
 while IFS= read -r src; do
   name="$(basename "$src")"
