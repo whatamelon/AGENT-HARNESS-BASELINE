@@ -56,5 +56,8 @@ state/hud-flash.txt
 # 머신별 prompt 시각 마커
 state/last-prompt-ts.txt
 
+# 머신별 sync 인증 결과
+state/sync-attestation*.json
+
 # 부트스트랩 wizard 메시지 ID (머신별, 일회용)
 state/wizard-message-id.txt
