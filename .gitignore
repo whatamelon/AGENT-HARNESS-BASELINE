@@ -56,6 +56,9 @@ state/hud-flash.txt
 # 머신별 prompt 시각 마커
 state/last-prompt-ts.txt
 
+# 머신별 tab pull throttle 마커 (zsh hook이 매 5분 갱신, 추적 시 양쪽 맥 race로 conflict marker 박힘)
+state/last-tab-sync.txt
+
 # 머신별 sync 인증 결과
 state/sync-attestation*.json
 
