@@ -3,68 +3,72 @@
 Date: 2026-05-04
 Machine: company MacBook Pro / current Codex session
 
-## Snapshot
+## Snapshot After 1차 Migration
 
 - Claude Code visible skills: 245
-- Codex visible skills: 211
-- Shared skill names: 211
-- Claude-only skills missing in Codex: 34
-- Codex-only skills missing in Claude: 0
+- Codex visible skills: 231
+- Shared skill names: 231
+- Claude-only skill names still not physically present in Codex: 14
+- Codex-only skill names missing in Claude: 0
+- Unresolved skill gap after policy allowlist/alias: 0
 
-Important: all 34 Claude-only entries currently resolve under `/Users/manager/wishket/claude-settings/...`, not the central `~/.config/claude-sync/codex/skills` surface.
+Important: the original 34 Claude-only entries resolved under `/Users/manager/wishket/claude-settings/...`, not the central `~/.config/claude-sync/codex/skills` surface. This pass promoted portable and guarded skills into the central Codex surface and left only intentional Claude-only or Codex-alias cases.
 
 ## Classification Legend
 
-- `MIGRATE`: convert/copy into Codex skills with Codex-safe instructions.
-- `MIGRATE_WITH_GUARD`: useful in Codex but must require explicit user approval or read-only default because it touches DB, env, Slack, external systems, or arbitrary execution.
-- `ALLOWLIST_CLAUDE_ONLY`: should remain Claude-only, or is tied to Claude-specific runtime/MCP/hook behavior.
-- `DEDUP_OR_ALIAS`: Codex already has a nearby official/bundled skill/plugin; prefer alias/mapping or allowlist instead of duplicating unless exact name parity is required.
+- `MIGRATED`: now copied/converted into Codex skills with Codex guardrails.
+- `MIGRATED_WITH_GUARD`: now available in Codex, but the skill itself requires explicit approval or read-only default because it touches DB, env, external systems, or arbitrary execution.
+- `ALLOWLIST_CLAUDE_ONLY`: intentionally remains Claude-only/runtime-specific.
+- `DEDUP_OR_ALIAS`: Codex already has a nearby official/bundled skill/plugin; `sync-attest` resolves this by alias policy instead of duplicating.
 
-| # | Skill | Recommended class | Reason | Next action |
+| # | Skill | Final class | Codex status | Reason / Guardrail |
 |---:|---|---|---|---|
-| 1 | chrome-mcp-fix | ALLOWLIST_CLAUDE_ONLY | Chrome extension / Claude-in-Chrome MCP troubleshooting is Claude-specific. | Add to sync-attest allowlist. |
-| 2 | db-patch | MIGRATE_WITH_GUARD | DB mutation can be useful, but must require explicit approval and transaction/backup guidance. | Convert only with approval-first policy. |
-| 3 | db-query | MIGRATE_WITH_GUARD | DB read-only inspection can be useful, but may expose sensitive data. | Convert with read-only + redaction guidance. |
-| 4 | debug | DEDUP_OR_ALIAS | Codex already has debugging-strategies/analyze style skills; name parity optional. | Prefer alias to existing debugging flow, or migrate if exact slash workflow needed. |
-| 5 | develop | DEDUP_OR_ALIAS | Codex already has executor/frontend/backend pattern skills; generic develop overlaps heavily. | Alias to Codex implementation workflow. |
-| 6 | dispatch-agents | ALLOWLIST_CLAUDE_ONLY | Describes external Claude Code agents/background dispatch, not Codex native subagent contract. | Keep Claude-only unless rewritten from scratch for Codex. |
-| 7 | e2e-qa-report | MIGRATE | Playwright screenshot QA report is compatible with Codex/browser tooling. | Convert to Codex skill. |
-| 8 | feature-develop | MIGRATE | High-level feature lifecycle can work in both harnesses. | Convert with Codex wording and no Claude-only assumptions. |
-| 9 | feature-error-fix | MIGRATE | RCA/fix/report lifecycle is portable. | Convert to Codex skill. |
-| 10 | feature-review | MIGRATE | Planning/review/PDF design lifecycle is portable if PDF tooling is optional. | Convert; replace Claude-specific tools with generic/Codex tools. |
-| 11 | git-commit-create | MIGRATE | Git commit workflow is useful and CLI-compatible. | Convert; keep gh/native CLI preference. |
-| 12 | git-extract-pr | MIGRATE | Worktree/partial PR workflow is CLI-compatible. | Convert; emphasize dirty-tree safety. |
-| 13 | git-issue-create | MIGRATE | GitHub issue workflow can use gh CLI. | Convert; require user approval before publishing. |
-| 14 | git-pr-create | MIGRATE | PR workflow can use gh CLI. | Convert; require final user review before creation if needed. |
-| 15 | git-workflow | MIGRATE | Integrated issue/sync/plan/commit workflow is portable. | Convert after checking dependencies on local archives. |
-| 16 | html-presentation-deck | DEDUP_OR_ALIAS | Codex has Presentations plugin/skills; exact HTML deck workflow may still be useful. | Prefer alias to Presentations unless exact HTML deck output is required. |
-| 17 | init | ALLOWLIST_CLAUDE_ONLY | Generates Claude Code settings (`CLAUDE.md`, `.claude/`, scripts). | Keep Claude-only; create separate Codex init if needed. |
-| 18 | md-to-pdf | DEDUP_OR_ALIAS | Codex already has pdf/documents capabilities. | Alias to existing pdf skill; migrate only if Chrome-specific renderer is required. |
-| 19 | next-best-practices | DEDUP_OR_ALIAS | Codex has Vercel/Next official skills and nextjs-app-router-patterns. | Prefer official Vercel Next skill; alias if exact name parity required. |
-| 20 | next-cache-components | DEDUP_OR_ALIAS | Codex has Vercel Next Cache Components skill. | Alias to official Vercel skill. |
-| 21 | odoo-inspect | MIGRATE_WITH_GUARD | Odoo schema inspection can be useful but system-specific. | Convert with read-only default and credential safeguards. |
-| 22 | odoo-query | MIGRATE_WITH_GUARD | Odoo data query can expose sensitive data. | Convert with read-only + redaction + approval guidance. |
-| 23 | odoo-run | MIGRATE_WITH_GUARD | Arbitrary Odoo method execution is high-risk. | Convert only with explicit approval gates or allowlist as Claude-only. |
-| 24 | pscan | MIGRATE | Project context scan is portable and useful in Codex. | Convert to Codex skill. |
-| 25 | refactor-comply | MIGRATE | Rule-compliant refactor workflow is portable. | Convert; map `.claude/references` to project docs/AGENTS.md where needed. |
-| 26 | request-start | DEDUP_OR_ALIAS | Document intake/PDF/image conversion overlaps with Documents/PDF plugins; may be company-specific. | Alias to document workflow or migrate if the receipt format is important. |
-| 27 | setup-env | MIGRATE_WITH_GUARD | 1Password/env writes are sensitive and machine-specific. | Convert with explicit approval, no secret echoing, and portability warnings. |
-| 28 | slack-notify | ALLOWLIST_CLAUDE_ONLY | External Slack side effects conflict with user preference: no Slack without explicit approval. | Keep Claude-only or convert as disabled/manual-only. |
-| 29 | supabase-postgres-best-practices | MIGRATE | Read/write guidance skill; safe and portable as documentation. | Convert to Codex skill. |
-| 30 | sync-issues | MIGRATE | GitHub issue/PR archive sync can use gh CLI. | Convert; require clear repo and branch context. |
-| 31 | test | DEDUP_OR_ALIAS | Codex has many testing skills and webapp-testing; generic test overlaps. | Alias to test/webapp-testing, or migrate if this exact workflow is important. |
-| 32 | tmux-terminal-control | ALLOWLIST_CLAUDE_ONLY | Tmux pane/session orchestration is terminal-environment-specific and may not fit Codex API harness. | Keep Claude-only unless user explicitly wants tmux parity. |
-| 33 | vercel-composition-patterns | DEDUP_OR_ALIAS | Codex has Vercel React best-practices and frontend skills. | Alias to official Vercel React skill. |
-| 34 | vitest | MIGRATE | Vitest guidance is portable and useful. | Convert to Codex skill. |
+| 1 | chrome-mcp-fix | ALLOWLIST_CLAUDE_ONLY | Policy allowlist | Chrome extension / Claude-in-Chrome MCP troubleshooting is Claude-specific. |
+| 2 | db-patch | MIGRATED_WITH_GUARD | `codex/skills/db-patch` | DB mutation; explicit approval, blast-radius, backup/rollback, and no secret echoing required. |
+| 3 | db-query | MIGRATED_WITH_GUARD | `codex/skills/db-query` | DB read; read-only posture, least-privilege query, and sensitive-data redaction required. |
+| 4 | debug | DEDUP_OR_ALIAS | alias → `debugging-strategies` | Codex already has debugging/analyze flows. |
+| 5 | develop | DEDUP_OR_ALIAS | alias → `worker` | Codex already has worker/executor/front/backend implementation surfaces. |
+| 6 | dispatch-agents | ALLOWLIST_CLAUDE_ONLY | Policy allowlist | External Claude Code agent dispatch/runtime control is not Codex-native. |
+| 7 | e2e-qa-report | MIGRATED | `codex/skills/e2e-qa-report` | Playwright screenshot QA report is compatible with Codex/browser tooling. |
+| 8 | feature-develop | MIGRATED | `codex/skills/feature-develop` | Feature lifecycle is portable. |
+| 9 | feature-error-fix | MIGRATED | `codex/skills/feature-error-fix` | RCA/fix/report lifecycle is portable. |
+| 10 | feature-review | MIGRATED | `codex/skills/feature-review` | Planning/review/demo/PDF lifecycle is portable with Codex tooling substitutions. |
+| 11 | git-commit-create | MIGRATED | `codex/skills/git-commit-create` | Git commit workflow is CLI-compatible. |
+| 12 | git-extract-pr | MIGRATED | `codex/skills/git-extract-pr` | Worktree/partial PR workflow is CLI-compatible. |
+| 13 | git-issue-create | MIGRATED | `codex/skills/git-issue-create` | GitHub issue workflow can use `gh`; external creation requires clear user intent. |
+| 14 | git-pr-create | MIGRATED | `codex/skills/git-pr-create` | PR workflow can use `gh`; final publishing requires clear user intent. |
+| 15 | git-workflow | MIGRATED | `codex/skills/git-workflow` | Integrated issue/sync/plan/commit workflow is portable. |
+| 16 | html-presentation-deck | DEDUP_OR_ALIAS | alias → `presentations:Presentations` | Codex has Presentations plugin/skills. |
+| 17 | init | ALLOWLIST_CLAUDE_ONLY | Policy allowlist | Generates Claude Code settings; Codex should use a separate init flow. |
+| 18 | md-to-pdf | DEDUP_OR_ALIAS | alias → `pdf` | Codex already has PDF/document capabilities. |
+| 19 | next-best-practices | DEDUP_OR_ALIAS | alias → `vercel:next-best-practices` | Codex has official Vercel/Next skills. |
+| 20 | next-cache-components | DEDUP_OR_ALIAS | alias → `vercel:next-cache-components` | Codex has official Vercel Next Cache Components skill. |
+| 21 | odoo-inspect | MIGRATED_WITH_GUARD | `codex/skills/odoo-inspect` | Odoo metadata inspection; read-only default and credential safeguards required. |
+| 22 | odoo-query | MIGRATED_WITH_GUARD | `codex/skills/odoo-query` | Odoo data read; read-only default and redaction required. |
+| 23 | odoo-run | MIGRATED_WITH_GUARD | `codex/skills/odoo-run` | Odoo method execution; explicit approval and rollback/dry-run guidance required. |
+| 24 | pscan | MIGRATED | `codex/skills/pscan` | Project context scan is portable; `.claude` outputs must be mapped to Codex/project docs when needed. |
+| 25 | refactor-comply | MIGRATED | `codex/skills/refactor-comply` | Rule-compliant refactor workflow is portable. |
+| 26 | request-start | DEDUP_OR_ALIAS | alias → `documents:documents` | Document intake/PDF/image conversion overlaps with Codex Documents/PDF plugins. |
+| 27 | setup-env | MIGRATED_WITH_GUARD | `codex/skills/setup-env` | 1Password/env writes; explicit approval, portability warning, and no secret echoing required. |
+| 28 | slack-notify | ALLOWLIST_CLAUDE_ONLY | Policy allowlist | External Slack side effect; user preference requires explicit approval before any Slack notification. |
+| 29 | supabase-postgres-best-practices | MIGRATED | `codex/skills/supabase-postgres-best-practices` | Read/write guidance skill; safe as documentation. |
+| 30 | sync-issues | MIGRATED | `codex/skills/sync-issues` | GitHub issue/PR archive sync can use `gh`; repo/branch context required. |
+| 31 | test | DEDUP_OR_ALIAS | alias → `webapp-testing` | Codex already has test/webapp-testing skills. |
+| 32 | tmux-terminal-control | ALLOWLIST_CLAUDE_ONLY | Policy allowlist | Tmux pane orchestration is terminal-environment specific. |
+| 33 | vercel-composition-patterns | DEDUP_OR_ALIAS | alias → `vercel:vercel-react-best-practices` | Codex has official Vercel React best-practices skill. |
+| 34 | vitest | MIGRATED | `codex/skills/vitest` | Vitest guidance is portable. |
 
-## Recommended Rollout
+## Policy Artifacts
 
-1. First migrate low-risk portable skills:
-   - e2e-qa-report, feature-develop, feature-error-fix, feature-review, git-* workflows, pscan, refactor-comply, supabase-postgres-best-practices, sync-issues, vitest.
-2. Add allowlist for clearly Claude-only skills:
-   - chrome-mcp-fix, dispatch-agents, init, slack-notify, tmux-terminal-control.
-3. Add alias/dedup mapping for overlaps:
-   - debug, develop, html-presentation-deck, md-to-pdf, next-best-practices, next-cache-components, request-start, test, vercel-composition-patterns.
-4. Only then handle guarded integrations:
-   - db-patch, db-query, odoo-inspect, odoo-query, odoo-run, setup-env.
+- Policy file: `config/skill-sync-policy.json`
+- Attestation behavior: `bin/sync-attest.sh` now records raw gaps, policy allowlists, aliases, guarded skills available in Codex, and unresolved gaps separately.
 
+## Current Meaning of “Same”
+
+`Claude Code ↔ Codex same` now means:
+
+1. Portable skills are physically available in both surfaces.
+2. High-risk portable skills are physically available in both surfaces, but Codex copies contain explicit approval/redaction/rollback guardrails.
+3. Claude-runtime-only skills remain Claude-only and are named in policy.
+4. Duplicated official/plugin surfaces are resolved by alias policy rather than copied twice.
+5. `sync-attest` fails only if a new unclassified gap appears, a policy file is missing, a link/hash breaks, or runtime doctor checks fail.

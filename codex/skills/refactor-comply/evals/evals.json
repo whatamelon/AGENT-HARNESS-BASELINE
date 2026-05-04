@@ -1,0 +1,14 @@
+{
+  "skill_name": "refactor-comply",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "wbs-timeline-view.tsx 파일이 1827줄이야. 컨벤션 300줄 기준의 6배인데, 타임라인 계산 로직, 드래그/리사이즈 핸들러, 렌더링(Phase 그룹, Task 바, 헤더, 그리드), 상태 관리가 전부 한 파일에 있어. 이거 리팩토링해줘. --gate plan 으로 계획까지만.",
+      "expected_output": "01-diagnosis.md에 위반 항목이 구체적으로 나열되고, 02-test-plan.md에 기존 동작을 잠그는 회귀 테스트 계획이 있고, 03-refactor-plan.md에 책임별 파일 분리 계획이 단위별로 정리되어 있어야 한다. 각 단위마다 테스트 검증 방법이 명시되어야 한다.",
+      "files": [
+        "src/app/portal-v2/(workspace)/[workspaceId]/projects/[projectId]/wbs/_components/wbs-timeline-view.tsx"
+      ],
+      "assertions": []
+    }
+  ]
+}

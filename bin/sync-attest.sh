@@ -186,6 +186,37 @@ def surface_manifest(label: str, root: Path) -> dict:
     }
 
 
+def load_skill_sync_policy(ssot: Path) -> dict:
+    path = ssot / "config" / "skill-sync-policy.json"
+    empty = {
+        "path": str(path),
+        "loaded": False,
+        "classes": {
+            "claude_only_allowlist": {},
+            "codex_aliases": {},
+            "migrate_with_guard": {},
+            "migrate": [],
+        },
+    }
+    if not path.is_file():
+        return empty
+    try:
+        data = json.loads(path.read_text())
+    except Exception as exc:
+        return {**empty, "error": str(exc)}
+    classes = data.setdefault("classes", {})
+    for key, default in {
+        "claude_only_allowlist": {},
+        "codex_aliases": {},
+        "migrate_with_guard": {},
+        "migrate": [],
+    }.items():
+        classes.setdefault(key, default)
+    data["path"] = str(path)
+    data["loaded"] = True
+    return data
+
+
 def parse_doctor(text: str) -> dict:
     import re
     result = {"ok": False, "passed": None, "warnings": None, "failed": None}
@@ -234,11 +265,46 @@ add_check("git_worktree_clean", clean or allow_dirty, clean=clean, dirty_entries
 
 claude_names = skill_names(claude_root)
 codex_names = skill_names(codex_root)
-missing_in_codex = sorted(set(claude_names) - set(codex_names))
+missing_in_codex_raw = sorted(set(claude_names) - set(codex_names))
 missing_in_claude = sorted(set(codex_names) - set(claude_names))
 shared = sorted(set(claude_names) & set(codex_names))
-add_check("skill_name_sets_equal", not missing_in_codex and not missing_in_claude,
-          missing_in_codex=missing_in_codex, missing_in_claude=missing_in_claude)
+
+skill_policy = load_skill_sync_policy(ssot)
+policy_classes = skill_policy.get("classes", {})
+allowlist = policy_classes.get("claude_only_allowlist", {}) or {}
+aliases = policy_classes.get("codex_aliases", {}) or {}
+guarded = policy_classes.get("migrate_with_guard", {}) or {}
+planned_migrate = set(policy_classes.get("migrate", []) or [])
+
+allowlisted_claude_only = sorted(name for name in missing_in_codex_raw if name in allowlist)
+aliased_in_codex = []
+for name in missing_in_codex_raw:
+    target = aliases.get(name)
+    if not target:
+        continue
+    # Plugin skill aliases may contain a namespace prefix that is not a top-level
+    # directory; accept them as policy-resolved, but record the target verbatim.
+    target_exists = target in codex_names or ":" in target
+    aliased_in_codex.append({"name": name, "target": target, "target_exists": target_exists})
+
+resolved_by_policy = set(allowlisted_claude_only) | {item["name"] for item in aliased_in_codex}
+unresolved_missing_in_codex = sorted(set(missing_in_codex_raw) - resolved_by_policy)
+# A guarded skill is considered resolved only when it actually exists in Codex.
+guarded_available_in_codex = sorted(name for name in guarded if name in codex_names)
+guarded_missing_in_codex = sorted(name for name in guarded if name in missing_in_codex_raw)
+
+add_check(
+    "skill_name_sets_equal",
+    not unresolved_missing_in_codex and not missing_in_claude,
+    policy_loaded=bool(skill_policy.get("loaded")),
+    missing_in_codex_raw=missing_in_codex_raw,
+    missing_in_codex_unresolved=unresolved_missing_in_codex,
+    missing_in_claude=missing_in_claude,
+    allowlisted_claude_only=allowlisted_claude_only,
+    aliased_in_codex=aliased_in_codex,
+    guarded_available_in_codex=guarded_available_in_codex,
+    guarded_missing_in_codex=guarded_missing_in_codex,
+)
 
 broken = broken_symlinks(codex_root) + broken_symlinks(claude_root)
 absolute = absolute_top_symlinks(codex_root) + absolute_top_symlinks(claude_root)
@@ -319,8 +385,18 @@ attestation = {
         "claude_count": len(claude_names),
         "codex_count": len(codex_names),
         "shared_count": len(shared),
-        "missing_in_codex": missing_in_codex,
+        "missing_in_codex_raw": missing_in_codex_raw,
+        "missing_in_codex_unresolved": unresolved_missing_in_codex,
         "missing_in_claude": missing_in_claude,
+        "allowlisted_claude_only": allowlisted_claude_only,
+        "aliased_in_codex": aliased_in_codex,
+        "guarded_available_in_codex": guarded_available_in_codex,
+        "guarded_missing_in_codex": guarded_missing_in_codex,
+        "skill_sync_policy": {
+            "path": skill_policy.get("path"),
+            "loaded": bool(skill_policy.get("loaded")),
+            "sha256": sha256_bytes(Path(skill_policy["path"]).read_bytes()) if skill_policy.get("loaded") else None,
+        },
         "name_set_sha256": sha256_bytes("\n".join(shared).encode()),
     },
     "manifest": manifest,
@@ -351,6 +427,11 @@ print(f"clean: {clean}")
 print(f"claude skills: {len(claude_names)}")
 print(f"codex skills: {len(codex_names)}")
 print(f"shared names: {len(shared)}")
+print(f"missing in codex raw: {len(missing_in_codex_raw)}")
+print(f"missing in codex unresolved: {len(unresolved_missing_in_codex)}")
+print(f"policy allowlisted: {len(allowlisted_claude_only)}")
+print(f"policy aliased: {len(aliased_in_codex)}")
+print(f"guarded available in codex: {len(guarded_available_in_codex)}")
 print(f"name set sha256: {attestation['skills']['name_set_sha256']}")
 print(f"manifest sha256: {manifest['combined_sha256']}")
 print(f"design sha256: {attestation['design']['design_sha256']}")

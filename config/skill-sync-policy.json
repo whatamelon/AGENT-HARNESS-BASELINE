@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "updated_at": "2026-05-04",
+  "purpose": "Classify Claude Code skill names that are intentionally not one-to-one in Codex so sync-attest can distinguish real drift from planned/approved differences.",
+  "classes": {
+    "migrate": [
+      "e2e-qa-report",
+      "feature-develop",
+      "feature-error-fix",
+      "feature-review",
+      "git-commit-create",
+      "git-extract-pr",
+      "git-issue-create",
+      "git-pr-create",
+      "git-workflow",
+      "pscan",
+      "refactor-comply",
+      "supabase-postgres-best-practices",
+      "sync-issues",
+      "vitest"
+    ],
+    "migrate_with_guard": {
+      "db-patch": "DB mutation; require explicit user approval, transaction/backup plan, and no secret echoing.",
+      "db-query": "DB read; require read-only posture, least-privilege query, and redaction for sensitive data.",
+      "odoo-inspect": "Odoo metadata inspection; require read-only default and credential safeguards.",
+      "odoo-query": "Odoo data read; require read-only default and redaction for sensitive data.",
+      "odoo-run": "Odoo method execution; high risk, require explicit approval and dry-run/rollback guidance where possible.",
+      "setup-env": "1Password/env writes; require explicit approval, portability warning, and no secret echoing."
+    },
+    "claude_only_allowlist": {
+      "chrome-mcp-fix": "Claude-in-Chrome MCP troubleshooting is Claude-specific.",
+      "dispatch-agents": "External Claude Code agent dispatch/runtime control is not Codex-native.",
+      "init": "Generates Claude Code project settings; Codex should use a separate init flow.",
+      "slack-notify": "External Slack side effect; keep manual-only unless user explicitly approves notification.",
+      "tmux-terminal-control": "Tmux pane orchestration is terminal-environment specific, not a guaranteed Codex API surface."
+    },
+    "codex_aliases": {
+      "debug": "debugging-strategies",
+      "develop": "worker",
+      "html-presentation-deck": "presentations:Presentations",
+      "md-to-pdf": "pdf",
+      "next-best-practices": "vercel:next-best-practices",
+      "next-cache-components": "vercel:next-cache-components",
+      "request-start": "documents:documents",
+      "test": "webapp-testing",
+      "vercel-composition-patterns": "vercel:vercel-react-best-practices"
+    }
+  }
+}

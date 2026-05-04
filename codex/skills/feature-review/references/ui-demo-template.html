@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>{{FEATURE_NAME}} — UI 변경 데모</title>
+<style>
+  :root {
+    --color-text: #1f2937;
+    --color-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-bg: #ffffff;
+    --color-bg-alt: #f9fafb;
+    --color-accent: #2563eb;
+    --color-added-bg: #ecfdf5;
+    --color-added-border: #10b981;
+    --color-changed-bg: #fef9c3;
+    --color-changed-border: #f59e0b;
+    --color-removed-bg: #fef2f2;
+    --color-removed-border: #ef4444;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+                 "Malgun Gothic", "Noto Sans KR", sans-serif;
+    color: var(--color-text);
+    background: var(--color-bg);
+    line-height: 1.55;
+  }
+
+  h1.demo-title {
+    font-size: 22px;
+    margin: 0 0 4px;
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: 8px;
+  }
+  .demo-meta {
+    color: var(--color-muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .change-summary {
+    background: var(--color-bg-alt);
+    border-left: 4px solid var(--color-accent);
+    padding: 12px 16px;
+    margin: 0 0 28px;
+    border-radius: 4px;
+  }
+  .change-summary h2 { font-size: 15px; margin: 0 0 8px; color: var(--color-accent); }
+  .change-summary ul { margin: 0; padding-left: 18px; }
+  .change-summary li { margin-bottom: 4px; }
+
+  .screen-block {
+    margin: 0 0 40px;
+    page-break-inside: avoid;
+  }
+  .screen-block h2 {
+    font-size: 17px;
+    margin: 0 0 12px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .state {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+  .state-header {
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .state.as-is .state-header { background: #f3f4f6; color: #374151; }
+  .state.to-be .state-header { background: #eff6ff; color: #1d4ed8; }
+
+  .state-body {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 16px;
+    padding: 16px;
+  }
+  .screen-mock {
+    border: 1px dashed var(--color-border);
+    border-radius: 4px;
+    padding: 16px;
+    background: #fff;
+    min-height: 180px;
+  }
+  .state-notes {
+    font-size: 13px;
+    color: var(--color-text);
+    background: var(--color-bg-alt);
+    border-radius: 4px;
+    padding: 12px;
+  }
+  .state-notes h4 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .state-notes ul { margin: 0; padding-left: 16px; }
+
+  .added {
+    background: var(--color-added-bg);
+    border: 2px dashed var(--color-added-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  .changed {
+    background: var(--color-changed-bg);
+    border: 2px solid var(--color-changed-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  .removed {
+    background: var(--color-removed-bg);
+    border: 2px solid var(--color-removed-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    text-decoration: line-through;
+    text-decoration-color: var(--color-removed-border);
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--color-muted);
+    margin: 0 0 20px;
+  }
+  .legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 4px;
+    vertical-align: middle;
+    border-radius: 2px;
+  }
+  .legend .legend-added::before { background: var(--color-added-bg); border: 1px dashed var(--color-added-border); }
+  .legend .legend-changed::before { background: var(--color-changed-bg); border: 1px solid var(--color-changed-border); }
+  .legend .legend-removed::before { background: var(--color-removed-bg); border: 1px solid var(--color-removed-border); }
+
+  /* 인쇄 최적화 */
+  @media print {
+    body { padding: 0; }
+    .screen-block { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1 class="demo-title">{{FEATURE_NAME}} — UI 변경 데모</h1>
+<p class="demo-meta">생성일: {{DATE}} · 기반: 01-analysis.md, 02-design.md, 04-plan.md</p>
+
+<section class="change-summary">
+  <h2>핵심 변경 요약</h2>
+  <ul>
+    <!-- 04-plan.md의 "1. 최종 결정 사항"에서 3~5개 추출 -->
+    <li>{{CHANGE_1}}</li>
+    <li>{{CHANGE_2}}</li>
+    <li>{{CHANGE_3}}</li>
+  </ul>
+</section>
+
+<div class="legend">
+  <span class="legend-added">추가</span>
+  <span class="legend-changed">변경</span>
+  <span class="legend-removed">제거</span>
+</div>
+
+<!-- 화면 블록: 기능이 다루는 화면마다 반복 -->
+<section class="screen-block">
+  <h2>화면 1: {{SCREEN_NAME}}</h2>
+
+  <div class="comparison">
+    <!-- As-Is -->
+    <div class="state as-is">
+      <div class="state-header">As-Is (현재)</div>
+      <div class="state-body">
+        <div class="screen-mock">
+          <!-- 현재 화면의 정적 HTML 모킹. 실제 페이지의 핵심 요소만 재현. -->
+          <!-- 예: 폼, 테이블 헤더, 버튼 배치 등 -->
+        </div>
+        <div class="state-notes">
+          <h4>현재 상태 메모</h4>
+          <ul>
+            <li>{{ASIS_NOTE_1}}</li>
+            <li>{{ASIS_NOTE_2}}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- To-Be -->
+    <div class="state to-be">
+      <div class="state-header">To-Be (신규)</div>
+      <div class="state-body">
+        <div class="screen-mock">
+          <!-- 신규 화면 모킹. 변경된 요소에 .added / .changed / .removed 클래스 부여. -->
+          <!-- 예: <button class="added">새 버튼</button> -->
+        </div>
+        <div class="state-notes">
+          <h4>변경 메모</h4>
+          <ul>
+            <li>{{TOBE_NOTE_1}}</li>
+            <li>{{TOBE_NOTE_2}}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 화면이 여러 개면 section.screen-block을 복제해서 추가 -->
+
+</body>
+</html>

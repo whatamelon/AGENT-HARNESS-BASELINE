@@ -1,0 +1,6 @@
+{
+  "eval_id": 1,
+  "eval_name": "wbs-timeline-split",
+  "prompt": "wbs-timeline-view.tsx 파일이 1827줄이야. 컨벤션 300줄 기준의 6배인데, 타임라인 계산 로직, 드래그/리사이즈 핸들러, 렌더링(Phase 그룹, Task 바, 헤더, 그리드), 상태 관리가 전부 한 파일에 있어. 이거 리팩토링해줘. --gate plan 으로 계획까지만.",
+  "assertions": []
+}

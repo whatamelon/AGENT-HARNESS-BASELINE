@@ -87,7 +87,7 @@ while IFS= read -r src; do
   link_target="$(rel_link_target "$src" "$(dirname "$dst")")"
 
   if [[ -L "$dst" ]]; then
-    if same_link_target "$dst" "$src" && [[ "$(readlink "$dst")" == "$link_target" ]]; then
+    if same_link_target "$dst" "$src"; then
       ((skipped+=1))
       continue
     fi

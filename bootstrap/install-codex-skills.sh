@@ -86,6 +86,29 @@ if [[ -e "$AGENTS_SKILLS_DIR" || -L "$AGENTS_SKILLS_DIR" ]]; then
   AGENTS_REAL="$(real_path "$AGENTS_SKILLS_DIR")"
 fi
 
+POLICY_FILE="$HOME/.config/claude-sync/config/skill-sync-policy.json"
+POLICY_SKIP_NAMES=""
+if [[ -f "$POLICY_FILE" ]]; then
+  POLICY_SKIP_NAMES="$(python3 - "$POLICY_FILE" <<'PY'
+import json, sys
+try:
+    data=json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+classes=data.get('classes', {})
+names=set((classes.get('claude_only_allowlist') or {}).keys())
+names.update((classes.get('codex_aliases') or {}).keys())
+print('\n'.join(sorted(names)))
+PY
+)"
+fi
+
+policy_skip_name() {
+  local name="$1"
+  [[ -n "$POLICY_SKIP_NAMES" ]] || return 1
+  grep -Fxq -- "$name" <<<"$POLICY_SKIP_NAMES"
+}
+
 total=0
 
 while IFS= read -r src; do
@@ -101,6 +124,11 @@ while IFS= read -r src; do
     continue
   fi
 
+  if policy_skip_name "$s"; then
+    ((skipped+=1))
+    continue
+  fi
+
   src_real="$(real_path "$src")"
   if is_under "$src_real" "$CODEX_REAL" || { [[ -n "$AGENTS_REAL" ]] && is_under "$src_real" "$AGENTS_REAL"; }; then
     ((loops+=1))
@@ -110,7 +138,7 @@ while IFS= read -r src; do
   link_target="$(rel_link_target "$src" "$(dirname "$dst")")"
 
   if [[ -L "$dst" ]]; then
-    if same_link_target "$dst" "$src" && [[ "$(readlink "$dst")" == "$link_target" ]]; then
+    if same_link_target "$dst" "$src"; then
       ((skipped+=1))
       continue
     fi
