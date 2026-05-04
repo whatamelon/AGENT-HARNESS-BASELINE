@@ -28,6 +28,7 @@ Checks and records:
   - broken / absolute top-level symlinks are absent
   - ~/.agents/skills resolves to ~/.codex/skills
   - file manifest hash for both skill surfaces
+  - shared DESIGN.md/getdesign.md entrypoints are linked for home, Claude, and Codex
   - omx doctor reports 0 warnings / 0 failed, unless --skip-doctor is used
 
 Writes a machine-local JSON attestation to:
@@ -66,6 +67,9 @@ if (( skip_generate == 0 )); then
   fi
   if [[ -x "$SSOT/bootstrap/install-claude-codex-skills.sh" ]]; then
     "$SSOT/bootstrap/install-claude-codex-skills.sh" >/dev/null
+  fi
+  if [[ -x "$SSOT/bin/link-design.sh" ]]; then
+    "$SSOT/bin/link-design.sh" >/dev/null
   fi
 fi
 
@@ -201,6 +205,7 @@ claude_root = Path(os.environ["PY_CLAUDE_SKILLS_DIR"]).expanduser()
 codex_root = Path(os.environ["PY_CODEX_SKILLS_DIR"]).expanduser()
 legacy_root = Path(os.environ["PY_LEGACY_SKILLS_DIR"]).expanduser()
 out = Path(os.environ["PY_OUT"]).expanduser()
+design_root = ssot / "design"
 allow_dirty = os.environ["PY_ALLOW_DIRTY"] == "1"
 skip_fetch = os.environ["PY_SKIP_FETCH"] == "1"
 skip_doctor = os.environ["PY_SKIP_DOCTOR"] == "1"
@@ -240,6 +245,28 @@ add_check("no_broken_skill_symlinks", not broken, broken_symlinks=broken)
 add_check("top_level_skill_symlinks_relative", not absolute, absolute_symlinks=absolute)
 add_check("legacy_agents_skills_points_to_codex", real(legacy_root) == real(codex_root),
           legacy_real=real(legacy_root), codex_real=real(codex_root))
+
+design_expected = {
+    str(Path.home() / "DESIGN.md"): design_root / "DESIGN.md",
+    str(Path.home() / "getdesign.md"): design_root / "getdesign.md",
+    str(Path.home() / ".claude" / "DESIGN.md"): design_root / "DESIGN.md",
+    str(Path.home() / ".claude" / "getdesign.md"): design_root / "getdesign.md",
+    str(Path.home() / ".codex" / "DESIGN.md"): design_root / "DESIGN.md",
+    str(Path.home() / ".codex" / "getdesign.md"): design_root / "getdesign.md",
+}
+design_links = []
+for link, target in design_expected.items():
+    lp = Path(link)
+    tp = Path(target)
+    design_links.append({
+        "link": link,
+        "target": str(target),
+        "is_symlink": lp.is_symlink(),
+        "resolves": real(lp) == real(tp),
+        "target_exists": tp.is_file(),
+    })
+add_check("shared_design_entrypoints_linked", all(x["is_symlink"] and x["resolves"] and x["target_exists"] for x in design_links),
+          design_links=design_links)
 
 doctor = {"skipped": skip_doctor}
 if not skip_doctor:
@@ -281,6 +308,12 @@ attestation = {
         "name_set_sha256": sha256_bytes("\n".join(shared).encode()),
     },
     "manifest": manifest,
+    "design": {
+        "root": str(design_root),
+        "links": design_links,
+        "design_sha256": sha256_bytes((design_root / "DESIGN.md").read_bytes()) if (design_root / "DESIGN.md").is_file() else None,
+        "getdesign_sha256": sha256_bytes((design_root / "getdesign.md").read_bytes()) if (design_root / "getdesign.md").is_file() else None,
+    },
     "runtime": {
         "omx_doctor": doctor,
     },
@@ -303,6 +336,8 @@ print(f"codex skills: {len(codex_names)}")
 print(f"shared names: {len(shared)}")
 print(f"name set sha256: {attestation['skills']['name_set_sha256']}")
 print(f"manifest sha256: {manifest['combined_sha256']}")
+print(f"design sha256: {attestation['design']['design_sha256']}")
+print(f"getdesign sha256: {attestation['design']['getdesign_sha256']}")
 if not skip_doctor:
     summary = doctor.get("summary", {})
     print(f"omx doctor: {summary.get('passed')} passed, {summary.get('warnings')} warnings, {summary.get('failed')} failed")

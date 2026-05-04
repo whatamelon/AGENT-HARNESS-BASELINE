@@ -143,6 +143,33 @@ OMC `team`/`swarm`/`ultrawork`를 쓰기 전에는 `codex-bridge --validate`를 
 - `~/.codex/config.toml`은 Slack/Telegram/MCP 토큰 같은 시크릿을 포함할 수 있어 git에 통째로 넣지 않는다. 공유 가능한 동작은 bridge와 plugin install 상태로 맞추고, 시크릿은 1Password/env/cache로 유지한다.
 - Claude hook과 Codex hook은 런타임 의미가 완전히 같지 않다. 공통 Stop hook에는 bridge를 얹고, 도구별 품질 체크는 각 도구 hook에 둔다.
 
+
+## Shared Design OS (`DESIGN.md` / `getdesign.md`)
+
+Claude Code와 Codex가 같은 디자인 컨텍스트를 보도록 중앙 디자인 파일을 공유한다.
+
+| Entry point | Target |
+|---|---|
+| `~/DESIGN.md` | `~/.config/claude-sync/design/DESIGN.md` |
+| `~/getdesign.md` | `~/.config/claude-sync/design/getdesign.md` |
+| `~/.claude/DESIGN.md`, `~/.claude/getdesign.md` | same canonical files |
+| `~/.codex/DESIGN.md`, `~/.codex/getdesign.md` | same canonical files |
+
+사용법:
+
+```bash
+getdesign                         # shell alias가 없으면 아래 직접 실행
+~/.config/claude-sync/bin/getdesign.sh
+```
+
+UI/UX/product/visual 작업 전에는 `getdesign.md` → `DESIGN.md` → 프로젝트 로컬 디자인 문서 순서로 읽는다.
+공유 디자인 파일을 수정한 뒤에는 아래로 인증한다:
+
+```bash
+cd ~/.config/claude-sync
+bash bin/sync-attest.sh
+```
+
 ## 새 프로젝트 등록
 ```bash
 cd ~/development/new-project

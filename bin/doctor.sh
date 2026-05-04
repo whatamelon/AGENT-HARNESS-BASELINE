@@ -23,6 +23,12 @@ for d in skills agents commands rules hooks hud; do
 done
 check_link "$HOME/.claude/notify.sh" "$SSOT/claude/notify.sh"
 check_link "$HOME/.claude/CLAUDE.md" "$SSOT/claude/CLAUDE.md"
+check_link "$HOME/DESIGN.md" "$SSOT/design/DESIGN.md"
+check_link "$HOME/getdesign.md" "$SSOT/design/getdesign.md"
+check_link "$HOME/.claude/DESIGN.md" "$SSOT/design/DESIGN.md"
+check_link "$HOME/.claude/getdesign.md" "$SSOT/design/getdesign.md"
+check_link "$HOME/.codex/DESIGN.md" "$SSOT/design/DESIGN.md"
+check_link "$HOME/.codex/getdesign.md" "$SSOT/design/getdesign.md"
 check_link "$HOME/.claude/.mcp.json" "$SSOT/claude/mcp.shared.json"
 check_link "$HOME/.config/projects" "$SSOT/config/projects"
 

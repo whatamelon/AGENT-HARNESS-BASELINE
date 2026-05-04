@@ -202,3 +202,6 @@ if [[ -z "${__CLAUDE_SYNC_TAB_PULL_DONE:-}" ]]; then
   __claude_sync_tab_pull
   export __CLAUDE_SYNC_TAB_PULL_DONE=1
 fi
+
+# Shared design context
+alias getdesign="$HOME/.config/claude-sync/bin/getdesign.sh"

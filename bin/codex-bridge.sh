@@ -49,6 +49,9 @@ done
 
 [[ -d "$SSOT" ]] || { echo "Missing SSOT: $SSOT" >&2; exit 1; }
 mkdir -p "$CODEX_HOME" "$SSOT/codex/agents" "$SSOT/codex/hooks" "$SSOT/codex/skills" "$SSOT/codex/memories"
+if (( link == 1 )) && [[ -x "$SSOT/bin/link-design.sh" ]]; then
+  "$SSOT/bin/link-design.sh" >/dev/null 2>&1 || true
+fi
 
 copy_into_empty_dir() {
   local src="$1" dst="$2"

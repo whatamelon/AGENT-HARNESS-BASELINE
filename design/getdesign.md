@@ -1,0 +1,56 @@
+# getdesign.md — Design Context Retrieval Workflow
+
+Use this file when a task needs product, UI, UX, visual, or interaction design context.
+
+## Quick command
+
+```bash
+~/.config/claude-sync/bin/getdesign.sh
+```
+
+This prints the active global design entrypoints and discovers project-local design files from the current directory upward.
+
+## Retrieval order
+
+1. **User request** — explicit visual/product requirements in the current turn are highest priority.
+2. **Project-local design files** — nearest `DESIGN.md`, `design.md`, `docs/design*.md`, Storybook docs, theme config, component docs.
+3. **Global design OS** — `~/DESIGN.md` / `~/.claude/DESIGN.md` / `~/.codex/DESIGN.md`.
+4. **Available skills** — use relevant design skills such as `frontend-design`, `ui-ux-pro-max`, `web-design-guidelines`, `tailwind-design-system`, `shadcn-ui`, or framework-specific UI skills.
+5. **Runtime evidence** — screenshots, browser inspection, accessibility checks, tests, and user feedback.
+
+## Required design context summary
+
+Before doing design work, produce a short summary with:
+
+- Product goal:
+- Primary user/action:
+- Surface/component/page:
+- Existing design system or project style:
+- Constraints:
+- Validation plan:
+
+## Output expectations
+
+For implementation tasks:
+
+- Make the smallest coherent design change that satisfies the goal.
+- Preserve existing design language unless the task asks for a new direction.
+- Include state coverage: loading, empty, error, success, disabled, long content.
+- Verify with screenshots/browser checks when UI is rendered locally.
+
+For review tasks:
+
+- Identify hierarchy, spacing, contrast, affordance, consistency, accessibility, and responsive issues.
+- Prioritize issues by user impact.
+- Provide concrete fixes, not vague taste comments.
+
+## Sync certification
+
+After editing shared design files, run:
+
+```bash
+cd ~/.config/claude-sync
+bash bin/sync-attest.sh
+```
+
+PASS means the design files are linked into Claude Code and Codex and the shared environment is current.

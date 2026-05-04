@@ -22,6 +22,11 @@ for f in notify.sh CLAUDE.md; do
   echo "  ✓ ~/.claude/$f"
 done
 
+echo "▶ 공유 디자인 컨텍스트 symlink"
+if [[ -x "$SSOT/bin/link-design.sh" ]]; then
+  "$SSOT/bin/link-design.sh"
+fi
+
 echo "▶ MCP shared symlink"
 if [[ -e "$HOME/.claude/.mcp.json" && ! -L "$HOME/.claude/.mcp.json" ]]; then
   mv "$HOME/.claude/.mcp.json" "$HOME/.claude/.mcp.json.bak.$(date +%s)"
