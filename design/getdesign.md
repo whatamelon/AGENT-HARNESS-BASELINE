@@ -2,13 +2,17 @@
 
 Use this file when a task needs product, UI, UX, visual, or interaction design context.
 
-## Quick command
+## Quick commands
 
 ```bash
-~/.config/claude-sync/bin/getdesign.sh
+getdesign                 # show active design context and project-local docs
+getdesign init            # copy shared DESIGN.md/getdesign.md into current project
+getdesign init --force    # overwrite current project copies
+getdesign add cursor      # install a getdesign.md catalog inspiration via npx
+getdesign doctor          # verify shared entrypoint symlinks
 ```
 
-This prints the active global design entrypoints and discovers project-local design files from the current directory upward.
+`getdesign` is an alias for `~/.config/claude-sync/bin/getdesign.sh`. With no arguments, it prints the active global design entrypoints and discovers project-local design files from the current directory upward.
 
 ## Retrieval order
 
@@ -54,3 +58,20 @@ bash bin/sync-attest.sh
 ```
 
 PASS means the design files are linked into Claude Code and Codex and the shared environment is current.
+
+
+## DESIGN.md structure checklist
+
+A strong DESIGN.md should include these sections:
+
+1. Visual Theme & Atmosphere
+2. Color Palette & Roles
+3. Typography Rules
+4. Component Stylings
+5. Layout Principles
+6. Depth & Elevation
+7. Do's and Don'ts
+8. Responsive Behavior
+9. Agent Prompt Guide
+
+If a project-local DESIGN.md is missing these sections, improve it before major UI work or explicitly document which project design system replaces them.

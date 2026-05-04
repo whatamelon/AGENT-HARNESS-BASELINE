@@ -14,7 +14,8 @@ Load the shared design operating system before product/UI/UX/visual work.
 
 1. Run or conceptually follow:
    ```bash
-   ~/.config/claude-sync/bin/getdesign.sh
+   getdesign
+   # or: ~/.config/claude-sync/bin/getdesign.sh
    ```
 2. Read the nearest project-local design docs discovered by the command.
 3. Read the global shared files:
@@ -33,3 +34,12 @@ Load the shared design operating system before product/UI/UX/visual work.
 ## Stop condition
 
 Continue until the design context is identified, applied, and the verification evidence is clear.
+
+
+## Project setup shortcuts
+
+```bash
+getdesign init          # copy shared DESIGN.md into this project
+getdesign add cursor    # install a catalog inspiration into this project
+getdesign doctor        # verify global shared links
+```
