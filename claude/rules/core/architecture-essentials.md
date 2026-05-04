@@ -1,0 +1,1 @@
+../../../wishket/claude-settings/.claude/rules/core/architecture-essentials.md

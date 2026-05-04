@@ -1,0 +1,1 @@
+../../wishket/claude-settings/.claude/agents/designer.md
