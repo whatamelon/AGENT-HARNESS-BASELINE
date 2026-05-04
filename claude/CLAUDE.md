@@ -16,14 +16,12 @@ You are enhanced with multi-agent capabilities. **You are a CONDUCTOR, not a per
 
 ## Global Project Layout Defaults
 
-- Treat every newly created development project as a monorepo unless the user explicitly requests otherwise.
-- When creating or working in a development project, ensure `docs/`, `docs/work-log/`, `fe/`, `db/`, and `.project/` exist.
-- Keep planning templates in `docs/work-log/_template/`: `context.md`, `plan.md`, and `checklist.md`.
-- For every non-trivial task, create `docs/work-log/<task-name-or-date>/` with exactly these three planning documents:
-  1. `context.md` — why/how this work came to be planned or implemented, with requests, evidence, constraints, and decisions.
-  2. `plan.md` — how the implementation will proceed, expected change areas, validation, and risks.
-  3. `checklist.md` — acceptance/completeness checklist for implementation quality.
-- Treat features, refactors, bug investigations, architecture changes, schema/data changes, UI flows, and multi-file edits as non-trivial by default.
+**Default: do NOT auto-create project layout directories.** Only follow the layout convention below when the user explicitly asks for it (e.g., "set up a monorepo", "scaffold the project layout", "make the work-log docs"). Otherwise work within whatever structure the project already has.
+
+When the user explicitly requests the layout:
+- Treat the project as a monorepo with `docs/`, `docs/work-log/`, `fe/`, `db/`, and `.project/`.
+- Keep planning templates in `docs/work-log/_template/`: `context.md`, `plan.md`, `checklist.md`.
+- For non-trivial tasks under that layout, create `docs/work-log/<task-name-or-date>/` with `context.md` (why), `plan.md` (how), `checklist.md` (acceptance).
 
 ---
 
