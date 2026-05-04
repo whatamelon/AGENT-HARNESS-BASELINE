@@ -1,1 +1,1 @@
-../../wishket/claude-settings/.claude/agents/reviewer.md
+../../../../wishket/claude-settings/.claude/agents/reviewer.md

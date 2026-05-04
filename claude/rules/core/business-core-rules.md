@@ -1,1 +1,1 @@
-../../../wishket/claude-settings/.claude/rules/core/business-core-rules.md
+../../../../../wishket/claude-settings/.claude/rules/core/business-core-rules.md

@@ -1,1 +1,1 @@
-../../../wishket/claude-settings/.claude/rules/core/db-essentials.md
+../../../../../wishket/claude-settings/.claude/rules/core/db-essentials.md

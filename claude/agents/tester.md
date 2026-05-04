@@ -1,1 +1,1 @@
-../../wishket/claude-settings/.claude/agents/tester.md
+../../../../wishket/claude-settings/.claude/agents/tester.md
