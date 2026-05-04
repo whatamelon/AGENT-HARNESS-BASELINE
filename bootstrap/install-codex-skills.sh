@@ -31,6 +31,7 @@ relinked=0
 conflicts=0
 invalid=0
 loops=0
+overrides=0
 
 real_path() {
   python3 - "$1" <<'PY'
@@ -69,6 +70,13 @@ except ValueError:
     sys.exit(1)
 sys.exit(0 if common == parent else 1)
 PY
+}
+
+is_allowed_codex_override() {
+  case "$1" in
+    setup-notify-hooks) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 CODEX_REAL="$(real_path "$CODEX_SKILLS_DIR")"
@@ -115,6 +123,11 @@ while IFS= read -r src; do
       ((skipped+=1))
       continue
     fi
+    if is_allowed_codex_override "$s"; then
+      echo "  ↷ override: $s — Codex-compatible generated skill retained"
+      ((overrides+=1))
+      continue
+    fi
     echo "  ⚠️  conflict: $s — Codex에 같은 이름의 실제 파일/디렉터리가 이미 존재"
     ((conflicts+=1))
     continue
@@ -126,4 +139,4 @@ while IFS= read -r src; do
 done < <(find -L "$CC_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 
 echo ""
-echo "  total: $total, added: $added, relinked: $relinked, skipped: $skipped, loops: $loops, invalid: $invalid, conflicts: $conflicts"
+echo "  total: $total, added: $added, relinked: $relinked, skipped: $skipped, loops: $loops, overrides: $overrides, invalid: $invalid, conflicts: $conflicts"
