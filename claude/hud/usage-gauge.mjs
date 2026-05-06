@@ -28,12 +28,12 @@ function colorByRemaining(rem) {
   return GREEN;
 }
 
-function bar(rem, width = 8) {
+function bar(rem, width = 8, color) {
   if (rem == null) return `${DIM}[────────] --%${RESET}`;
   const pct = clamp(Math.round(rem));
   const filled = Math.round((pct / 100) * width);
   const s = '█'.repeat(filled) + '░'.repeat(width - filled);
-  const c = colorByRemaining(pct);
+  const c = color ?? colorByRemaining(pct);
   return `${c}[${s}] ${pct}%${RESET}`;
 }
 
@@ -75,7 +75,7 @@ const parts = [
   `${CYAN}${model}${RESET}${dir ? `${DIM}@${dir}${RESET}` : ''}`,
   `5h ${bar(fiveRem)}${fiveReset ? `${DIM} reset:${fiveReset}${RESET}` : ''}`,
   `7d ${bar(weekRem)}${weekReset ? `${DIM} reset:${weekReset}${RESET}` : ''}`,
-  `컨텍스트 ${bar(ctxRem)}`,
+  `컨텍스트 ${bar(ctxRem, 8, GREEN)}`,
 ];
 
 console.log(parts.join(' | '));
