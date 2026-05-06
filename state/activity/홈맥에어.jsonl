@@ -177,3 +177,4 @@
 {"ts":"2026-05-04T23:04:46+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny","duration_min":10,"commits":0,"files_changed":0,"summary":"denny · 10분 · 0 commits · 0 files"}
 {"ts":"2026-05-06T22:08:13+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/.companio/project","duration_min":10,"commits":0,"files_changed":0,"summary":"project · 10분 · 0 commits · 0 files"}
 {"ts":"2026-05-06T22:12:41+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/.companio/project","duration_min":10,"commits":0,"files_changed":0,"summary":"project · 10분 · 0 commits · 0 files"}
+{"ts":"2026-05-06T22:26:45+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/wooricc/ziontt","duration_min":10,"commits":0,"files_changed":0,"summary":"ziontt · \"fix: 청년 수 변경 시 banding 자동 갱신 도구\" · 10분 · 0 commits · 0 files"}
