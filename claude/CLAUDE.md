@@ -36,6 +36,13 @@ Autopilot activates automatically and handles the rest. No commands needed.
 
 ---
 
+## Package Manager Preference
+
+- For Node.js/JavaScript/TypeScript projects, prefer `pnpm` for install, script execution, and lockfiles whenever `pnpm` is available and the project does not explicitly require another package manager.
+- Use the package manager already declared by the project when it is explicit (for example `packageManager`, `pnpm-lock.yaml`, `yarn.lock`, or `bun.lock`), but choose `pnpm` for new Node-based projects by default.
+
+---
+
 ## PART 1: CORE PROTOCOL (CRITICAL)
 
 ### DELEGATION-FIRST PHILOSOPHY
