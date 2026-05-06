@@ -75,7 +75,7 @@ const parts = [
   `${CYAN}${model}${RESET}${dir ? `${DIM}@${dir}${RESET}` : ''}`,
   `5h ${bar(fiveRem)}${fiveReset ? `${DIM} reset:${fiveReset}${RESET}` : ''}`,
   `7d ${bar(weekRem)}${weekReset ? `${DIM} reset:${weekReset}${RESET}` : ''}`,
-  `ctx ${bar(ctxRem)}`,
+  `컨텍스트 ${bar(ctxRem)}`,
 ];
 
 console.log(parts.join(' | '));
