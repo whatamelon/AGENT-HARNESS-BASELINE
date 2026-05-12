@@ -37,12 +37,17 @@ model: opus
 ## 문서 파일명 규칙
 
 ```
-/docs/work-log/YYYY-MM-DD-[기능명].md
+/docs/work-log/YYYY-MM-DD-[기능명]/
+  ├── context.md
+  ├── plan.md
+  └── checklist.md
 /docs/product-manage/YYYY-MM-DD-[기능명]-v[버전].md
 ```
 
 예시:
-- `docs/work-log/2026-02-22-payment-integration.md`
+- `docs/work-log/2026-02-22-payment-integration/context.md`
+- `docs/work-log/2026-02-22-payment-integration/plan.md`
+- `docs/work-log/2026-02-22-payment-integration/checklist.md`
 - `docs/product-manage/2026-02-22-credit-system-v2.md`
 
 ## ⚠️ 보고서 필수 작성 규칙
@@ -108,13 +113,49 @@ model: opus
 ### work-log 기본 형식
 
 ```markdown
-# [기능명] 작업 로그
+# context.md
 
-## 개요
+## Context
+
 - 작성일: YYYY-MM-DD
 - 작업자: [팀/담당]
 - 상태: 진행중 / 완료 / 보류
+- 요청/배경:
+- 근거/관련 파일:
+- 제약/결정:
 
+# plan.md
+
+## Plan
+
+- 목표 결과:
+- 접근 방식:
+- 영향 범위:
+- 검증 전략:
+- 위험/롤백:
+
+## Steps
+
+- [ ] [작업 1]
+- [ ] [작업 2]
+
+# checklist.md
+
+## Checklist
+
+- [ ] Context captured
+- [ ] Plan reviewed
+- [ ] Acceptance criteria defined
+- [ ] Implementation complete
+- [ ] Tests/lint/typecheck run as applicable
+- [ ] Remaining risks documented
+```
+
+## 이전 단일 파일 work-log 호환 참고
+
+기존 `docs/work-log/YYYY-MM-DD-[기능명].md`가 이미 있으면 그대로 보존하고, 신규 non-trivial 작업은 폴더형 `context.md`, `plan.md`, `checklist.md`를 우선 사용한다.
+
+```markdown
 ## 요구사항
 - [요구사항 1]
 - [요구사항 2]
@@ -152,7 +193,7 @@ model: opus
 ## 프로젝트 컨텍스트 (LawbLaw)
 
 - **docs 폴더**: `/Users/denny/development/lawblaw_dev/docs`
-- **work-log**: `docs/work-log/YYYY-MM-DD-[기능명].md`
+- **work-log**: `docs/work-log/YYYY-MM-DD-[기능명]/{context.md,plan.md,checklist.md}`
 - **product-manage**: `docs/product-manage/YYYY-MM-DD-[기능명]-v[버전].md`
 - **파일명 규칙**: 날짜 접두사 필수 (`YYYY-MM-DD-`)
 - **서비스명**: LawbLaw (LawBlaw 금지)

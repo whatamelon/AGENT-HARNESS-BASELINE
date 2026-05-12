@@ -40,6 +40,8 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 │   ├── sync.sh                 # launchd가 호출 — pull → 자동 commit/push
 │   ├── migrate-secrets-to-1password.sh  # 평문 토큰 → vault 이전
 │   ├── project-init.sh         # 새 프로젝트 sync 등록
+│   ├── ensure-project-layout.sh # docs/work-log/_template + fe/db/.project 보장
+│   ├── ensure-work-log-task.sh  # docs/work-log/<task>/{context,plan,checklist}.md 생성
 │   ├── env-sync.sh             # .env 재주입 (op inject)
 │   ├── export-desktop.sh       # ★ GUI 앱 설정 → SSOT (개인맥에서)
 │   ├── import-desktop.sh       # ★ SSOT → 새 머신 (op inject 거침)
@@ -123,6 +125,9 @@ git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync &&
 
 # 글로벌 컨벤션 강제 재빌드
 ~/.config/claude-sync/bin/rebuild-agents-md.sh --force
+
+# 작업별 work-log 하네스 생성
+~/.config/claude-sync/bin/ensure-work-log-task.sh --title "my task" --json
 
 # Claude Code ↔ Codex 브리지
 codex-bridge                 # 빠른 동기화

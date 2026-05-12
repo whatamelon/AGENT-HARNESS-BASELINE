@@ -22,6 +22,7 @@ When the user explicitly requests the layout:
 - Treat the project as a monorepo with `docs/`, `docs/work-log/`, `fe/`, `db/`, and `.project/`.
 - Keep planning templates in `docs/work-log/_template/`: `context.md`, `plan.md`, `checklist.md`.
 - For non-trivial tasks under that layout, create `docs/work-log/<task-name-or-date>/` with `context.md` (why), `plan.md` (how), `checklist.md` (acceptance).
+- Prefer `$work-log-harness` or `~/.config/claude-sync/bin/ensure-work-log-task.sh --title "<task>" --json` at workflow start; do not attach layout creation to SessionStart.
 
 ---
 
