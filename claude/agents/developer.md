@@ -1,1 +1,0 @@
-../../../../wishket/claude-settings/.claude/agents/developer.md
