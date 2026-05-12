@@ -240,3 +240,4 @@
 {"ts":"2026-05-10T02:52:30+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/development/mynote","duration_min":10,"commits":0,"files_changed":0,"summary":"mynote · \"Extend archive with second Apple Notes batch\" · 10분 · 0 commits · 0 files"}
 {"ts":"2026-05-10T03:08:21+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/development/mynote","duration_min":10,"commits":0,"files_changed":0,"summary":"mynote · \"Restore archive index state after detail navigation\" · 10분 · 0 commits · 0 files"}
 {"ts":"2026-05-10T03:14:10+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/development/mynote","duration_min":10,"commits":0,"files_changed":0,"summary":"mynote · \"Add Vercel observability scripts\" · 10분 · 0 commits · 0 files"}
+{"ts":"2026-05-12T14:01:23+09:00","host":"홈맥에어","type":"session_end","cwd":"/Users/denny/.companio/project","duration_min":10,"commits":0,"files_changed":0,"summary":"project · 10분 · 0 commits · 0 files"}
