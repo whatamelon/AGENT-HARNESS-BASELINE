@@ -5,17 +5,15 @@ description: "[OMX] QA cycling workflow - test, verify, fix, repeat until goal m
 
 # UltraQA Skill
 
+## Operating Contract
+
+- Use outcome-first framing with concise, evidence-dense progress and completion reporting.
+- Treat newer user updates as local overrides for the active workflow branch while preserving earlier non-conflicting constraints.
+- If the user says `continue`, advance the current verified next step instead of restarting discovery.
+
 [ULTRAQA ACTIVATED - AUTONOMOUS QA CYCLING]
 
 ## Overview
-
-## GPT-5.5 Guidance Alignment
-
-Use the shared workflow guidance pattern: outcome-first framing, concise visible updates for multi-step QA, local overrides for the active workflow branch, validation proportional to risk, explicit stop rules, and automatic continuation for safe reversible steps. Ask only for material, destructive, credentialed, external-production, or preference-dependent branches.
-
-You are now in **ULTRAQA** mode - an autonomous QA cycling workflow that runs until your quality goal is met.
-
-**Cycle**: qa-tester → architect verification → fix → repeat
 
 ## Goal Parsing
 
@@ -43,10 +41,10 @@ If no structured goal provided, interpret the argument as a custom goal.
    - `--custom`: Run appropriate command and check for pattern
    - `--interactive`: Use qa-tester for interactive CLI/service testing:
      ```
-     delegate(role="qa-tester", tier="STANDARD", task="TEST:
+     Use `/prompts:qa-tester` with:
      Goal: [describe what to verify]
      Service: [how to start]
-     Test cases: [specific scenarios to verify]")
+     Test cases: [specific scenarios to verify]
      ```
 
 2. **CHECK RESULT**: Did the goal pass?
@@ -55,18 +53,18 @@ If no structured goal provided, interpret the argument as a custom goal.
 
 3. **ARCHITECT DIAGNOSIS**: Spawn architect to analyze failure
    ```
-   delegate(role="architect", tier="THOROUGH", task="DIAGNOSE FAILURE:
+   Use `/prompts:architect` with:
    Goal: [goal type]
    Output: [test/build output]
-   Provide root cause and specific fix recommendations.")
+   Provide root cause and specific fix recommendations.
    ```
 
 4. **FIX ISSUES**: Apply architect's recommendations
    ```
-   delegate(role="executor", tier="STANDARD", task="FIX:
+   Use `/prompts:executor` with:
    Issue: [architect diagnosis]
    Files: [affected files]
-   Apply the fix precisely as recommended.")
+   Apply the fix precisely as recommended.
    ```
 
 5. **REPEAT**: Go back to step 1
@@ -95,20 +93,19 @@ Output progress each cycle:
 
 ## State Tracking
 
-Use `omx_state` MCP tools for UltraQA lifecycle state.
+Use the CLI-first state surface (`omx state ... --json`) for UltraQA lifecycle state. If explicit MCP compatibility tools are already available, equivalent `omx_state` calls are optional compatibility, not the default.
 
 - **On start**:
-  `state_write({mode: "ultraqa", active: true, current_phase: "qa", iteration: 1, started_at: "<now>"})`
+  `omx state write --input '{"mode":"ultraqa","active":true,"current_phase":"qa","iteration":1,"started_at":"<now>"}' --json`
 - **On each cycle**:
-  `state_write({mode: "ultraqa", current_phase: "qa", iteration: <cycle>})`
+  `omx state write --input '{"mode":"ultraqa","current_phase":"qa","iteration":<cycle>}' --json`
 - **On diagnose/fix transitions**:
-  `state_write({mode: "ultraqa", current_phase: "diagnose"})`
-  `state_write({mode: "ultraqa", current_phase: "fix"})`
+  `omx state write --input '{"mode":"ultraqa","current_phase":"diagnose"}' --json`
+  `omx state write --input '{"mode":"ultraqa","current_phase":"fix"}' --json`
 - **On completion**:
-  `state_write({mode: "ultraqa", active: false, current_phase: "complete", completed_at: "<now>"})`
+  `omx state write --input '{"mode":"ultraqa","active":false,"current_phase":"complete","completed_at":"<now>"}' --json`
 - **For resume detection**:
-  `state_read({mode: "ultraqa"})`
-
+  `omx state read --input '{"mode":"ultraqa"}' --json`
 
 ## Scenario Examples
 
@@ -134,9 +131,9 @@ User can cancel with `/cancel` which clears the state file.
 
 When goal is met OR max cycles reached OR exiting early, run `$cancel` or call:
 
-`state_clear({mode: "ultraqa"})`
+`omx state clear --input '{"mode":"ultraqa"}' --json`
 
-Use MCP state cleanup rather than deleting files directly.
+Use CLI state cleanup rather than deleting files directly.
 
 ---
 
