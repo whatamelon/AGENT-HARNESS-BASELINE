@@ -2,10 +2,9 @@ tap "hamed-elfayome/claude-usage"
 tap "supabase/tap"
 # Open-source, cross-platform JavaScript runtime environment
 brew "node"
-# Browser automation CLI for AI agents
-brew "agent-browser", link: false
 # Manage multiple AI agents like Claude Code, Aider and Codex in your terminal
 brew "claude-squad"
+# agent-browser는 npm-globals-names.txt에 있음 (npm install -g agent-browser). brew와 중복 회피.
 # C library implementing the SSH2 protocol
 brew "libssh2"
 # Get a file from an HTTP, HTTPS or FTP server
