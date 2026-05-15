@@ -415,5 +415,13 @@ for label in com.denny.claude-sync com.denny.claude-sync-digest com.denny.srcsht
 done
 
 echo ""
+echo "── designslop 강제계 (Claude Code + Codex) ──"
+if [[ -x "$SSOT/bin/designslop-doctor.sh" ]]; then
+  bash "$SSOT/bin/designslop-doctor.sh" || ((errors++))
+else
+  echo "❌ bin/designslop-doctor.sh 없음/비실행"; ((errors++))
+fi
+
+echo ""
 [[ $errors -eq 0 ]] && echo "✅ All good ($errors errors)" || echo "❌ $errors errors"
 exit $errors
