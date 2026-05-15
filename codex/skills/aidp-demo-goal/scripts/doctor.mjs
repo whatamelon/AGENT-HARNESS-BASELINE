@@ -20,6 +20,9 @@ const checks = {
   omx: has('omx', ['--version']),
   tmux: has('tmux', ['-V']),
   vercel: has('vercel', ['--version']),
+  gh: has('gh', ['--version']),
+  gws: has('gws', ['--help']),
+  slackMcpConfig: fileExists('~/.codex/config.toml'),
   codexHooks: fileExists('~/.codex/hooks.json'),
   claudeSync: fileExists('~/.config/claude-sync'),
   designslopAudit: fileExists('~/.config/claude-sync/claude/hooks/designslop-audit.py')
@@ -48,6 +51,11 @@ const capabilities = {
   ]
 };
 
+const connectorGuidance = [];
+if (checks.slackMcpConfig) connectorGuidance.push('Slack MCP config detected: use MCP tools for Slack search/history/read; do not send messages without explicit approval');
+if (checks.gws) connectorGuidance.push('gws detected: use Google Workspace CLI for Gmail, Drive, Calendar, Docs/Sheets evidence intake after auth check');
+if (checks.gh) connectorGuidance.push('gh detected: use GitHub CLI for issues, PRs, repos, discussions after auth check');
+
 const blockers = [];
 if (!checks.node) blockers.push('node missing: scripts cannot run; use manual templates only');
 if (mode !== 'full') {
@@ -58,4 +66,4 @@ if (mode !== 'full') {
 }
 if (!checks.vercel) blockers.push('vercel missing: live deploy requires alternative adapter or approved fallback');
 
-console.log(JSON.stringify({ mode, checks, capabilities: capabilities[mode], blockers }, null, 2));
+console.log(JSON.stringify({ mode, checks, capabilities: capabilities[mode], connectors: connectorGuidance, blockers }, null, 2));

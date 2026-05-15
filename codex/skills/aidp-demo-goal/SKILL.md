@@ -100,6 +100,39 @@ When user says any of these, use this skill:
 - `10-30시간 돌릴 AIDP demo harness 만들어줘`
 - `FDE proposal demo 자동화해줘`
 
+
+## Local Evidence Connectors
+
+Prefer local, already-authenticated tools before inventing manual brief content. Run `doctor` and inspect connector availability.
+
+Supported local evidence sources when present:
+
+| Source | Detection | Use | Notes |
+|---|---|---|---|
+| Slack | Slack MCP in Codex config / MCP tools available | channel/thread/search/history evidence | Read/analyze only unless user explicitly approves sending messages |
+| Gmail | `gws` CLI | `gws gmail users messages list/get` | Check auth first; respect scopes and privacy |
+| Google Drive | `gws` CLI | `gws drive files list/get` | Download/read only relevant files |
+| Google Calendar | `gws` CLI | `gws calendar events list/get` | Meeting dates, attendees, agenda context |
+| Google Docs/Sheets/Slides | `gws` CLI | `gws docs`, `gws sheets`, `gws slides` | RFP, notes, spreadsheets, decks |
+| GitHub | `gh` CLI | issues, PRs, repos, discussions, code context | Prefer `gh`; if auth invalid, report and fall back to local repo evidence |
+
+Evidence intake rules:
+- Do not send Slack/email/Chat messages without explicit user approval.
+- Do not broaden search beyond the named customer/project/context without reason.
+- Store source index under `.omx/evidence/<customer-or-run>/source-index.json` when doing intake.
+- Score each evidence item for directness, authority, recency, specificity, contradiction, and demo usefulness before synthesizing the brief.
+- Mark stale or low-purity evidence; do not let old context override newer customer/RFP decisions unless type-specific policy supports it.
+- If connector auth is missing/invalid, record `connector_unavailable` and continue from provided/local evidence.
+
+Useful command shapes:
+
+```sh
+gh auth status
+gws gmail users messages list --params '{"userId":"me","q":"<customer or project>","maxResults":10}'
+gws drive files list --params '{"q":"name contains '<customer>'","pageSize":10}'
+gws calendar events list --params '{"calendarId":"primary","q":"<customer>","singleEvents":true,"orderBy":"startTime"}'
+```
+
 ## Workflow
 
 ### 1. Intake and Context Snapshot
