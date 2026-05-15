@@ -8,278 +8,12 @@ Stop 훅에서 실행 — 3가지 역할:
 """
 import sys
 import json
-import re
 import subprocess
 from pathlib import Path
 
-# 장식 eyebrow / 영문 UI 라벨 강제 게이트
-# 룰 SSOT: ~/.config/claude-sync/claude/rules/no-decorative-eyebrow.md
-#
-# 허용(고유명사/플랫폼/한국 통용 약어) — 이건 슬롭 아님
-EYEBROW_ALLOW = {
-    "YOUTUBE", "INSTAGRAM", "KAKAO", "NAVER", "TIKTOK", "X",
-    "BMW", "AUDI", "BENZ", "KIA", "GENESIS", "TESLA", "VOLVO", "LEXUS",
-    "CEO", "VIP", "EV", "PT", "AS", "OK", "ID", "OS", "QR", "FAQ", "CS",
-}
-# eyebrow 스타일 시그널 (섹션 타이틀 위 장식 키커)
-_EYEBROW_STYLE = ("uppercase", "tracking-wider")
-# 영문 ALL CAPS 리터럴 (한글 없음, 변수보간 없음)
-_RX_LABEL_PROP = re.compile(r'label\s*[=:]\s*["\']([^"\'{}]+)["\']')
-_RX_JSX_TEXT = re.compile(r'>\s*([A-Z][A-Z0-9 ._·\-&/]{2,})\s*<')
-_RX_HANGUL = re.compile(r'[가-힣]')
-
-
-def _is_english_allcaps_slop(text: str) -> bool:
-    t = text.strip()
-    if not t or _RX_HANGUL.search(t) or "{" in t:
-        return False
-    letters = [c for c in t if c.isalpha()]
-    if not letters or not all(c.isascii() and c.isupper() for c in letters):
-        return False
-    if len(letters) < 2:
-        return False
-    # 토큰이 전부 allowlist면 통과 (예: "CEO", "BMW")
-    tokens = [w for w in re.split(r'[ ·/&\-_.]+', t) if w]
-    if tokens and all(w in EYEBROW_ALLOW for w in tokens):
-        return False
-    return True
-
-
-def check_eyebrow_slop(files: list) -> tuple:
-    """장식 eyebrow / 비기능 영문 UI 라벨 탐지 (세션 수정 파일만)"""
-    hits = []
-    for f in files:
-        if not f.endswith((".tsx", ".jsx", ".ts", ".js")):
-            continue
-        p = Path(f)
-        if not p.exists() or p.name == "quality-check.py":
-            continue
-        try:
-            lines = p.read_text(encoding="utf-8").splitlines()
-        except Exception:
-            continue
-        for i, line in enumerate(lines):
-            stripped = line.lstrip()
-            # 주석 라인 제외 (예시/문서가 오탐 안 되게)
-            if stripped.startswith(("//", "*", "/*", "#")):
-                continue
-            # 1) label= / label: 영문 ALL CAPS 리터럴
-            for m in _RX_LABEL_PROP.finditer(line):
-                if _is_english_allcaps_slop(m.group(1)):
-                    hits.append(f"{p.name}:{i+1}  label \"{m.group(1).strip()}\"")
-            # 2) eyebrow 스타일 className + 인접 영문 ALL CAPS JSX 텍스트
-            window = "\n".join(lines[i:i + 3])
-            if all(s in line for s in _EYEBROW_STYLE):
-                for m in _RX_JSX_TEXT.finditer(window):
-                    if _is_english_allcaps_slop(m.group(1)):
-                        hits.append(f"{p.name}:{i+1}  eyebrow \"{m.group(1).strip()}\"")
-    # 중복 제거 (순서 보존)
-    seen = set()
-    uniq = []
-    for h in hits:
-        if h not in seen:
-            seen.add(h)
-            uniq.append(h)
-    return len(uniq), uniq[:12]
-
-
-# ── no-design-slop A/B 게이트 ──────────────────────────
-# 룰 SSOT: ~/.config/claude-sync/claude/rules/no-design-slop.md
-
-_COMMENT_PREFIX = ("//", "*", "/*", "#")
-
-
-def _iter_code_lines(files, exts):
-    """주석 제외 코드 라인 yield: (path, lineno, line)"""
-    for f in files:
-        if not f.endswith(exts):
-            continue
-        p = Path(f)
-        if not p.exists() or p.name == "quality-check.py":
-            continue
-        try:
-            text = p.read_text(encoding="utf-8")
-        except Exception:
-            continue
-        for i, line in enumerate(text.splitlines()):
-            if line.lstrip().startswith(_COMMENT_PREFIX):
-                continue
-            yield p, i + 1, line
-
-
-def _dedup(hits, cap=12):
-    seen, out = set(), []
-    for h in hits:
-        if h not in seen:
-            seen.add(h)
-            out.append(h)
-    return len(out), out[:cap]
-
-
-# D1 — 아이콘 라이브러리 혼용 (한 파일에 2+ 패밀리)
-_ICON_FAMILY = [
-    (re.compile(r'["\']lucide-react(-native)?["\']'), "lucide"),
-    (re.compile(r'["\']@heroicons/'), "heroicons"),
-    (re.compile(r'["\']react-icons'), "react-icons"),
-    (re.compile(r'["\']@expo/vector-icons'), "expo-vector-icons"),
-    (re.compile(r'["\']react-native-vector-icons'), "rn-vector-icons"),
-    (re.compile(r'["\'](@phosphor-icons/|phosphor-react)'), "phosphor"),
-    (re.compile(r'["\']@tabler/icons'), "tabler"),
-    (re.compile(r'["\']react-feather["\']'), "feather"),
-]
-
-
-def check_icon_mixing(files: list) -> tuple:
-    hits = []
-    cur = None
-    fams = set()
-    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx", ".ts", ".js")):
-        if cur is not None and p != cur:
-            if len(fams) >= 2:
-                hits.append(f"{cur.name}  아이콘 라이브러리 혼용: {', '.join(sorted(fams))}")
-            fams = set()
-        cur = p
-        if "import" in line or "require(" in line:
-            for rx, name in _ICON_FAMILY:
-                if rx.search(line):
-                    fams.add(name)
-    if cur is not None and len(fams) >= 2:
-        hits.append(f"{cur.name}  아이콘 라이브러리 혼용: {', '.join(sorted(fams))}")
-    return _dedup(hits)
-
-
-# D2 — border/radius arbitrary 값 (디자인 토큰 위반)
-_RX_ARBITRARY = re.compile(r'\b(rounded|border)(-[a-zA-Z]+)*-\[[^\]]+\]')
-_RX_TOKEN_OK = re.compile(r'-\[(var\(|theme\()')
-
-
-def check_border_radius_arbitrary(files: list) -> tuple:
-    hits = []
-    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx")):
-        for m in _RX_ARBITRARY.finditer(line):
-            if _RX_TOKEN_OK.search(m.group(0)):
-                continue
-            hits.append(f"{p.name}:{ln}  arbitrary `{m.group(0)}`")
-    return _dedup(hits)
-
-
-# D3 — 컴포넌트 내 arbitrary hex (토큰/테마/SVG/shadow 제외) — 경고(B)
-_RX_HEX = re.compile(r'#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3}(?:[0-9a-fA-F]{2})?)?\b')
-_RX_PATH_TOKEN = re.compile(r'(colors|theme|tokens?|palette|tailwind\.config|/design|\.config\.)', re.I)
-
-
-def check_arbitrary_hex(files: list) -> tuple:
-    hits = []
-    for f in files:
-        if not f.endswith((".tsx", ".jsx")):
-            continue
-        if _RX_PATH_TOKEN.search(f):
-            continue
-        p = Path(f)
-        if not p.exists():
-            continue
-        try:
-            raw = p.read_text(encoding="utf-8")
-        except Exception:
-            continue
-        for i, line in enumerate(raw.splitlines()):
-            s = line.lstrip()
-            if s.startswith(_COMMENT_PREFIX):
-                continue
-            # SVG 내부 구조색 / 브랜드 표기는 라인 통째 예외
-            if any(t in line for t in ("fill=", "<Path", "<Svg", 'd="M', "BRAND", "brand")):
-                continue
-            for m in _RX_HEX.finditer(line):
-                hx = m.group(0).lower()
-                if hx in ("#000", "#fff", "#000000", "#ffffff"):
-                    continue
-                # shadowColor 는 해당 hex만 surgical 예외 (라인 통째 X)
-                if "shadowColor" in line[max(0, m.start() - 16):m.start()]:
-                    continue
-                hits.append(f"{p.name}:{i+1}  raw hex `{m.group(0)}` → 토큰 사용")
-    return _dedup(hits)
-
-
-# D-EMOJI — UI 텍스트 데코 이모지 (A 강제). 화살표/·/×/체크글리프 제외.
-# 텍스트로 통용되는 글리프는 제외(✓ U+2713 와 동일 취급):
-#  - ★☆ U+2605/06 평점 (`4.9★`)
-#  - ♠♡♢♣♤♥♦♧ U+2660-2667 카드 슈트 (포커/트럼프 UI 텍스트)
-#  - 1F000-1F2FF 마작/도미노/플레잉카드/enclosed-alnum (카드게임 콘텐츠, UI 데코 희소)
-# 데코 이모지 본체는 1F300 이상 + 큐레이트 BMP.
-_RX_EMOJI = re.compile(
-    "["
-    "\U0001F300-\U0001FAFF"
-    "\U00002600-\U00002604\U00002607-\U0000265F\U00002668-\U000026FF"
-    "\U0001F1E6-\U0001F1FF"
-    "\U0000231A\U0000231B\U000023E9-\U000023FF"
-    "\U00002705\U00002708\U00002728\U00002733\U00002734"
-    "\U0000274C\U00002764\U00002B50\U00002B55"
-    "]"
-)
-
-
-def check_emoji_deco(files: list) -> tuple:
-    hits = []
-    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx")):
-        if line.lstrip().startswith("import ") or "require(" in line:
-            continue
-        m = _RX_EMOJI.search(line)
-        if m:
-            hits.append(f"{p.name}:{ln}  이모지 데코 `{m.group(0)}` — 제거 or lucide 아이콘")
-    return _dedup(hits)
-
-
-# D4 — FlatList/SectionList 상태 누락 (ListEmptyComponent 없음) — 경고(B)
-def check_list_empty_state(files: list) -> tuple:
-    hits = []
-    for f in files:
-        if not f.endswith((".tsx", ".jsx")):
-            continue
-        p = Path(f)
-        if not p.exists():
-            continue
-        try:
-            t = p.read_text(encoding="utf-8")
-        except Exception:
-            continue
-        if ("<FlatList" in t or "<SectionList" in t) and "ListEmptyComponent" not in t:
-            hits.append(f"{p.name}  FlatList/SectionList — ListEmptyComponent(빈 상태) 누락")
-    return _dedup(hits)
-
-
-# D7 — RN <Modal> onRequestClose 누락 — 경고(B)
-def check_modal_close(files: list) -> tuple:
-    hits = []
-    for f in files:
-        if not f.endswith((".tsx", ".jsx")):
-            continue
-        p = Path(f)
-        if not p.exists():
-            continue
-        try:
-            t = p.read_text(encoding="utf-8")
-        except Exception:
-            continue
-        if re.search(r'<Modal[\s>]', t) and "onRequestClose" not in t:
-            hits.append(f"{p.name}  <Modal> onRequestClose(백/뒤로가기 닫기) 누락")
-    return _dedup(hits)
-
-
-# D9 — 과도한 shadow (shadowRadius>16 / elevation>12) — 경고(B)
-_RX_SHADOW_R = re.compile(r'shadowRadius:\s*([0-9]+(?:\.[0-9]+)?)')
-_RX_ELEVATION = re.compile(r'elevation:\s*([0-9]+)')
-
-
-def check_excessive_shadow(files: list) -> tuple:
-    hits = []
-    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx")):
-        for m in _RX_SHADOW_R.finditer(line):
-            if float(m.group(1)) > 16:
-                hits.append(f"{p.name}:{ln}  shadowRadius {m.group(1)} (>16 과함)")
-        for m in _RX_ELEVATION.finditer(line):
-            if int(m.group(1)) > 12:
-                hits.append(f"{p.name}:{ln}  elevation {m.group(1)} (>12 과함)")
-    return _dedup(hits)
+# 디텍터는 단일 소스 모듈에서 import (hook ↔ audit 드리프트 0)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import designslop_detectors as ds  # noqa: E402
 
 
 def check_typescript_errors(files: list) -> tuple:
@@ -372,16 +106,19 @@ def main():
     # ── 오류 체크 ──────────────────────────────────────
     ts_errors, ts_details = check_typescript_errors(files)
     py_errors, py_details = check_python_errors(files)
-    eb_count, eb_details = check_eyebrow_slop(files)
-    d1_count, d1_details = check_icon_mixing(files)
-    d2_count, d2_details = check_border_radius_arbitrary(files)
-    d3_count, d3_details = check_arbitrary_hex(files)
-    em_count, em_details = check_emoji_deco(files)
-    d4_count, d4_details = check_list_empty_state(files)
-    d7_count, d7_details = check_modal_close(files)
-    d9_count, d9_details = check_excessive_shadow(files)
-    gate_count = eb_count + d1_count + d2_count + em_count
-    warn_count = d3_count + d4_count + d7_count + d9_count
+    _r = ds.run_all(files)
+    eb_count, eb_details = _r["gate"]["eyebrow"]
+    d1_count, d1_details = _r["gate"]["icon"]
+    d2_count, d2_details = _r["gate"]["border"]
+    em_count, em_details = _r["gate"]["emoji"]
+    nav_count, nav_details = _r["gate"]["nav"]
+    d3_count, d3_details = _r["warn"]["hex"]
+    d4_count, d4_details = _r["warn"]["list"]
+    d7_count, d7_details = _r["warn"]["modal"]
+    d9_count, d9_details = _r["warn"]["shadow"]
+    gate_count = _r["gate_count"]
+    warn_count = _r["warn_count"]
+    ledger = _r["review_ledger"]
     total_errors = ts_errors + py_errors
 
     # ── 출력 구성 ───────────────────────────────────────
@@ -407,6 +144,10 @@ def main():
         if em_count > 0:
             lines.append(f"**이모지 데코 ({em_count})** — 제거 또는 lucide 아이콘 치환")
             for d in em_details:
+                lines.append(f"- `{d}`")
+        if nav_count > 0:
+            lines.append(f"**글로벌 네비 오노출 ({nav_count})** — 비-탭루트에서 제거 (.designslop.json 선언 기준)")
+            for d in nav_details:
                 lines.append(f"- `{d}`")
         lines.append("")
         lines.append(
@@ -434,6 +175,19 @@ def main():
             lines.append(f"**과도한 shadow ({d9_count})** — 평평+hairline 우선")
             for d in d9_details:
                 lines.append(f"- `{d}`")
+        lines.append("")
+
+    # review 레저 — 정규식으로 못 거르는 퍼지 케이스를 버리지 않고 추적(비차단)
+    if ledger:
+        try:
+            with open(log_dir / "designslop-review.jsonl", "a", encoding="utf-8") as lf:
+                for e in ledger:
+                    lf.write(json.dumps(e, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        lines.append(f"### 🗂 review 레저 +{len(ledger)}건 (퍼지 케이스 추적 · 비차단)")
+        for e in ledger[:6]:
+            lines.append(f"- `{e['file']}` {e['kind']}: {e['note']}")
         lines.append("")
 
     # CCTV 기록
