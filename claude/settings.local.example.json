@@ -1,8 +1,8 @@
 {
   "env": {
-    "TELEGRAM_TOKEN": "$(op read 'op://Private/Claude-Telegram-Bot/password')",
-    "TELEGRAM_CHAT_ID": "$(op read 'op://Private/Claude-Telegram-Bot/chat-id')",
-    "SLACK_BOT_TOKEN": "$(op read 'op://Private/Claude-Slack-Bot/password')",
-    "SLACK_USER_ID": "$(op read 'op://Private/Claude-Slack-Bot/user-id')"
+    "TELEGRAM_TOKEN": "{{ op://Employee/claude-sync-machine-env/TELEGRAM_TOKEN }}",
+    "TELEGRAM_CHAT_ID": "{{ op://Employee/claude-sync-machine-env/TELEGRAM_CHAT_ID }}",
+    "SLACK_BOT_TOKEN": "{{ op://Employee/claude-sync-machine-env/SLACK_BOT_TOKEN }}",
+    "SLACK_USER_ID": "{{ op://Employee/claude-sync-machine-env/SLACK_USER_ID }}"
   }
 }

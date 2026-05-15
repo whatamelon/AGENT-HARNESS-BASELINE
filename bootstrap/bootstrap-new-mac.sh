@@ -148,18 +148,17 @@ step "8. claude-sync install.sh"
 # ─── 9. 시크릿 자동 주입 (1Password에 항목이 있을 때만) ──────
 step "9. 시크릿 자동 주입"
 if op vault list >/dev/null 2>&1; then
-  TPL="$HOME/.claude/settings.local.tpl.json"
-  if [[ -f "$TPL" ]]; then
-    op inject --force -i "$TPL" -o "$HOME/.claude/settings.local.json" 2>&1 \
+  if [[ -x "$SSOT_DIR/bin/install-secrets.sh" ]]; then
+    "$SSOT_DIR/bin/install-secrets.sh" 2>&1 \
       && info "settings.local.json 주입됨" \
-      || warn "주입 실패 — 1Password에 vault 항목이 없을 수 있음"
+      || warn "주입 실패 — vault/item 확인 (Employee/claude-sync-machine-env)"
     "$SSOT_DIR/bin/install.sh" >/dev/null
     info "settings.json 재머지 완료"
   else
-    warn "$TPL 없음 — 첫 머신이면 settings.local.example.json 참고해서 직접 작성"
+    warn "$SSOT_DIR/bin/install-secrets.sh 없음 — 수동: op inject --force -i $SSOT_DIR/claude/settings.local.example.json -o ~/.claude/settings.local.json"
   fi
 else
-  warn "1Password 미인증 — 시크릿 주입 스킵"
+  warn "1Password 미인증 — 시크릿 주입 스킵 (op signin 후 install-secrets.sh 직접 실행)"
 fi
 
 # ─── 10. 글로벌 npm 패키지 ────────────────────────────────────
@@ -195,6 +194,21 @@ ln -sfn "$PLIST_SRC" "$PLIST_DST"
 launchctl unload "$PLIST_DST" 2>/dev/null || true
 launchctl load "$PLIST_DST"
 launchctl list | grep -q claude-sync && info "launchd 등록됨" || warn "launchd 등록 실패"
+
+# srcsht-rename watcher (template — __HOME__ 치환 후 LaunchAgents로 복사)
+SRCSHT_TPL="$SSOT_DIR/launchd/com.denny.srcsht-rename.plist"
+SRCSHT_DST="$HOME/Library/LaunchAgents/com.denny.srcsht-rename.plist"
+if [[ -f "$SRCSHT_TPL" ]]; then
+  mkdir -p "$HOME/srcsht" "$HOME/Library/Logs"
+  # 기존 manager 호환 plist 정리 (있다면)
+  launchctl unload "$HOME/Library/LaunchAgents/com.manager.srcsht-rename.plist" 2>/dev/null || true
+  rm -f "$HOME/Library/LaunchAgents/com.manager.srcsht-rename.plist"
+  # 새 plist (__HOME__ 치환 — WatchPaths는 절대경로 박혀야 launchd가 인식)
+  sed "s|__HOME__|$HOME|g" "$SRCSHT_TPL" > "$SRCSHT_DST"
+  launchctl unload "$SRCSHT_DST" 2>/dev/null || true
+  launchctl load "$SRCSHT_DST"
+  launchctl list | grep -q srcsht-rename && info "srcsht-rename 등록됨" || warn "srcsht launchd 등록 실패"
+fi
 
 # ─── 13. 에디터 확장 (VS Code / Cursor) ──────────────────────
 step "13. VS Code / Cursor 확장"
@@ -263,6 +277,27 @@ else
     warn "gh 미인증 — 부트스트랩 끝나고 'gh auth login' 후 수동 실행:"
     warn "  gh repo clone wishket-aidp/claude-settings ~/wishket/claude-settings"
   fi
+fi
+
+# ─── 13e. agent-work-log-harness ──────────────────────────────
+# whatamelon/agent-work-log-harness — work-log 자동 생성 헬퍼.
+# install.sh가 ~/.local/bin/ensure-work-log-task 심링크 + claude/codex skill 심링크 설치.
+step "13e. agent-work-log-harness"
+WORKLOG_DIR="$HOME/.config/agent-work-log-harness"
+WORKLOG_REPO="https://github.com/whatamelon/agent-work-log-harness.git"
+if [[ -d "$WORKLOG_DIR/.git" ]]; then
+  info "이미 clone됨 — git pull"
+  (cd "$WORKLOG_DIR" && git pull --ff-only --quiet) || warn "work-log-harness pull 실패"
+else
+  mkdir -p "$(dirname "$WORKLOG_DIR")"
+  git clone --quiet "$WORKLOG_REPO" "$WORKLOG_DIR" \
+    && info "work-log-harness clone 완료" \
+    || warn "work-log-harness clone 실패 (네트워크?)"
+fi
+if [[ -x "$WORKLOG_DIR/install.sh" ]]; then
+  "$WORKLOG_DIR/install.sh" >/dev/null 2>&1 \
+    && info "ensure-work-log-task 심링크 + skill 심링크 설치" \
+    || warn "work-log-harness install.sh 실패"
 fi
 
 # ─── 14. 검증 ─────────────────────────────────────────────────
