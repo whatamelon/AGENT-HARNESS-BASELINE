@@ -299,17 +299,34 @@ def main():
     lines.append(f"## 🔍 자동 품질 검사 | 수정 파일 {file_count}개")
     lines.append("")
 
-    # 장식 eyebrow / 영문 라벨 — 최상단 강제 (글로벌 Iron Law)
-    if eb_count > 0:
-        lines.append(f"### 🚫 장식 eyebrow / 영문 UI 라벨 슬롭: {eb_count}건 — 반드시 수정")
-        for d in eb_details:
-            lines.append(f"- `{d}`")
+    # 디자인 슬롭 A계층 — 최상단 강제 (글로벌 Iron Law)
+    if gate_count > 0:
+        lines.append(f"### 🚫 디자인 슬롭(A) {gate_count}건 — 반드시 수정")
+        if eb_count > 0:
+            lines.append(f"**장식 eyebrow / 영문 UI 라벨 ({eb_count})**")
+            for d in eb_details:
+                lines.append(f"- `{d}`")
+        if d1_count > 0:
+            lines.append(f"**아이콘 라이브러리 혼용 ({d1_count})** — 단일 세트로 통일")
+            for d in d1_details:
+                lines.append(f"- `{d}`")
+        if d2_count > 0:
+            lines.append(f"**border/radius arbitrary 값 ({d2_count})** — 디자인 토큰 사용")
+            for d in d2_details:
+                lines.append(f"- `{d}`")
         lines.append("")
         lines.append(
-            "→ 섹션 타이틀 위 키커 제거 / 영문 라벨 한국어화. "
-            "예외: 브랜드·플랫폼 고유명사, 통용 약어(CEO 등). "
-            "룰: `~/.config/claude-sync/claude/rules/no-decorative-eyebrow.md`"
+            "→ 룰: `~/.config/claude-sync/claude/rules/no-design-slop.md` · "
+            "`no-decorative-eyebrow.md` (예외: 브랜드 고유명사, 통용 약어, var/theme 토큰)"
         )
+        lines.append("")
+
+    # 디자인 슬롭 B계층 — 점검 경고 (비차단)
+    if d3_count > 0:
+        lines.append(f"### ⚠️ 디자인 슬롭(B) 점검 | 컴포넌트 raw hex {d3_count}건")
+        for d in d3_details:
+            lines.append(f"- `{d}`")
+        lines.append("(토큰 매칭되면 전환. shadowColor/SVG/브랜드색은 예외)")
         lines.append("")
 
     # CCTV 기록
