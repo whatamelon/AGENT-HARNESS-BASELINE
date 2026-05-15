@@ -44,12 +44,24 @@ brew "zsh"
 brew "zsh-syntax-highlighting"
 # Supabase CLI
 brew "supabase/tap/supabase"
+# Vercel CLI (vercel login)
+brew "vercel-cli"
 # Command-line interface for 1Password
 cask "1password-cli"
 # Native macOS menu bar app for monitoring Claude AI usage limits
 cask "hamed-elfayome/claude-usage/claude-usage-tracker"
 # OpenAI's coding agent that runs in your terminal
 cask "codex"
+# Claude Code (CLI + desktop)
+cask "claude"
+# Cursor IDE (cursor CLI 포함)
+cask "cursor"
+# VS Code (code CLI 포함, bootstrap step 13에서 사용)
+cask "visual-studio-code"
+# Docker Desktop (docker login, docker compose)
+cask "docker-desktop"
+# Google Cloud SDK (gcloud, GCP 인프라용 — Workspace 작업은 gws npm 사용)
+cask "gcloud-cli"
 vscode "anthropic.claude-code"
 vscode "bradlc.vscode-tailwindcss"
 vscode "dbaeumer.vscode-eslint"
