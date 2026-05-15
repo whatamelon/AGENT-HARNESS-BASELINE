@@ -41,6 +41,14 @@ def _iter_code_lines(files, exts):
             yield p, i + 1, line
 
 
+# 테스트/스토리/목 파일은 출하 UI 아님 → 디텍터 대상 제외 (의도적 픽스처 문자열)
+_IS_FIXTURE = re.compile(r'(\.test\.|\.spec\.|\.stories\.|/__tests__/|/__mocks__/|\.cy\.|/e2e/)')
+
+
+def _is_fixture(path: str) -> bool:
+    return bool(_IS_FIXTURE.search(path.replace("\\", "/")))
+
+
 def _dedup(hits, cap=12):
     seen, out = set(), []
     for h in hits:
