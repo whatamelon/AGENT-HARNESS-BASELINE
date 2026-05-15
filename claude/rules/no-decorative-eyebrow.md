@@ -51,6 +51,18 @@
 프로젝트 로컬 DESIGN.md가 "ALL CAPS eyebrow"를 권장하더라도 **본 글로벌 룰이 우선**한다
 (프로젝트 DESIGN.md는 본 룰에 맞춰 갱신한다).
 
+## 강제 메커니즘 (수동 룰 아님)
+
+본 룰은 문서만이 아니라 **Stop 게이트 hook으로 자동 강제**된다:
+
+- `~/.config/claude-sync/claude/hooks/quality-check.py` 의 `check_eyebrow_slop()`
+- 매 턴 종료(Stop)마다 그 세션에서 수정된 `.tsx/.jsx/.ts/.js`를 재스캔
+- 위반 발견 시 `exit 2`로 file:line을 에이전트에 강제 피드백 → 수정 전까지 계속 표면화
+- 동시편집 프로세스가 eyebrow를 되돌려도 다음 Stop에서 재적발 (현재 파일 내용 기준 스캔)
+- allowlist(`EYEBROW_ALLOW`): 브랜드·플랫폼 고유명사 + 한국 통용 약어. 한글 포함·변수보간·주석 라인은 오탐 제외
+
+룰 텍스트와 hook의 allowlist/패턴은 함께 갱신한다 (한쪽만 바꾸면 드리프트).
+
 ## How to apply
 
 - UI 작성/수정 시: 타이틀 위에 micro ALL CAPS 라벨을 얹으려는 충동이 들면 → **얹지 말 것**. 타이틀 + spacing으로 충분
