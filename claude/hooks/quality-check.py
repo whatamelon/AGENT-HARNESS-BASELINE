@@ -186,12 +186,15 @@ def check_arbitrary_hex(files: list) -> tuple:
             s = line.lstrip()
             if s.startswith(_COMMENT_PREFIX):
                 continue
-            # SVG 내부 구조색 / RN shadow 관용구 / 브랜드 표기는 예외
-            if any(t in line for t in ("shadowColor", "fill=", "<Path", "<Svg", 'd="M', "BRAND", "brand")):
+            # SVG 내부 구조색 / 브랜드 표기는 라인 통째 예외
+            if any(t in line for t in ("fill=", "<Path", "<Svg", 'd="M', "BRAND", "brand")):
                 continue
             for m in _RX_HEX.finditer(line):
                 hx = m.group(0).lower()
                 if hx in ("#000", "#fff", "#000000", "#ffffff"):
+                    continue
+                # shadowColor 는 해당 hex만 surgical 예외 (라인 통째 X)
+                if "shadowColor" in line[max(0, m.start() - 16):m.start()]:
                     continue
                 hits.append(f"{p.name}:{i+1}  raw hex `{m.group(0)}` → 토큰 사용")
     return _dedup(hits)
