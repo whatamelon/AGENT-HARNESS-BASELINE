@@ -47,7 +47,22 @@ supabase link --project-ref XXX # 프로젝트 연결
 project-init                    # → ~/.config/projects/supabase.json 자동 등록
 ```
 
-### Google Cloud
+### Google Workspace (gws) — Gmail / Drive / Sheets / Docs / Calendar
+Workspace 작업은 무조건 `gws` 우선. `gcloud`는 GCP 인프라용으로만.
+
+```bash
+# 첫 실행 시 OAuth (1회) — keyring에 refresh token 영구 저장
+gws schema gmail.users.messages.list >/dev/null
+
+# 검증
+gws gmail users labels list --params '{"userId":"me"}' | head -5
+```
+
+세션마다 재인증 X. 권한 부족 에러 발생 시에만 토큰 재발급.
+
+### Google Cloud (GCP 전용)
+Workspace API는 위 `gws` 사용. `gcloud`는 Cloud Run / BigQuery / GCS 등 인프라 용도.
+
 ```bash
 gcloud init
 gcloud auth login                       # 사용자 인증

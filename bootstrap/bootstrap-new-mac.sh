@@ -316,7 +316,7 @@ step "14. 검증 (cs-doctor)"
 # ─── 15. 최종 안내 (사람 액션 체크리스트) ────────────────────
 step "15. ★ 남은 사람 액션 (CLI 로그인)"
 if [[ -x "${SSOT_DIR}/bin/notify-step.sh" ]]; then
-  bash "${SSOT_DIR}/bin/notify-step.sh" human-action "CLI OAuth 인증" "gh / gcloud / supabase / vercel / docker / firebase / claude — 각각 별도 터미널에서 로그인 필요" 2>/dev/null &
+  bash "${SSOT_DIR}/bin/notify-step.sh" human-action "CLI OAuth 인증" "gh / gws (Workspace) / gcloud (GCP) / supabase / vercel / docker / firebase / claude — 각각 별도 터미널에서 로그인 필요" 2>/dev/null &
   disown $! 2>/dev/null || true
 fi
 cat <<EOF
@@ -326,9 +326,10 @@ cat <<EOF
   [필수]
   ${B}gh auth login${N}                        # GitHub
   ${B}op signin${N}                            # 1Password (위에서 안 됐다면)
+  ${B}gws schema gmail.users.messages.list >/dev/null${N}  # Google Workspace (Gmail/Drive/Sheets/Docs/Calendar) — 1회 OAuth, keyring 영구
 
   [있는 도구만]
-  ${B}gcloud init${N}                          # Google Cloud
+  ${B}gcloud init${N}                          # GCP 인프라용 (Workspace 작업은 gws 우선)
   ${B}gcloud auth application-default login${N}
   ${B}vercel login${N}                         # Vercel
   ${B}supabase login${N}                       # Supabase

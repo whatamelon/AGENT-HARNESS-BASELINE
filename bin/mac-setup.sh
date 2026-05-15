@@ -326,7 +326,7 @@ step_11_cli_auth() {
   ui_step_header 11 $TOTAL_STEPS "CLI 인증 (사람 액션)"
   _notify_step 11 "CLI 인증"
   if [[ -x "$SSOT/bin/notify-step.sh" ]]; then
-    bash "$SSOT/bin/notify-step.sh" human-action "CLI OAuth 인증" "gh / gcloud / supabase / vercel / docker / claude — 각각 별도 터미널에서 로그인 필요" 2>/dev/null &
+    bash "$SSOT/bin/notify-step.sh" human-action "CLI OAuth 인증" "gh / gws (Workspace) / gcloud (GCP) / supabase / vercel / docker / claude — 각각 별도 터미널에서 로그인 필요" 2>/dev/null &
     disown $! 2>/dev/null || true
   fi
   ui_info "각 명령을 별도 터미널에서 실행 후 [y/s/n] 표시"
@@ -334,7 +334,8 @@ step_11_cli_auth() {
 
   local checks=(
     "gh auth login|gh auth status"
-    "gcloud auth list|gcloud auth list 2>/dev/null | grep -q ACTIVE"
+    "gws schema gmail.users.messages.list >/dev/null (1회 OAuth, keyring 영구)|gws gmail users labels list --params '{\"userId\":\"me\"}' >/dev/null 2>&1"
+    "gcloud auth list (GCP 인프라용, Workspace는 gws 우선)|gcloud auth list 2>/dev/null | grep -q ACTIVE"
     "supabase login|supabase projects list"
     "vercel login|vercel whoami"
     "docker login|docker info"
