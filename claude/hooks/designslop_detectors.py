@@ -377,6 +377,7 @@ def collect_review_ledger(files: list) -> list:
 # ── 단일 진입점 (hook + audit 공용) ───────────────────
 def run_all(files: list) -> dict:
     """모든 디텍터 1회 실행. hook/audit 가 이 dict 만 소비 → 드리프트 0."""
+    files = [f for f in files if not _is_fixture(f)]
     gate = {
         "eyebrow": check_eyebrow_slop(files),
         "icon": check_icon_mixing(files),
