@@ -18,6 +18,21 @@ Build efficient, scalable monorepos that enable code sharing, consistent tooling
 - Versioning and publishing packages
 - Debugging monorepo-specific issues
 
+## User Default Layout Policy
+
+For client/product work, default to `1 project = 1 repo` monorepo unless the user explicitly requests independently governed repositories.
+
+Preferred baseline:
+
+```text
+apps/       # runnable deliverables: web, admin, mobile apps, workers
+packages/   # shared UI, domain logic, config, SDKs, database types
+docs/       # committed project context, work logs, decisions
+.project/   # project metadata/evidence
+```
+
+If requirements identify distinct apps, create distinct packages under `apps/` rather than faking app separation with route groups inside one app. Keep `docs/`, `materials/`, `proposal/`, and design artifacts with the code so collaborators receive the full context. Use Git subtree later only to mirror or extract an app/package that truly needs its own repository; do not subtree project docs away from the implementation.
+
 ## Core Concepts
 
 ### 1. Why Monorepos?

@@ -11,9 +11,19 @@ import json
 import subprocess
 from pathlib import Path
 
-# 디텍터는 단일 소스 모듈에서 import (hook ↔ audit 드리프트 0)
+# 디텍터는 단일 소스 모듈에서 import (hook ↔ audit 드리프트 0).
+# fail-safe: 부분 동기화/미설치 머신에서 모듈이 없어도 quality-check 자체는
+# 절대 죽지 않는다 (ts/py/CCTV 체크 보존). 디자인 슬롭만 조용히 비활성.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import designslop_detectors as ds  # noqa: E402
+try:
+    import designslop_detectors as ds  # noqa: E402
+except Exception:
+    class _NoopDS:
+        @staticmethod
+        def run_all(_files):
+            return {"gate": {}, "warn": {}, "gate_count": 0,
+                    "warn_count": 0, "review_ledger": []}
+    ds = _NoopDS()
 
 
 def check_typescript_errors(files: list) -> tuple:
