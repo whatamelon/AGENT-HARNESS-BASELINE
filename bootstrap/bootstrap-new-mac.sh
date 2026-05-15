@@ -195,22 +195,26 @@ else
 fi
 
 # ─── 12. launchd 자동 sync 등록 ───────────────────────────────
+# macOS Tahoe(26.x) 일부 환경에서 LaunchAgents 디렉토리는 심링크 따라가지 못함.
+# 안전하게 cp + modern bootstrap/bootout syntax 사용.
 step "12. launchd 자동 sync (30분 주기)"
+mkdir -p "$HOME/Library/LaunchAgents"
 PLIST_SRC="$SSOT_DIR/launchd/com.denny.claude-sync.plist"
 PLIST_DST="$HOME/Library/LaunchAgents/com.denny.claude-sync.plist"
-mkdir -p "$HOME/Library/LaunchAgents"
-ln -sfn "$PLIST_SRC" "$PLIST_DST"
-launchctl unload "$PLIST_DST" 2>/dev/null || true
-launchctl load "$PLIST_DST"
+[[ -L "$PLIST_DST" ]] && rm "$PLIST_DST"   # 옛 심링크 정리
+cp -f "$PLIST_SRC" "$PLIST_DST"
+launchctl bootout "gui/$UID/com.denny.claude-sync" 2>/dev/null || true
+launchctl bootstrap "gui/$UID" "$PLIST_DST" 2>&1 | tail -1
 launchctl list | grep -q claude-sync && info "launchd 등록됨" || warn "launchd 등록 실패"
 
 # daily-digest plist (매일 아침 8시)
 DIGEST_SRC="$SSOT_DIR/launchd/com.denny.claude-sync-digest.plist"
 DIGEST_DST="$HOME/Library/LaunchAgents/com.denny.claude-sync-digest.plist"
 if [[ -f "$DIGEST_SRC" ]]; then
-  ln -sfn "$DIGEST_SRC" "$DIGEST_DST"
-  launchctl unload "$DIGEST_DST" 2>/dev/null || true
-  launchctl load "$DIGEST_DST"
+  [[ -L "$DIGEST_DST" ]] && rm "$DIGEST_DST"
+  cp -f "$DIGEST_SRC" "$DIGEST_DST"
+  launchctl bootout "gui/$UID/com.denny.claude-sync-digest" 2>/dev/null || true
+  launchctl bootstrap "gui/$UID" "$DIGEST_DST" 2>&1 | tail -1
   launchctl list | grep -q claude-sync-digest && info "daily-digest launchd 등록됨" || warn "digest launchd 등록 실패"
 fi
 
