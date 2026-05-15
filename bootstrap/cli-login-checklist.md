@@ -40,10 +40,22 @@ project-init                    # → ~/.config/projects/vercel.json 자동 등�
 ```
 
 ### Supabase
+
+**중요:** `supabase login` browser OAuth는 종종 `Unknown error` 실패. **PAT 방식 권장.**
+
 ```bash
-supabase login                  # 토큰으로 로그인
+# 1) PAT 생성: https://supabase.com/dashboard/account/tokens
+#    → Generate new token → "claude-sync" 이름 → 복사
+# 2) 1Password에 저장 (한 번만)
+op item create --category 'API Credential' --title 'supabase-pat' \
+  --vault Employee credential='<paste>' --tags claude-sync,supabase
+
+# 3) login (한 줄, 두 머신 다 같은 토큰)
+supabase login --token "$(op read 'op://Employee/supabase-pat/credential')"
+
+# 4) 프로젝트 연결
 cd ~/development/[프로젝트]
-supabase link --project-ref XXX # 프로젝트 연결
+supabase link --project-ref XXX
 project-init                    # → ~/.config/projects/supabase.json 자동 등록
 ```
 
@@ -125,11 +137,16 @@ brew install gh && gh auth login   # gh가 깔리면 자동 사용
 ## 검증
 모든 로그인 끝나면:
 ```bash
-cs-doctor                # claude-sync 환경 검증
-gh auth status           # GitHub
-gcloud auth list         # GCP
-op vault list            # 1Password
-docker info              # Docker
+cs-doctor                                                       # claude-sync 환경 검증
+gh auth status                                                  # GitHub
+op vault list                                                   # 1Password
+gws gmail users labels list --params '{"userId":"me"}' >/dev/null && echo "gws OK"
+supabase projects list >/dev/null 2>&1 && echo "supabase OK"
+vercel whoami                                                   # Vercel
+gcloud auth list                                                # GCP
+docker info                                                     # Docker
+firebase projects:list                                          # Firebase
+wrangler whoami                                                 # Cloudflare
 ```
 
 ---

@@ -397,6 +397,23 @@ else
   echo "⚠ srcsht-rename launchd 미등록 (bootstrap step 12에서 처리)"
 fi
 
+# LaunchAgents plist 파일 타입 + 사이즈 검증 (macOS 26.x 심링크 차단 대비)
+for label in com.denny.claude-sync com.denny.claude-sync-digest com.denny.srcsht-rename; do
+  plist="$HOME/Library/LaunchAgents/${label}.plist"
+  if [[ -L "$plist" ]]; then
+    echo "⚠ $label.plist 심링크 — macOS 26.x LaunchAgents 차단 가능 (bootstrap step 12 재실행 권장)"
+  elif [[ -f "$plist" ]]; then
+    sz=$(wc -c < "$plist" | tr -d ' ')
+    if [[ "$sz" -gt 0 ]]; then
+      echo "✓ $label.plist (${sz} bytes 실파일)"
+    else
+      echo "❌ $label.plist 0 bytes — bootstrap step 12 재실행 필요"; ((errors++))
+    fi
+  else
+    echo "⚠ $label.plist 없음 (해당 launchd 사용 안 함)"
+  fi
+done
+
 echo ""
 [[ $errors -eq 0 ]] && echo "✅ All good ($errors errors)" || echo "❌ $errors errors"
 exit $errors

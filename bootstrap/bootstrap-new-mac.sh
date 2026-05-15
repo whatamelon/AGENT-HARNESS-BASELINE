@@ -166,6 +166,20 @@ if op vault list >/dev/null 2>&1; then
   else
     warn "$SSOT_DIR/bin/install-secrets.sh 없음 — 수동: op inject --force -i $SSOT_DIR/claude/settings.local.example.json -o ~/.claude/settings.local.json"
   fi
+
+  # supabase PAT 자동 login (vault에 'supabase-pat' 있을 때만)
+  if command -v supabase >/dev/null 2>&1; then
+    if op item get supabase-pat --vault Employee >/dev/null 2>&1; then
+      SUPA_TOKEN=$(op read 'op://Employee/supabase-pat/credential' 2>/dev/null)
+      if [[ -n "$SUPA_TOKEN" ]]; then
+        supabase login --token "$SUPA_TOKEN" >/dev/null 2>&1 \
+          && info "supabase login (PAT)" \
+          || warn "supabase login 실패 (PAT 만료 가능)"
+      fi
+    else
+      info "supabase PAT 없음 — vault에 'supabase-pat' 추가하면 자동 login"
+    fi
+  fi
 else
   warn "1Password 미인증 — 시크릿 주입 스킵 (op signin 후 install-secrets.sh 직접 실행)"
 fi
