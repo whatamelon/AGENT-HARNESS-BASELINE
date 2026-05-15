@@ -5,5 +5,6 @@ firebase-tools@15.12.0
 npm@11.9.0
 nx@20.0.0
 oh-my-claude-sisyphus@3.7.16
+oh-my-codex@0.17.3
 wrangler@4.61.1
 yarn@1.22.22

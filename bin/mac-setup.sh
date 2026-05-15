@@ -182,6 +182,25 @@ step_05_codex() {
     else
       ui_skip "install-codex-skills.sh 없음"
     fi
+
+    # (2.5) oh-my-codex (OMX) — Codex용 멀티에이전트 오케스트레이션
+    # npm globals(step_07)보다 먼저 실행되므로 여기서 설치 보장 → omx setup.
+    # hermes 번들 node 경로가 바뀌어도 npm prefix로 동적 추적, ~/.local/bin 심링크로 일반 셸 노출.
+    if ! npm list -g --depth=0 oh-my-codex >/dev/null 2>&1; then
+      ui_doing "npm i -g oh-my-codex"
+      npm install -g --silent oh-my-codex >/dev/null 2>&1 && ui_ok "oh-my-codex 설치" || ui_err "oh-my-codex 설치 실패"
+    fi
+    local omx_prefix omx_src
+    omx_prefix="$(npm prefix -g 2>/dev/null || true)"
+    omx_src="${omx_prefix:+$omx_prefix/bin/omx}"
+    if [[ -n "$omx_src" && -e "$omx_src" ]]; then
+      mkdir -p "$HOME/.local/bin"
+      ln -sfn "$omx_src" "$HOME/.local/bin/omx"
+      ui_doing "omx setup"
+      "$omx_src" setup >/dev/null 2>&1 && ui_ok "OMX 통합 완료 (omx setup)" || ui_warn "omx setup 경고 — 'omx doctor'로 확인"
+    else
+      ui_skip "omx 바이너리 미발견 — 'omx doctor'로 설치 확인 필요"
+    fi
   else
     ui_skip "Codex 미설치 — 스킵 (필요 시 brew install --cask codex)"
   fi
