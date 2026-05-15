@@ -224,12 +224,12 @@ SRCSHT_DST="$HOME/Library/LaunchAgents/com.denny.srcsht-rename.plist"
 if [[ -f "$SRCSHT_TPL" ]]; then
   mkdir -p "$HOME/srcsht" "$HOME/Library/Logs"
   # 기존 manager 호환 plist 정리 (있다면)
-  launchctl unload "$HOME/Library/LaunchAgents/com.manager.srcsht-rename.plist" 2>/dev/null || true
+  launchctl bootout "gui/$UID/com.manager.srcsht-rename" 2>/dev/null || true
   rm -f "$HOME/Library/LaunchAgents/com.manager.srcsht-rename.plist"
   # 새 plist (__HOME__ 치환 — WatchPaths는 절대경로 박혀야 launchd가 인식)
   sed "s|__HOME__|$HOME|g" "$SRCSHT_TPL" > "$SRCSHT_DST"
-  launchctl unload "$SRCSHT_DST" 2>/dev/null || true
-  launchctl load "$SRCSHT_DST"
+  launchctl bootout "gui/$UID/com.denny.srcsht-rename" 2>/dev/null || true
+  launchctl bootstrap "gui/$UID" "$SRCSHT_DST" 2>&1 | tail -1
   launchctl list | grep -q srcsht-rename && info "srcsht-rename 등록됨" || warn "srcsht launchd 등록 실패"
 fi
 
