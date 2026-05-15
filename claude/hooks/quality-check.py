@@ -83,6 +83,120 @@ def check_eyebrow_slop(files: list) -> tuple:
     return len(uniq), uniq[:12]
 
 
+# ── no-design-slop A/B 게이트 ──────────────────────────
+# 룰 SSOT: ~/.config/claude-sync/claude/rules/no-design-slop.md
+
+_COMMENT_PREFIX = ("//", "*", "/*", "#")
+
+
+def _iter_code_lines(files, exts):
+    """주석 제외 코드 라인 yield: (path, lineno, line)"""
+    for f in files:
+        if not f.endswith(exts):
+            continue
+        p = Path(f)
+        if not p.exists() or p.name == "quality-check.py":
+            continue
+        try:
+            text = p.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        for i, line in enumerate(text.splitlines()):
+            if line.lstrip().startswith(_COMMENT_PREFIX):
+                continue
+            yield p, i + 1, line
+
+
+def _dedup(hits, cap=12):
+    seen, out = set(), []
+    for h in hits:
+        if h not in seen:
+            seen.add(h)
+            out.append(h)
+    return len(out), out[:cap]
+
+
+# D1 — 아이콘 라이브러리 혼용 (한 파일에 2+ 패밀리)
+_ICON_FAMILY = [
+    (re.compile(r'["\']lucide-react(-native)?["\']'), "lucide"),
+    (re.compile(r'["\']@heroicons/'), "heroicons"),
+    (re.compile(r'["\']react-icons'), "react-icons"),
+    (re.compile(r'["\']@expo/vector-icons'), "expo-vector-icons"),
+    (re.compile(r'["\']react-native-vector-icons'), "rn-vector-icons"),
+    (re.compile(r'["\'](@phosphor-icons/|phosphor-react)'), "phosphor"),
+    (re.compile(r'["\']@tabler/icons'), "tabler"),
+    (re.compile(r'["\']react-feather["\']'), "feather"),
+]
+
+
+def check_icon_mixing(files: list) -> tuple:
+    hits = []
+    cur = None
+    fams = set()
+    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx", ".ts", ".js")):
+        if cur is not None and p != cur:
+            if len(fams) >= 2:
+                hits.append(f"{cur.name}  아이콘 라이브러리 혼용: {', '.join(sorted(fams))}")
+            fams = set()
+        cur = p
+        if "import" in line or "require(" in line:
+            for rx, name in _ICON_FAMILY:
+                if rx.search(line):
+                    fams.add(name)
+    if cur is not None and len(fams) >= 2:
+        hits.append(f"{cur.name}  아이콘 라이브러리 혼용: {', '.join(sorted(fams))}")
+    return _dedup(hits)
+
+
+# D2 — border/radius arbitrary 값 (디자인 토큰 위반)
+_RX_ARBITRARY = re.compile(r'\b(rounded|border)(-[a-zA-Z]+)*-\[[^\]]+\]')
+_RX_TOKEN_OK = re.compile(r'-\[(var\(|theme\()')
+
+
+def check_border_radius_arbitrary(files: list) -> tuple:
+    hits = []
+    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx")):
+        for m in _RX_ARBITRARY.finditer(line):
+            if _RX_TOKEN_OK.search(m.group(0)):
+                continue
+            hits.append(f"{p.name}:{ln}  arbitrary `{m.group(0)}`")
+    return _dedup(hits)
+
+
+# D3 — 컴포넌트 내 arbitrary hex (토큰/테마/SVG/shadow 제외) — 경고(B)
+_RX_HEX = re.compile(r'#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3}(?:[0-9a-fA-F]{2})?)?\b')
+_RX_PATH_TOKEN = re.compile(r'(colors|theme|tokens?|palette|tailwind\.config|/design|\.config\.)', re.I)
+
+
+def check_arbitrary_hex(files: list) -> tuple:
+    hits = []
+    for f in files:
+        if not f.endswith((".tsx", ".jsx")):
+            continue
+        if _RX_PATH_TOKEN.search(f):
+            continue
+        p = Path(f)
+        if not p.exists():
+            continue
+        try:
+            raw = p.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        for i, line in enumerate(raw.splitlines()):
+            s = line.lstrip()
+            if s.startswith(_COMMENT_PREFIX):
+                continue
+            # SVG 내부 구조색 / RN shadow 관용구 / 브랜드 표기는 예외
+            if any(t in line for t in ("shadowColor", "fill=", "<Path", "<Svg", 'd="M', "BRAND", "brand")):
+                continue
+            for m in _RX_HEX.finditer(line):
+                hx = m.group(0).lower()
+                if hx in ("#000", "#fff", "#000000", "#ffffff"):
+                    continue
+                hits.append(f"{p.name}:{i+1}  raw hex `{m.group(0)}` → 토큰 사용")
+    return _dedup(hits)
+
+
 def check_typescript_errors(files: list) -> tuple:
     """TypeScript 오류 체크 (tsconfig가 있는 프로젝트만)"""
     ts_files = [f for f in files if f.endswith((".ts", ".tsx"))]
