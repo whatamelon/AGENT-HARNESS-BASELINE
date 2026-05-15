@@ -82,13 +82,19 @@
 
 ## 강제 계층 (hook 게이트화 우선순위)
 
-| 계층 | 방식 | 분야 |
-|---|---|---|
-| **A. 즉시 게이트** (정규식/카운트, `exit 2` 강제 — [[no-decorative-eyebrow]] 메커니즘) | `quality-check.py` | 2 아이콘, 8 border/ring, 1 색감(arbitrary hex), 10 영문더미 |
-| **B. 휴리스틱 경고** (오탐 가능, Stop ⚠️ 비차단) | `quality-check.py` 경고 섹션 | 1 색감, 4 리스트, 6 네비, 7 모달, 9 카드, 10 상태누락 |
-| **C. 판단/시각 only** (룰 + 리뷰 에이전트 + visual-check) | 자동화 불가 | 3 정렬, 5 상세페이지 위계 |
+| 계층 | 방식 | 분야 | 상태 |
+|---|---|---|---|
+| **A. 즉시 게이트** (`exit 2` 강제, `🚫`) | `quality-check.py` | 10 영문더미·eyebrow ([[no-decorative-eyebrow]]) / 2 아이콘 라이브러리 혼용 / 8 border·radius arbitrary | **라이브** |
+| **B. 경고** (Stop `⚠️` 비차단) | `quality-check.py` | 1·9 컴포넌트 내 arbitrary hex(토큰/SVG/shadow/브랜드 예외) | **라이브** |
+| **B. 휴리스틱** (미구현) | 예정 | 4 리스트 상태누락, 6 네비, 7 모달, 9 카드 shadow, 10 상태누락 | 룰 self-check만 |
+| **C. 판단/시각 only** | 룰 + 리뷰 에이전트 + visual-check | 1 색감 종합, 3 정렬, 5 상세 위계 | 자동화 불가 |
 
+라이브 게이트: `file-tracker.py`(PostToolUse) → 세션 수정 파일 기록 → `quality-check.py`(Stop)
+재스캔 → 위반 시 `exit 2`로 에이전트 강제 피드백. 동시편집 재발도 다음 Stop에서 재적발.
 hook 미구현 분야도 본 룰은 매 세션 자동 로드되어 작성·리뷰 시 self-check 기준이 된다.
+
+검증된 오탐 제외: lucide-react↔lucide-react-native 동일 패밀리, `rounded-[var()/theme()]` 토큰,
+경로에 colors/theme/token, `#000/#fff`, SVG fill/Path, `shadowColor`(해당 hex만), 주석 라인.
 
 ## How to apply
 
