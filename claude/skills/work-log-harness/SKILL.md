@@ -1,6 +1,6 @@
 ---
 name: work-log-harness
-description: Create or reuse the user's per-task docs/work-log harness. Use when starting non-trivial implementation, refactor, investigation, architecture, schema/data, UI flow, or team/worker work that needs context.md, plan.md, and checklist.md under docs/work-log/<task>/.
+description: Create or reuse the user's per-task docs/work-log harness. Use when starting non-trivial implementation, refactor, investigation, architecture, schema/data, UI flow, or team/worker work that needs context.md, plan.md, and checklist.md under docs/work-log/YYYY-MM-DD_<feature>/.
 ---
 
 # Work Log Harness
@@ -16,7 +16,8 @@ Use this skill to bootstrap the user's standard task documentation without relyi
 ## Contract
 
 - Do not create project layout merely because a session started.
-- Create the work-log folder at workflow start or when explicitly requested.
+- When a project layout is explicitly requested, prefer `apps/` for runnable apps and `packages/` for shared code; keep root `docs/` as committed project context.
+- Create the dated work-log folder at workflow start or when explicitly requested.
 - Do not overwrite existing files.
 - Keep the active task folder as the single source of truth for context, plan, checklist, validation, and remaining risks.
 
@@ -35,18 +36,18 @@ Optional arguments:
 --slug <stable-task-slug>
 ```
 
-The command creates or reuses:
+The command creates or reuses a dated folder:
 
 ```text
-docs/work-log/<slug>/context.md
-docs/work-log/<slug>/plan.md
-docs/work-log/<slug>/checklist.md
+docs/work-log/YYYY-MM-DD_<feature>/context.md
+docs/work-log/YYYY-MM-DD_<feature>/plan.md
+docs/work-log/YYYY-MM-DD_<feature>/checklist.md
 ```
 
 ## Workflow
 
 1. Choose a concise task title and stable slug.
-2. Run the command and capture the returned `work_log_dir`.
+2. Run the command and capture the returned `work_log_dir`; it must be `docs/work-log/YYYY-MM-DD_<feature>`.
 3. Fill `context.md` with the user request, evidence, constraints, decisions, and related files.
 4. Fill `plan.md` with target outcome, approach, expected change areas, validation strategy, and risks.
 5. Keep `checklist.md` current as work proceeds.
