@@ -5,6 +5,8 @@
 > **(1) 섹션/페이지 타이틀 바로 위에 ALL CAPS micro eyebrow·키커 라벨을 두지 않는다.
 > (2) 화면에 노출되는 UI 라벨은 한국어가 기본. 비기능 영어 라벨(장식성 ALL CAPS 영문)은 금지.**
 
+상위 패밀리: [[no-design-slop]] (AI 디자인 슬롭 10분야 — 본 룰은 그 중 강제 hook 구현분).
+
 "NOTIFICATION CENTER / CONTACT / DELIVERY DETAILS / WHY BBAKCAR / MEMBER" 처럼
 큰 타이틀 위에 얹는 영문 미니 헤더는 매거진 감성이 아니라 "AI가 자동 생성한 톤"이 된다.
 큰 타이틀(`display-*`/`heading-*`)만으로 섹션을 구획하고, 호흡은 spacing으로 잡는다.
