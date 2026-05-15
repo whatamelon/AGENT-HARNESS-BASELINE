@@ -2,7 +2,7 @@
 
 **Default: do NOT auto-create project layout directories.**
 
-Work within whatever structure the project already has. Do not invent a baseline structure (`docs/`, `fe/`, `db/`, `.project/`, `data/`, `scripts/`, `templates/`, etc.) on your own initiative.
+Work within whatever structure the project already has. Do not invent a baseline structure (`docs/`, `apps/`, `packages/`, `db/`, `.project/`, `data/`, `scripts/`, `templates/`, etc.) on your own initiative.
 
 ## When this layout DOES apply
 
@@ -13,11 +13,21 @@ Only when the user explicitly asks for it. Triggers like:
 - "create the baseline structure"
 
 In that case, follow this convention:
-- Monorepo with `docs/`, `docs/work-log/`, `fe/`, `db/`, `.project/`
-- `docs/work-log/_template/` holds templates: `context.md`, `plan.md`, `checklist.md`
-- For non-trivial tasks under that layout, create one folder per task with the three planning docs
+- Treat one client/project as one repository by default. Use a monorepo so code, docs, schema, evidence, and planning context travel together.
+- Prefer top-level `apps/` for runnable deliverables and `packages/` for shared code. For example, separate real deliverables become separate app packages such as `apps/park-mobile/` and `apps/onyu-mobile/`, not route groups inside one app.
+- Keep project context in the repository: `docs/`, `docs/work-log/`, `materials/`, `proposal/`, `design-mockups/`, and `.project/` when present. Do not split `docs/` into a private/local-only repo; it is implementation context.
+- Keep data/schema infrastructure in the shape the project actually uses (`supabase/`, `db/`, `prisma/`, etc.). Do not force `db/` if the repo already has a better canonical directory.
+- `docs/work-log/_template/` holds templates: `context.md`, `plan.md`, `checklist.md`.
+- For non-trivial tasks under that layout, create one folder per task with the three planning docs.
 - Prefer `$work-log-harness` or `~/.config/claude-sync/bin/ensure-work-log-task.sh --title "<task>" --json` at workflow start.
 - Do not wire this to SessionStart; create/update work-log folders only for explicit layout requests or non-trivial workflow starts.
+
+## Multi-app and subtree policy
+
+- If requirements, RFPs, stores, deployments, or ownership boundaries say there are two apps, create two app packages under `apps/` even if a single route-group demo would be faster.
+- Use `packages/` for shared UI, domain, SDK, DB types, and config instead of copying code between app packages.
+- Use Git subtree only as a later extraction/mirroring mechanism when an app/package truly needs its own repository for external team, deployment, or governance reasons. Do not use subtree to hide or separate core project docs.
+- Microservice-style `1 app = 1 repo` is an exception for independently governed services. The default for client/product work is `1 project = 1 repo` monorepo.
 
 ## Work-log folder naming (MANDATORY)
 

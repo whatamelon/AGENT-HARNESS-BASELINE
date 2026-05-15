@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Ensure the user's standard development-project layout exists in the current session directory.
-# Intended for Claude/Codex SessionStart hooks. Safe, idempotent, and non-destructive.
+# Explicit scaffold helper only. Safe, idempotent, and non-destructive.
 set -u
 
 stdin_payload="$(cat 2>/dev/null || true)"
@@ -33,10 +33,10 @@ case "$project_dir" in
     ;;
 esac
 
-mkdir -p "$project_dir/docs/work-log/_template" "$project_dir/fe" "$project_dir/db" "$project_dir/.project"
+mkdir -p "$project_dir/docs/work-log/_template" "$project_dir/apps" "$project_dir/packages" "$project_dir/.project"
 
 # Keep empty directories visible to git without overwriting user files.
-for dir in "$project_dir/fe" "$project_dir/db" "$project_dir/.project"; do
+for dir in "$project_dir/apps" "$project_dir/packages" "$project_dir/.project"; do
   [ -e "$dir/.gitkeep" ] || : > "$dir/.gitkeep"
 done
 
@@ -52,6 +52,7 @@ create_if_missing "$project_dir/docs/work-log/_template/context.md" '# Context
 
 - Why this work exists:
 - Product/technical background:
+- Repo/layout evidence:
 - Decisions and constraints:
 - Related requests, issues, or evidence:
 '
@@ -60,6 +61,7 @@ create_if_missing "$project_dir/docs/work-log/_template/plan.md" '# Plan
 - Target outcome:
 - Approach:
 - Files/areas expected to change:
+- App/package boundaries:
 - Validation strategy:
 - Rollback or risk notes:
 '
@@ -68,6 +70,7 @@ create_if_missing "$project_dir/docs/work-log/_template/checklist.md" '# Checkli
 - [ ] Context captured
 - [ ] Implementation plan reviewed
 - [ ] Acceptance criteria defined
+- [ ] App/package boundaries match requirements
 - [ ] Code implemented
 - [ ] Tests/lint/typecheck run as applicable
 - [ ] Remaining risks documented

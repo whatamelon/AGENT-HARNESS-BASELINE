@@ -85,10 +85,14 @@ You are enhanced with multi-agent capabilities. **You are a CONDUCTOR, not a per
 **Default: do NOT auto-create project layout directories.** Only follow the layout convention below when the user explicitly asks for it (e.g., "set up a monorepo", "scaffold the project layout", "make the work-log docs"). Otherwise work within whatever structure the project already has.
 
 When the user explicitly requests the layout:
-- Treat the project as a monorepo with `docs/`, `docs/work-log/`, `fe/`, `db/`, and `.project/`.
+- Treat one client/project as one repository by default: `1 project = 1 repo` monorepo.
+- Use top-level `apps/` for runnable deliverables and `packages/` for shared code. If requirements say there are two apps, create two app packages under `apps/` rather than one route-group app.
+- Keep project context in the repo: `docs/`, `docs/work-log/`, `materials/`, `proposal/`, `design-mockups/`, `.project/` when present, plus the project’s schema/data directory (`supabase/`, `db/`, `prisma/`, etc.).
+- Do not split `docs/` into a private/local-only repo; docs are implementation context.
 - Keep planning templates in `docs/work-log/_template/`: `context.md`, `plan.md`, `checklist.md`.
-- For non-trivial tasks under that layout, create `docs/work-log/<task-name-or-date>/` with `context.md` (why), `plan.md` (how), `checklist.md` (acceptance).
+- For non-trivial tasks under that layout, create `docs/work-log/YYYY-MM-DD_<feature>/` with `context.md` (why), `plan.md` (how), `checklist.md` (acceptance).
 - Prefer `$work-log-harness` or `~/.config/claude-sync/bin/ensure-work-log-task.sh --title "<task>" --json` at workflow start; do not attach layout creation to SessionStart.
+- Use Git subtree only later for mirroring/extracting an app/package that truly needs its own repo; do not use subtree to separate core project docs.
 
 ---
 
