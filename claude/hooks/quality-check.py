@@ -288,6 +288,10 @@ def main():
     ts_errors, ts_details = check_typescript_errors(files)
     py_errors, py_details = check_python_errors(files)
     eb_count, eb_details = check_eyebrow_slop(files)
+    d1_count, d1_details = check_icon_mixing(files)
+    d2_count, d2_details = check_border_radius_arbitrary(files)
+    d3_count, d3_details = check_arbitrary_hex(files)
+    gate_count = eb_count + d1_count + d2_count
     total_errors = ts_errors + py_errors
 
     # ── 출력 구성 ───────────────────────────────────────
