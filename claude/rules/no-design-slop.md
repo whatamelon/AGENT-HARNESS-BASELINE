@@ -108,7 +108,7 @@
 - hex: 경로 colors/theme/token, `#000/#fff`, SVG fill/Path, `shadowColor`(해당 hex만)
 - 이모지: 화살표(→←↑↓), `·` `×`, `✓`(U+2713), `★☆`(2605/06 평점), `♠♥♦♣`(2660-2667 카드슈트), 마작/카드블록(1F000-1F2FF). 데코 본체 1F300↑ + 큐레이트 BMP
 - 공통: 주석/`import` 라인, **테스트·스토리·목 파일(`.test.`/`.spec.`/`.stories.`/`__tests__`)**
-- 프로젝트 선언: `.designslop.json` `allow.englishLabels`
+- 프로젝트 선언: `.designslop.json` `allow.englishLabels` — 원문 전체 매칭 + 공백/`·/&-_.` 토큰 매칭 둘 다 지원(`"WIN THIS"` 또는 `"WIN","THIS"` 모두 가능). 매니페스트는 캐시 없이 매 조회(동일 프로세스 추가도 즉시 반영)
 - B-휴리스틱 잔여 한계는 **레저로 추적**(D4 `.map`/D7 커스텀시트/D9 계산식) — 미탐이 아니라 추적된 미확정
 
 ## How to apply
