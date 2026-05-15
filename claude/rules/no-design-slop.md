@@ -80,28 +80,36 @@
 
 ---
 
-## 강제 계층 (hook 게이트화 우선순위)
+## 구조 (5계층 — "정규식 불가"를 맞는 구조로 전환)
+
+단일 소스: `~/.config/claude-sync/claude/hooks/designslop_detectors.py`.
+`quality-check.py`(Stop, 세션 수정파일) 와 `designslop-audit.py`(전수) 가 동일 `run_all` 호출 → 드리프트 0.
 
 | 계층 | 방식 | 분야 | 상태 |
 |---|---|---|---|
-| **A. 즉시 게이트** (`exit 2` 강제, `🚫`) | `quality-check.py` | 10 영문더미·eyebrow ([[no-decorative-eyebrow]]) / 2 아이콘 라이브러리 혼용 / 2 이모지 데코 / 8 border·radius arbitrary | **라이브** |
-| **B. 경고** (Stop `⚠️` 비차단) | `quality-check.py` | 1·9 컴포넌트 raw hex / 4·10 리스트 빈 상태 누락(FlatList ListEmptyComponent) / 7 Modal onRequestClose 누락 / 9 과도 shadow(shadowRadius>16·elevation>12) | **라이브** |
-| **C. 판단/시각 only** | 룰 + 리뷰 에이전트 + visual-check | 1 색감 종합, 3 정렬, 5 상세 위계, **6 글로벌 네비/헤더** | 자동화 불가 |
+| **A. 즉시 게이트** (`exit 2`, `🚫`) | `quality-check.py` | eyebrow/영문라벨 ([[no-decorative-eyebrow]]), D1 아이콘혼용, D2 border·radius arbitrary, D-EMOJI 이모지데코, **D6 네비** | **라이브** |
+| **B. 경고** (Stop `⚠️` 비차단) | `quality-check.py` | D3 raw hex, D4 리스트 빈상태, D7 Modal close, D9 과도 shadow | **라이브** |
+| **레저(추적)** | `~/.claude/logs/designslop-review.jsonl` | 정규식 판별 불가 퍼지케이스(.map 리스트/커스텀 오버레이/계산식 shadow) — 못 잡으면 버리지 말고 추적 | **라이브** |
+| **전수 감사 (Tier F)** | `designslop-audit.py <root>` | 세션 밖 잠재 슬롭 + baseline 대비 회귀만 게이트(CI용). `--baseline` 수용 스냅샷 | **라이브** |
+| **C. 판단/시각** | `designslop-rubric.json` + 리뷰/비전 에이전트 | 1 색감종합, 3 정렬, 5 상세위계, 한국1등앱 메타 | **루브릭화** (머신리더블 채점계약) |
 
-**6 네비가 hook 제외인 이유**: 전역 네비/헤더 컴포넌트명이 프로젝트마다 달라(GlobalNav/TabBar/AppHeader…)
-저오탐 글로벌 정규식이 불가능. 프로젝트-로컬 룰 + 리뷰에서 검증한다 (스코프 회피 아닌 기술적 한계).
+**못한 것 → 어떻게 구조화했나**
+- **D6 네비** (이름이 프로젝트마다 다름) → 추측 안 함. 프로젝트가 `.designslop.json`(레포 루트)에 `nav.globalComponents`/`tabRootGlobs` **선언** → 선언 시에만 발화, 미선언 시 비활성 = 오탐 0. "기술 한계"가 "선언 계약"으로 전환됨.
+- **C 판단영역** (정규식 불가) → `designslop-rubric.json` 의 머신리더블 probe(질문/pass·fail/severity/evidence)로 구조화. 리뷰·비전 에이전트가 렌더 화면에 일관 채점. 게이트는 Stop이 아니라 명시 리뷰 게이트.
+- **세션만 스캔** (옛 파일 잠재 슬롭 못 봄) → 전수 `designslop-audit.py` + `.designslop-baseline.json`(수용 residue). CI는 신규 회귀만 비영점 종료.
+- **도메인 영어 오탐**(SUV/CAR 등) → 매니페스트 `allow.englishLabels` 프로젝트 선언. 테스트/스토리 파일은 출하 UI 아니므로 디텍터 전역 제외.
+- **cancel MCP false-success** → `~/.config/claude-sync/bin/omc-cancel-verify.sh <mode>` 로 검증된 복구 절차 스크립트화(MCP 비의존, 잔존0 단언).
 
-라이브 게이트: `file-tracker.py`(PostToolUse) → 세션 수정 파일 기록 → `quality-check.py`(Stop)
-재스캔 → 위반 시 `exit 2`(A) / `⚠️`(B). 동시편집 재발도 다음 Stop에서 재적발.
-hook 미구현 분야도 본 룰은 매 세션 자동 로드되어 작성·리뷰 시 self-check 기준이 된다.
+라이브 게이트: `file-tracker.py`(PostToolUse) → 세션파일 → `quality-check.py`(Stop) → `exit 2`(A)/`⚠️`(B)/레저. 동시편집 재발도 다음 Stop 재적발.
 
 검증된 오탐 제외:
 - 아이콘: lucide-react↔lucide-react-native 동일 패밀리
 - border/radius: `rounded-[var()/theme()]` 토큰
 - hex: 경로 colors/theme/token, `#000/#fff`, SVG fill/Path, `shadowColor`(해당 hex만)
-- 이모지: 텍스트 통용 글리프 제외 — 화살표(→←↑↓), `·` `×`, `✓`(U+2713), `★☆`(U+2605/06 평점), `♠♥♦♣`(U+2660-2667 카드 슈트), 마작/도미노/플레잉카드 블록(U+1F000-1F2FF). 데코 본체는 U+1F300↑ + 큐레이트 BMP. regional-flag는 데코로 간주
-- 공통: 주석 라인, `import` 라인
-- B-휴리스틱 한계: D4는 `<FlatList>`만(`.map` 미검출), D7은 RN `<Modal>`만(커스텀 시트 제외) — WARN이라 비차단
+- 이모지: 화살표(→←↑↓), `·` `×`, `✓`(U+2713), `★☆`(2605/06 평점), `♠♥♦♣`(2660-2667 카드슈트), 마작/카드블록(1F000-1F2FF). 데코 본체 1F300↑ + 큐레이트 BMP
+- 공통: 주석/`import` 라인, **테스트·스토리·목 파일(`.test.`/`.spec.`/`.stories.`/`__tests__`)**
+- 프로젝트 선언: `.designslop.json` `allow.englishLabels`
+- B-휴리스틱 잔여 한계는 **레저로 추적**(D4 `.map`/D7 커스텀시트/D9 계산식) — 미탐이 아니라 추적된 미확정
 
 ## How to apply
 
