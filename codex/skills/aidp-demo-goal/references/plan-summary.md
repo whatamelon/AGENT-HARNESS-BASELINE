@@ -1,6 +1,6 @@
 # AIDP Demo Goal Plan Summary
 
-Origin: RALPLAN artifacts in `/Users/manager/.omx/plans/` for enterprise `/goal` plugin.
+Origin: RALPLAN artifacts from the local `.omx/plans/` planning workspace for enterprise `/goal` plugin.
 
 Core decision: build skill-first harness as thin policy layer over Ultragoal and Team.
 

@@ -28,6 +28,32 @@ It combines:
 - Security, privacy, deployment evidence, and final completion gates are non-overridable.
 - Mock deployment evidence is allowed only in tests; real completion needs live deploy URL or approved offline fallback evidence.
 
+
+## Environment Modes
+
+Run the doctor before assuming full automation:
+
+```sh
+node <skill-dir>/scripts/doctor.mjs
+# or, when Node.js is unavailable but Python exists:
+python3 <skill-dir>/scripts/doctor.py
+```
+
+Mode meanings:
+
+| Mode | Requirements | Allowed behavior |
+|---|---|---|
+| `portable` | skill files + Node.js or Python 3 | create/validate run docs, produce manual handoff, no hidden runtime mutation |
+| `workstation` | portable + `omx` | use Ultragoal artifacts/checkpoints when active goal matches; Team may be unavailable |
+| `full` | workstation + `tmux` + hooks/designslop | use durable Team, Stop-hook designslop gate, long-running orchestration |
+
+Fallback rules:
+- If `omx` is missing, do not invoke `$ultragoal`, `$team`, or `omx` commands; create portable run artifacts and print manual next commands.
+- If `tmux` is missing, do not launch Team; use native subagents only for bounded analysis or emit Team launch text.
+- If designslop hooks are missing, run audit manually when available: `python3 ~/.config/claude-sync/claude/hooks/designslop-audit.py <repo> --quiet`; if unavailable, record `designslop_unavailable` in completion audit and require human visual/design review.
+- If Vercel is missing or credentials unavailable, do not claim deploy completion; use another provider adapter or approved offline fallback.
+- If Node.js is missing, prefer Python fallback scripts. If both Node.js and Python 3 are missing, use templates manually and mark validation as manual.
+
 ## Run Directory
 
 Create one run directory per customer/demo goal:
@@ -91,17 +117,32 @@ If no `.omx/context/<slug>-*.md` exists, create one with task, outcome, facts, c
 
 ### 2. Create Goal Run Artifacts
 
-Create `.omx/goal-runs/<run-id>/` and seed:
-- `brief.md` from `templates/brief-template.md`
+Create `.omx/goal-runs/<run-id>/` and seed. Prefer deterministic init script when Node.js is available:
+
+```sh
+node <skill-dir>/scripts/init-run.mjs \
+  --slug <customer-demo-slug> \
+  --customer "<customer>" \
+  --industry "<industry>" \
+  --data-class internal \
+  --objective "<proposal-demo objective>" \
+  --wow "<meeting wow moment>"
+```
+
+The script creates:
+- `brief.md`
 - `run.json` matching `schemas/run.schema.json`
 - `lock.json` matching state contract below
 - empty `events.jsonl`
 - initial `stage-gates.json`
+- benchmark/proposal/deployment placeholders
 
-Run schema validation with:
+Validate with:
 
 ```sh
 node <skill-dir>/scripts/validate-run.mjs .omx/goal-runs/<run-id>
+# or Python fallback:
+python3 <skill-dir>/scripts/validate_run.py .omx/goal-runs/<run-id>
 ```
 
 ### 3. Reconcile Codex and Ultragoal State
@@ -182,6 +223,20 @@ Specialist reviews happen after Team or as native subagents:
 - `code-reviewer`: final quality
 - `architect`: state ownership and tradeoffs
 
+
+### 6.1 Design Harness Integration
+
+Design stage must integrate both visual-quality and anti-slop gates when available:
+
+1. Use `$design` or equivalent to create/refresh `DESIGN.md` or `design/DESIGN.md` from customer evidence, benchmark, and demo story.
+2. Establish visual reference or live baseline for core demo route.
+3. Use `$visual-ralph` / `$visual-verdict` where available; target final verdict score `>= 90`.
+4. Run designslop gate:
+   - full mode: Stop hook blocks A-grade violations automatically.
+   - portable/workstation mode: run `designslop-audit.py <repo> --quiet` when installed.
+   - if unavailable, require human review and record gap in completion audit.
+5. Completion evidence should include `DESIGN.md`, reference path, screenshot path, visual verdict JSON, designslop audit output or unavailable reason.
+
 ### 7. Deployment and Demo Readiness
 
 Default web prototype provider: Vercel.
@@ -201,8 +256,9 @@ Approved offline fallback can be used only when external deploy is blocked by cu
 
 Do not call `update_goal({status: "complete"})` until all are true:
 - all stage gates pass
-- Team terminal summary has no critical failed lane
+- Team terminal summary has no critical failed lane or portable fallback records no Team launch
 - benchmark score meets threshold or approved delta is documented
+- design evidence passes: `DESIGN.md`, reference/screenshot, visual verdict `>=90` when available, designslop A violations 0 or documented unavailable/human review
 - QA/security/privacy checks pass
 - live URL smoke passes or approved fallback exists
 - proposal package complete
@@ -248,6 +304,20 @@ Write rules:
 
 Team-origin events are evidence only; they cannot complete Codex/Ultragoal goal.
 
+
+## Portability Checklist
+
+Before claiming this skill works in a target environment, map evidence:
+
+- `doctor.mjs` or `doctor.py` output reports `manual`, `portable`, `workstation`, or `full`.
+- `init-run.mjs` creates a run directory without OMX.
+- `validate-run.mjs` or `validate_run.py` passes on the created run.
+- If full mode is expected: `omx`, `tmux`, Codex/Claude hooks, and designslop audit are present.
+- If live deploy is expected: Vercel or another deployment adapter is present and authenticated.
+- If connectors are expected: Slack/mail/file/image access is explicitly authorized and privacy gate is active.
+
+Do not describe missing runtime capability as working. Report degraded mode and next setup step.
+
 ## Output Shape
 
 When reporting run status, use:
@@ -275,6 +345,7 @@ When producing final package summary, include:
 ## References
 
 Read only when needed:
+- `references/deployment-modes.md` for environment portability and rollout modes.
 - `references/plan-summary.md` for design rationale and handoff shape.
 - `templates/brief-template.md` for run intake.
 - `templates/completion-audit-template.md` for final audit.
