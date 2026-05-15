@@ -231,11 +231,12 @@ Design stage must integrate both visual-quality and anti-slop gates when availab
 1. Use `$design` or equivalent to create/refresh `DESIGN.md` or `design/DESIGN.md` from customer evidence, benchmark, and demo story.
 2. Establish visual reference or live baseline for core demo route.
 3. Use `$visual-ralph` / `$visual-verdict` where available; target final verdict score `>= 90`.
-4. Run designslop gate:
+4. Enforce typography baseline: customer-facing web/app demo UI must use Pretendard as default Korean/Latin UI font unless user explicitly approves a different brand font. Document any exception in `design/DESIGN.md` and completion audit.
+5. Run designslop gate:
    - full mode: Stop hook blocks A-grade violations automatically.
    - portable/workstation mode: run `designslop-audit.py <repo> --quiet` when installed.
    - if unavailable, require human review and record gap in completion audit.
-5. Completion evidence should include `DESIGN.md`, reference path, screenshot path, visual verdict JSON, designslop audit output or unavailable reason.
+6. Completion evidence should include `DESIGN.md`, reference path, screenshot path, visual verdict JSON, designslop audit output or unavailable reason, and Pretendard font evidence or approved exception.
 
 ### 7. Deployment and Demo Readiness
 
