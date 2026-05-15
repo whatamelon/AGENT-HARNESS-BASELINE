@@ -36,7 +36,7 @@ def _is_english_allcaps_slop(text: str) -> bool:
     letters = [c for c in t if c.isalpha()]
     if not letters or not all(c.isascii() and c.isupper() for c in letters):
         return False
-    if len([c for c in letters]) < 2:
+    if len(letters) < 2:
         return False
     # 토큰이 전부 allowlist면 통과 (예: "CEO", "BMW")
     tokens = [w for w in re.split(r'[ ·/&\-_.]+', t) if w]
@@ -201,11 +201,15 @@ def check_arbitrary_hex(files: list) -> tuple:
 
 
 # D-EMOJI — UI 텍스트 데코 이모지 (A 강제). 화살표/·/×/체크글리프 제외.
-# ★(2605) ☆(2606) 는 평점 텍스트 글리프(예 `4.9★`)로 통용 → 제외 (✓ U+2713 와 동일 취급)
+# 텍스트로 통용되는 글리프는 제외(✓ U+2713 와 동일 취급):
+#  - ★☆ U+2605/06 평점 (`4.9★`)
+#  - ♠♡♢♣♤♥♦♧ U+2660-2667 카드 슈트 (포커/트럼프 UI 텍스트)
+#  - 1F000-1F2FF 마작/도미노/플레잉카드/enclosed-alnum (카드게임 콘텐츠, UI 데코 희소)
+# 데코 이모지 본체는 1F300 이상 + 큐레이트 BMP.
 _RX_EMOJI = re.compile(
     "["
-    "\U0001F000-\U0001FAFF"
-    "\U00002600-\U00002604\U00002607-\U000026FF"
+    "\U0001F300-\U0001FAFF"
+    "\U00002600-\U00002604\U00002607-\U0000265F\U00002668-\U000026FF"
     "\U0001F1E6-\U0001F1FF"
     "\U0000231A\U0000231B\U000023E9-\U000023FF"
     "\U00002705\U00002708\U00002728\U00002733\U00002734"
