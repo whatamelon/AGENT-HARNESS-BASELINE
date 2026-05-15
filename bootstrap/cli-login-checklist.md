@@ -134,6 +134,36 @@ brew install gh && gh auth login   # gh가 깔리면 자동 사용
 
 ---
 
+## 트러블슈팅
+
+### `Load failed: 5: Input/output error` — launchctl
+- macOS 26.x에서 `~/Library/LaunchAgents/` 심링크 차단 케이스. **plist는 심링크 X, cp 필수**.
+- 옛 syntax 사용 중일 수 있음. modern syntax로:
+  ```bash
+  launchctl bootout "gui/$UID/<label>" 2>/dev/null
+  launchctl bootstrap "gui/$UID" "$HOME/Library/LaunchAgents/<label>.plist"
+  ```
+
+### SSOT plist 0 bytes로 변형
+드물지만 새 머신 setup 중 발생 가능. git 복구:
+```bash
+cd ~/.config/claude-sync
+git status -s launchd/
+git checkout HEAD -- launchd/<broken>.plist
+```
+
+### `supabase login` Unknown error
+browser OAuth 실패. PAT 방식 사용. 위 Supabase section 참고.
+
+### paste 시 명령 줄바꿈으로 깨짐
+긴 명령은 짧게 디렉토리 이동 후 상대경로로:
+```bash
+cd ~/Library/LaunchAgents
+launchctl bootstrap gui/$UID ./<plist>
+```
+
+---
+
 ## 검증
 모든 로그인 끝나면:
 ```bash
