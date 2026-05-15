@@ -84,17 +84,24 @@
 
 | 계층 | 방식 | 분야 | 상태 |
 |---|---|---|---|
-| **A. 즉시 게이트** (`exit 2` 강제, `🚫`) | `quality-check.py` | 10 영문더미·eyebrow ([[no-decorative-eyebrow]]) / 2 아이콘 라이브러리 혼용 / 8 border·radius arbitrary | **라이브** |
-| **B. 경고** (Stop `⚠️` 비차단) | `quality-check.py` | 1·9 컴포넌트 내 arbitrary hex(토큰/SVG/shadow/브랜드 예외) | **라이브** |
-| **B. 휴리스틱** (미구현) | 예정 | 4 리스트 상태누락, 6 네비, 7 모달, 9 카드 shadow, 10 상태누락 | 룰 self-check만 |
-| **C. 판단/시각 only** | 룰 + 리뷰 에이전트 + visual-check | 1 색감 종합, 3 정렬, 5 상세 위계 | 자동화 불가 |
+| **A. 즉시 게이트** (`exit 2` 강제, `🚫`) | `quality-check.py` | 10 영문더미·eyebrow ([[no-decorative-eyebrow]]) / 2 아이콘 라이브러리 혼용 / 2 이모지 데코 / 8 border·radius arbitrary | **라이브** |
+| **B. 경고** (Stop `⚠️` 비차단) | `quality-check.py` | 1·9 컴포넌트 raw hex / 4·10 리스트 빈 상태 누락(FlatList ListEmptyComponent) / 7 Modal onRequestClose 누락 / 9 과도 shadow(shadowRadius>16·elevation>12) | **라이브** |
+| **C. 판단/시각 only** | 룰 + 리뷰 에이전트 + visual-check | 1 색감 종합, 3 정렬, 5 상세 위계, **6 글로벌 네비/헤더** | 자동화 불가 |
+
+**6 네비가 hook 제외인 이유**: 전역 네비/헤더 컴포넌트명이 프로젝트마다 달라(GlobalNav/TabBar/AppHeader…)
+저오탐 글로벌 정규식이 불가능. 프로젝트-로컬 룰 + 리뷰에서 검증한다 (스코프 회피 아닌 기술적 한계).
 
 라이브 게이트: `file-tracker.py`(PostToolUse) → 세션 수정 파일 기록 → `quality-check.py`(Stop)
-재스캔 → 위반 시 `exit 2`로 에이전트 강제 피드백. 동시편집 재발도 다음 Stop에서 재적발.
+재스캔 → 위반 시 `exit 2`(A) / `⚠️`(B). 동시편집 재발도 다음 Stop에서 재적발.
 hook 미구현 분야도 본 룰은 매 세션 자동 로드되어 작성·리뷰 시 self-check 기준이 된다.
 
-검증된 오탐 제외: lucide-react↔lucide-react-native 동일 패밀리, `rounded-[var()/theme()]` 토큰,
-경로에 colors/theme/token, `#000/#fff`, SVG fill/Path, `shadowColor`(해당 hex만), 주석 라인.
+검증된 오탐 제외:
+- 아이콘: lucide-react↔lucide-react-native 동일 패밀리
+- border/radius: `rounded-[var()/theme()]` 토큰
+- hex: 경로 colors/theme/token, `#000/#fff`, SVG fill/Path, `shadowColor`(해당 hex만)
+- 이모지: 화살표(→←↑↓), `·` `×` `✓`(U+2713) 등 텍스트 글리프, regional-flag만 단독 등은 미제외(데코로 간주)
+- 공통: 주석 라인, `import` 라인
+- B-휴리스틱 한계: D4는 `<FlatList>`만(`.map` 미검출), D7은 RN `<Modal>`만(커스텀 시트 제외) — WARN이라 비차단
 
 ## How to apply
 
