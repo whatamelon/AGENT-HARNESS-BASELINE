@@ -1,0 +1,20 @@
+{
+  "skill_name": "aidp-evidence-dossier",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "LGD 관련 Slack/메일/Drive 자료를 보고 제안미팅용 데모 brief 만들어줘. 오래된 RAG 얘기랑 최근 콜센터 얘기 맥락 구분해줘.",
+      "expected_output": "Builds dossier, separates stale RAG context from current contact-center priority, and emits recommended brief with evidence map."
+    },
+    {
+      "id": 2,
+      "prompt": "병원 고객 자료에서 restricted 데이터 여부와 외부 배포 가능성을 판단해서 demo opportunity 뽑아줘.",
+      "expected_output": "Scores security/privacy evidence, blocks unsupported external deploy assumptions, and recommends offline/sanitized demo brief."
+    },
+    {
+      "id": 3,
+      "prompt": "GitHub 이슈와 Drive RFP가 충돌하는데 뭐가 최신/권위 있는 요구사항인지 정리해줘.",
+      "expected_output": "Resolves contradictions using source authority and recency policy, preferring current RFP/customer decisions over internal GitHub notes where appropriate."
+    }
+  ]
+}

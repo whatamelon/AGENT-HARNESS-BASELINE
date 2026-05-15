@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIDP Evidence Graph",
+  "type": "object",
+  "required": ["dossier_id", "scored_at", "items", "summary"],
+  "properties": {
+    "dossier_id": {"type": "string"},
+    "scored_at": {"type": "string"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "scores", "summary"],
+        "properties": {
+          "id": {"type": "string"},
+          "scores": {
+            "type": "object",
+            "required": ["purity", "recency", "authority", "context_fit", "demo_usefulness", "overall"],
+            "properties": {
+              "purity": {"type": "number"},
+              "recency": {"type": "number"},
+              "authority": {"type": "number"},
+              "context_fit": {"type": "number"},
+              "demo_usefulness": {"type": "number"},
+              "overall": {"type": "number"}
+            }
+          },
+          "summary": {"type": "string"},
+          "reasons": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "summary": {"type": "object"}
+  },
+  "additionalProperties": true
+}

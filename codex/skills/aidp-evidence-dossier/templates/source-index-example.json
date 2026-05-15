@@ -1,0 +1,22 @@
+{
+  "dossier_id": "example-customer",
+  "customer": "Example Customer",
+  "project": null,
+  "created_at": "2026-05-16T00:00:00Z",
+  "scope": {"objective": "Prepare proposal demo"},
+  "items": [
+    {
+      "id": "ev_001",
+      "source": "gmail",
+      "title": "Customer asks for call classification demo",
+      "uri": "gmail://message/example",
+      "timestamp": "2026-05-10T09:00:00Z",
+      "speaker_role": "customer_decision_maker",
+      "directness": "direct",
+      "evidence_type": "email",
+      "summary": "Customer requested a proposal demo showing automatic call classification and agent answer draft workflow.",
+      "claims": ["Customer wants call classification", "Agent answer draft is desired demo flow"],
+      "tags": ["pain", "demo", "workflow"]
+    }
+  ]
+}

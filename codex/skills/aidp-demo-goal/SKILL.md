@@ -5,7 +5,7 @@ description: "[OMX] Run AIDP/FDE proposal-demo goal harness: turn customer brief
 
 # AIDP Demo Goal
 
-Use this skill to plan and drive enterprise proposal-demo runs for AIDP/Wishket FDE work. It is a skill-first implementation surface for the `/goal` harness concept: customer brief -> research -> plan -> design -> development -> QA -> deployment -> demo readiness -> completion audit.
+Use this skill to plan and drive enterprise proposal-demo runs for AIDP/Wishket FDE work. If the user asks to derive the brief from Slack, mail, Drive, Calendar, GitHub, files, images, or prior customer context, run `aidp-evidence-dossier` first and use its `recommended-brief.md` as input. It is a skill-first implementation surface for the `/goal` harness concept: customer brief -> research -> plan -> design -> development -> QA -> deployment -> demo readiness -> completion audit.
 
 ## Purpose
 
