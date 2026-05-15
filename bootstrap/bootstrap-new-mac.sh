@@ -204,6 +204,16 @@ launchctl unload "$PLIST_DST" 2>/dev/null || true
 launchctl load "$PLIST_DST"
 launchctl list | grep -q claude-sync && info "launchd 등록됨" || warn "launchd 등록 실패"
 
+# daily-digest plist (매일 아침 8시)
+DIGEST_SRC="$SSOT_DIR/launchd/com.denny.claude-sync-digest.plist"
+DIGEST_DST="$HOME/Library/LaunchAgents/com.denny.claude-sync-digest.plist"
+if [[ -f "$DIGEST_SRC" ]]; then
+  ln -sfn "$DIGEST_SRC" "$DIGEST_DST"
+  launchctl unload "$DIGEST_DST" 2>/dev/null || true
+  launchctl load "$DIGEST_DST"
+  launchctl list | grep -q claude-sync-digest && info "daily-digest launchd 등록됨" || warn "digest launchd 등록 실패"
+fi
+
 # srcsht-rename watcher (template — __HOME__ 치환 후 LaunchAgents로 복사)
 SRCSHT_TPL="$SSOT_DIR/launchd/com.denny.srcsht-rename.plist"
 SRCSHT_DST="$HOME/Library/LaunchAgents/com.denny.srcsht-rename.plist"

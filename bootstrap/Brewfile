@@ -77,3 +77,5 @@ vscode "nrwl.angular-console"
 vscode "vue.volar"
 # Bash testing framework (used in tests/)
 brew "bats-core"
+# Fuzzy finder (activity --tui)
+brew "fzf"
