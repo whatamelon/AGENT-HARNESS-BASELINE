@@ -1,0 +1,49 @@
+# ~/.zshrc.local — 머신별 zsh 추가 설정
+# 새 머신 setup 시 ~/.zshrc.local 없으면 bootstrap이 이 파일을 copy.
+# 이후 이 파일 직접 편집해서 머신별 prompt/alias 변경.
+
+# ─── Prompt ───
+__denny_emoji() {
+  local emojis=(🌸 🌟 🍀 🐱 🦄 🌈 🍓 🌻 🦋 ✨ 🎀 💜 ☕ 🌙 🍑 🌿 🐰 🐻 🦊 🍒 🐶 🍡 🧁 🪷 🩷)
+  print -- "${emojis[$((RANDOM % ${#emojis[@]} + 1))]}"
+}
+
+__denny_git_branch() {
+  local ref
+  ref=$(command git symbolic-ref --short HEAD 2>/dev/null) \
+    || ref=$(command git rev-parse --short HEAD 2>/dev/null) \
+    || return 0
+  print -- " (${ref})"
+}
+
+PROMPT='%K{221}%F{black} denny $(__denny_emoji) > %f%k %F{27}%2~%f%F{167}$(__denny_git_branch)%f '
+
+# ─── 모던 도구 init ───
+# zoxide (smart cd: z <키워드>)
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+
+# atuin (shell history DB; Ctrl+R 검색만 가로채고 Up 화살표는 기본 유지)
+command -v atuin >/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
+
+# fzf (Ctrl+R history, Ctrl+T file, Alt+C cd)
+[[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]] && source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+[[ -f /opt/homebrew/opt/fzf/shell/completion.zsh ]] && source /opt/homebrew/opt/fzf/shell/completion.zsh
+
+# zsh-autosuggestions (Fish 스타일 회색 자동완성, → 키로 수락)
+[[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# zsh-syntax-highlighting (반드시 다른 zle 위젯 이후에 source)
+[[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# ─── 별칭 ───
+command -v eza >/dev/null && {
+  alias ls='eza'
+  alias ll='eza -la --git --icons'
+  alias lt='eza --tree --level=2'
+}
+command -v bat >/dev/null && alias cat='bat --paging=never --style=plain'
+command -v fd >/dev/null && alias find='fd'
+
+# git-delta는 ~/.gitconfig에서 자동 사용

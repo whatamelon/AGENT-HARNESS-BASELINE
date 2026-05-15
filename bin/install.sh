@@ -76,6 +76,16 @@ else
   echo "  • ~/.zprofile 에 이미 source 라인 있음"
 fi
 
+echo "▶ ~/.zshrc.local 머신별 설정 (없으면 example로 시작)"
+if [[ ! -f "$HOME/.zshrc.local" ]]; then
+  if [[ -f "$SSOT/shell/zshrc.local.example" ]]; then
+    cp "$SSOT/shell/zshrc.local.example" "$HOME/.zshrc.local"
+    echo "  ✓ ~/.zshrc.local 생성 (prompt, zoxide/atuin/fzf/eza alias)"
+  fi
+else
+  echo "  • ~/.zshrc.local 이미 존재"
+fi
+
 echo "▶ git config include"
 git config --global include.path "$SSOT/git/gitconfig.shared" 2>/dev/null || true
 echo "  ✓ git include 등록"

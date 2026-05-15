@@ -42,6 +42,20 @@ brew "uv"
 brew "zsh"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# Fish-style autosuggestions for zsh
+brew "zsh-autosuggestions"
+# Smart cd (z <keyword>)
+brew "zoxide"
+# Shell history DB (Ctrl+R)
+brew "atuin"
+# Modern ls (eza)
+brew "eza"
+# Modern cat (bat)
+brew "bat"
+# Modern find (fd)
+brew "fd"
+# Better git diff (delta)
+brew "git-delta"
 # Supabase CLI
 brew "supabase/tap/supabase"
 # Vercel CLI (vercel login)
