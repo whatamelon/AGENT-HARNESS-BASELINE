@@ -1,0 +1,20 @@
+{
+  "skill_name": "aidp-demo-goal",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "aidp-demo-goal로 제조 고객 제안미팅용 재고 예측 프로토타입 목표 잡아줘. 20시간 정도 돌릴 수 있게.",
+      "expected_output": "Creates AIDP demo goal run plan with intake, benchmark, Team boundary, deployment evidence, and completion audit."
+    },
+    {
+      "id": 2,
+      "prompt": "고객 데이터가 restricted인데 외부 배포 없이 데모 패키지까지 만들고 싶어.",
+      "expected_output": "Uses privacy gate, blocks external deploy unless sanitized fixture data is used, and requires approved offline fallback evidence."
+    },
+    {
+      "id": 3,
+      "prompt": "FDE proposal demo 자동화: Team으로 구현은 돌리되 goal state는 worker가 건드리면 안돼.",
+      "expected_output": "Preserves Ultragoal leader ownership and constrains Team workers to evidence-only execution."
+    }
+  ]
+}

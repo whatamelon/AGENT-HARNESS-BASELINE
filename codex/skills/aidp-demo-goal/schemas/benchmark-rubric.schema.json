@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIDP Demo Goal Benchmark Rubric",
+  "type": "object",
+  "required": ["references", "dimensions", "threshold", "scorer", "citation_policy"],
+  "properties": {
+    "references": {"type": "array", "minItems": 3, "items": {"type": "object"}},
+    "dimensions": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["name", "weight", "scale"],
+        "properties": {
+          "name": {"type": "string"},
+          "weight": {"type": "number", "minimum": 0, "maximum": 1},
+          "scale": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "threshold": {"type": "number"},
+    "scorer": {"type": "string"},
+    "citation_policy": {"type": "object"}
+  },
+  "additionalProperties": true
+}

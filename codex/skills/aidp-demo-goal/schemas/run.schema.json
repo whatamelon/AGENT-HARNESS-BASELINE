@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIDP Demo Goal Run",
+  "type": "object",
+  "required": ["run_id", "slug", "status", "customer", "meeting", "current_stage", "created_at", "updated_at"],
+  "properties": {
+    "run_id": {"type": "string", "minLength": 1},
+    "slug": {"type": "string", "minLength": 1},
+    "status": {"enum": ["intake", "research", "planning", "design", "development", "qa", "deployment", "demo_readiness", "complete", "blocked", "failed"]},
+    "customer": {
+      "type": "object",
+      "required": ["name", "industry", "data_class"],
+      "properties": {
+        "name": {"type": "string"},
+        "industry": {"type": "string"},
+        "data_class": {"enum": ["public", "internal", "confidential", "restricted"]}
+      },
+      "additionalProperties": true
+    },
+    "meeting": {
+      "type": "object",
+      "required": ["goal", "wow_moment"],
+      "properties": {
+        "date": {"type": ["string", "null"]},
+        "goal": {"type": "string"},
+        "wow_moment": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "current_stage": {"type": "string"},
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"}
+  },
+  "additionalProperties": true
+}
