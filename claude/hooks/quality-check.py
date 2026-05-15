@@ -200,6 +200,82 @@ def check_arbitrary_hex(files: list) -> tuple:
     return _dedup(hits)
 
 
+# D-EMOJI — UI 텍스트 데코 이모지 (A 강제). 화살표/·/×/체크글리프 제외.
+_RX_EMOJI = re.compile(
+    "["
+    "\U0001F000-\U0001FAFF"
+    "\U00002600-\U000026FF"
+    "\U0001F1E6-\U0001F1FF"
+    "\U00002705\U00002708\U00002728\U00002733\U00002734"
+    "\U0000274C\U00002764\U00002B50\U00002B55"
+    "]"
+)
+
+
+def check_emoji_deco(files: list) -> tuple:
+    hits = []
+    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx")):
+        if line.lstrip().startswith("import ") or "require(" in line:
+            continue
+        m = _RX_EMOJI.search(line)
+        if m:
+            hits.append(f"{p.name}:{ln}  이모지 데코 `{m.group(0)}` — 제거 or lucide 아이콘")
+    return _dedup(hits)
+
+
+# D4 — FlatList/SectionList 상태 누락 (ListEmptyComponent 없음) — 경고(B)
+def check_list_empty_state(files: list) -> tuple:
+    hits = []
+    for f in files:
+        if not f.endswith((".tsx", ".jsx")):
+            continue
+        p = Path(f)
+        if not p.exists():
+            continue
+        try:
+            t = p.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        if ("<FlatList" in t or "<SectionList" in t) and "ListEmptyComponent" not in t:
+            hits.append(f"{p.name}  FlatList/SectionList — ListEmptyComponent(빈 상태) 누락")
+    return _dedup(hits)
+
+
+# D7 — RN <Modal> onRequestClose 누락 — 경고(B)
+def check_modal_close(files: list) -> tuple:
+    hits = []
+    for f in files:
+        if not f.endswith((".tsx", ".jsx")):
+            continue
+        p = Path(f)
+        if not p.exists():
+            continue
+        try:
+            t = p.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        if re.search(r'<Modal[\s>]', t) and "onRequestClose" not in t:
+            hits.append(f"{p.name}  <Modal> onRequestClose(백/뒤로가기 닫기) 누락")
+    return _dedup(hits)
+
+
+# D9 — 과도한 shadow (shadowRadius>16 / elevation>12) — 경고(B)
+_RX_SHADOW_R = re.compile(r'shadowRadius:\s*([0-9]+(?:\.[0-9]+)?)')
+_RX_ELEVATION = re.compile(r'elevation:\s*([0-9]+)')
+
+
+def check_excessive_shadow(files: list) -> tuple:
+    hits = []
+    for p, ln, line in _iter_code_lines(files, (".tsx", ".jsx")):
+        for m in _RX_SHADOW_R.finditer(line):
+            if float(m.group(1)) > 16:
+                hits.append(f"{p.name}:{ln}  shadowRadius {m.group(1)} (>16 과함)")
+        for m in _RX_ELEVATION.finditer(line):
+            if int(m.group(1)) > 12:
+                hits.append(f"{p.name}:{ln}  elevation {m.group(1)} (>12 과함)")
+    return _dedup(hits)
+
+
 def check_typescript_errors(files: list) -> tuple:
     """TypeScript 오류 체크 (tsconfig가 있는 프로젝트만)"""
     ts_files = [f for f in files if f.endswith((".ts", ".tsx"))]
@@ -294,7 +370,12 @@ def main():
     d1_count, d1_details = check_icon_mixing(files)
     d2_count, d2_details = check_border_radius_arbitrary(files)
     d3_count, d3_details = check_arbitrary_hex(files)
-    gate_count = eb_count + d1_count + d2_count
+    em_count, em_details = check_emoji_deco(files)
+    d4_count, d4_details = check_list_empty_state(files)
+    d7_count, d7_details = check_modal_close(files)
+    d9_count, d9_details = check_excessive_shadow(files)
+    gate_count = eb_count + d1_count + d2_count + em_count
+    warn_count = d3_count + d4_count + d7_count + d9_count
     total_errors = ts_errors + py_errors
 
     # ── 출력 구성 ───────────────────────────────────────
@@ -317,6 +398,10 @@ def main():
             lines.append(f"**border/radius arbitrary 값 ({d2_count})** — 디자인 토큰 사용")
             for d in d2_details:
                 lines.append(f"- `{d}`")
+        if em_count > 0:
+            lines.append(f"**이모지 데코 ({em_count})** — 제거 또는 lucide 아이콘 치환")
+            for d in em_details:
+                lines.append(f"- `{d}`")
         lines.append("")
         lines.append(
             "→ 룰: `~/.config/claude-sync/claude/rules/no-design-slop.md` · "
@@ -325,11 +410,24 @@ def main():
         lines.append("")
 
     # 디자인 슬롭 B계층 — 점검 경고 (비차단)
-    if d3_count > 0:
-        lines.append(f"### ⚠️ 디자인 슬롭(B) 점검 | 컴포넌트 raw hex {d3_count}건")
-        for d in d3_details:
-            lines.append(f"- `{d}`")
-        lines.append("(토큰 매칭되면 전환. shadowColor/SVG/브랜드색은 예외)")
+    if warn_count > 0:
+        lines.append(f"### ⚠️ 디자인 슬롭(B) 점검 {warn_count}건")
+        if d3_count > 0:
+            lines.append(f"**컴포넌트 raw hex ({d3_count})** — 토큰 매칭 시 전환 (shadowColor/SVG/브랜드 예외)")
+            for d in d3_details:
+                lines.append(f"- `{d}`")
+        if d4_count > 0:
+            lines.append(f"**리스트 빈 상태 누락 ({d4_count})** — ListEmptyComponent 추가")
+            for d in d4_details:
+                lines.append(f"- `{d}`")
+        if d7_count > 0:
+            lines.append(f"**Modal 닫기 누락 ({d7_count})** — onRequestClose/백드롭")
+            for d in d7_details:
+                lines.append(f"- `{d}`")
+        if d9_count > 0:
+            lines.append(f"**과도한 shadow ({d9_count})** — 평평+hairline 우선")
+            for d in d9_details:
+                lines.append(f"- `{d}`")
         lines.append("")
 
     # CCTV 기록
