@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "purpose": "C-tier(판단/시각) 디자인 슬롭의 구조화. 정규식 불가 영역을 머신리더블 루브릭으로 전환 — 리뷰/비전 에이전트가 렌더된 화면에 일관 적용하는 채점 계약.",
+    "rule_ssot": "~/.config/claude-sync/claude/rules/no-design-slop.md",
+    "consumed_by": ["visual-verdict", "code-reviewer", "vision agent", "designslop review gate"],
+    "scoring": "각 probe pass/fail. category score = pass/total. gate 권고: 모든 category >= 0.8 그리고 severity=high fail 0건",
+    "evidence_required": "screenshot(라이트+다크) 또는 DOM. 코드만으론 판정 불가 — 렌더 근거 필수"
+  },
+  "categories": [
+    {
+      "id": "color",
+      "name": "색감 종합",
+      "probes": [
+        { "id": "color-accent-count", "severity": "high",
+          "question": "화면당 의도적 accent 색이 1개 이하인가?",
+          "pass_if": "무채(ink/graphite/slate/ash/line/paper) 기반 + accent 최대 1계열",
+          "fail_if": "2+ 채도색 경쟁 / 무지개 / 프레임워크 기본색(blue-500 류) 노출" },
+        { "id": "color-gradient", "severity": "medium",
+          "question": "그라데이션이 의미 있는 1곳으로 절제되었나?",
+          "fail_if": "AI 데모식 보라/인디고 풀스크린 그라데이션, 다수 그라데이션" },
+        { "id": "color-contrast", "severity": "high",
+          "question": "본문 텍스트 대비 라이트/다크 모두 4.5:1 이상인가?",
+          "evidence": "두 모드 스크린샷 측정" },
+        { "id": "color-semantic", "severity": "medium",
+          "question": "성공/경고/위험 등 상태색이 일관 토큰으로 쓰였나(임의 hex 아님)?" }
+      ]
+    },
+    {
+      "id": "alignment",
+      "name": "정렬",
+      "probes": [
+        { "id": "align-body-left", "severity": "high",
+          "question": "본문/리스트 텍스트가 좌측정렬 기준선 하나로 통일됐나?",
+          "fail_if": "본문까지 center 도배, 좌/우 정렬 혼재" },
+        { "id": "align-number-right", "severity": "medium",
+          "question": "금액·수치 컬럼이 우측정렬·자릿수 정렬됐나?" },
+        { "id": "align-icon-text", "severity": "medium",
+          "question": "아이콘+텍스트 쌍의 수직 중심이 맞나(baseline 어긋남 없음)?" },
+        { "id": "align-grid", "severity": "low",
+          "question": "라벨-값/카드 그리드의 정렬선이 어긋나지 않나?" }
+      ]
+    },
+    {
+      "id": "detail-hierarchy",
+      "name": "상세페이지 위계",
+      "probes": [
+        { "id": "dh-first-screen", "severity": "high",
+          "question": "첫 화면(fold 위)에 핵심 정보(가격/요지)와 주 액션이 보이나?",
+          "fail_if": "핵심 정보가 스크롤 아래로 밀림" },
+        { "id": "dh-size-hierarchy", "severity": "high",
+          "question": "정보 위계가 타이포 크기/굵기로 드러나나(다 같은 크기 아님)?" },
+        { "id": "dh-sticky-cta", "severity": "medium",
+          "question": "주 CTA가 sticky 단일로 존재하나(없음/중복 아님)?" },
+        { "id": "dh-one-mission", "severity": "medium",
+          "question": "한 페이지가 한 미션인가(hero+인용+CTA 욱여넣기 없음)?" },
+        { "id": "dh-real-data", "severity": "high",
+          "question": "추천/통계가 실데이터인가(가짜 mock 숫자 아님)?" }
+      ]
+    },
+    {
+      "id": "korean-top-app-bar",
+      "name": "한국 1등앱 메타 (무신사·당근·토스)",
+      "probes": [
+        { "id": "kt-states", "severity": "high",
+          "question": "skeleton/empty/error/zero/offline 상태가 전부 디자인됐나?",
+          "fail_if": "일부 상태 누락" },
+        { "id": "kt-copy", "severity": "high",
+          "question": "카피가 자연 한국어인가(번역체·영문 더미 없음)?" },
+        { "id": "kt-number-format", "severity": "medium",
+          "question": "숫자가 천단위/통화/상대시간 포맷인가(raw 출력 아님)?" },
+        { "id": "kt-feedback", "severity": "medium",
+          "question": "탭 즉시반응(<100ms)·옵티미스틱·햅틱이 있나?" },
+        { "id": "kt-first-value", "severity": "medium",
+          "question": "첫 진입 0.5초 안에 가치가 보이나?" }
+      ]
+    }
+  ]
+}
