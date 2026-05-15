@@ -12,10 +12,13 @@ usage() {
   cat <<'EOF'
 Usage: ensure-work-log-task.sh [--root DIR] [--slug SLUG] [--title TITLE] [--json]
 
+Folder name is ALWAYS: docs/work-log/YYYY-MM-DD_<feature-slug>/
+(date prefix is forced even when --slug is given; separator is "_")
+
 Creates:
-  docs/work-log/<slug>/context.md
-  docs/work-log/<slug>/plan.md
-  docs/work-log/<slug>/checklist.md
+  docs/work-log/YYYY-MM-DD_<feature>/context.md
+  docs/work-log/YYYY-MM-DD_<feature>/plan.md
+  docs/work-log/YYYY-MM-DD_<feature>/checklist.md
 
 The script is idempotent and does not overwrite existing files.
 EOF
@@ -61,21 +64,29 @@ if [ -z "$TITLE" ]; then
   TITLE="Task work log"
 fi
 
+# Keep unicode letters (e.g. Korean) intact; only lowercase ASCII,
+# collapse whitespace to "-", and strip path-unsafe characters.
 slugify() {
   printf '%s' "$1" \
     | tr '[:upper:]' '[:lower:]' \
-    | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//; s/-{2,}/-/g' \
+    | tr -s ' \t\r\n' '-' \
+    | sed -E 's#[/\\:*?"<>|[:cntrl:]]+##g; s/-{2,}/-/g; s/^[-_.]+//; s/[-_.]+$//' \
     | cut -c 1-80
 }
 
-if [ -z "$SLUG" ]; then
-  base="$(slugify "$TITLE")"
-  [ -n "$base" ] || base="task"
-  SLUG="$(date +%Y-%m-%d)-$base"
+# Folder convention is always: YYYY-MM-DD_<feature-slug>
+# Applies whether --slug or --title (or bare title) was provided.
+DATE="$(date +%Y-%m-%d)"
+if [ -n "$SLUG" ]; then
+  feature="$(slugify "$SLUG")"
 else
-  SLUG="$(slugify "$SLUG")"
+  feature="$(slugify "$TITLE")"
 fi
-[ -n "$SLUG" ] || SLUG="$(date +%Y-%m-%d)-task"
+# Strip any leading date the caller may have already embedded to avoid
+# producing YYYY-MM-DD_YYYY-MM-DD_feature.
+feature="$(printf '%s' "$feature" | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}[_-]+//')"
+[ -n "$feature" ] || feature="task"
+SLUG="${DATE}_${feature}"
 
 SYNC_HOME="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
 if [ -x "$SYNC_HOME/bin/ensure-project-layout.sh" ]; then
