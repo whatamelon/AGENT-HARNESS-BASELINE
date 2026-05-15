@@ -8,8 +8,79 @@ Stop 훅에서 실행 — 3가지 역할:
 """
 import sys
 import json
+import re
 import subprocess
 from pathlib import Path
+
+# 장식 eyebrow / 영문 UI 라벨 강제 게이트
+# 룰 SSOT: ~/.config/claude-sync/claude/rules/no-decorative-eyebrow.md
+#
+# 허용(고유명사/플랫폼/한국 통용 약어) — 이건 슬롭 아님
+EYEBROW_ALLOW = {
+    "YOUTUBE", "INSTAGRAM", "KAKAO", "NAVER", "TIKTOK", "X",
+    "BMW", "AUDI", "BENZ", "KIA", "GENESIS", "TESLA", "VOLVO", "LEXUS",
+    "CEO", "VIP", "EV", "PT", "AS", "OK", "ID", "OS", "QR", "FAQ", "CS",
+}
+# eyebrow 스타일 시그널 (섹션 타이틀 위 장식 키커)
+_EYEBROW_STYLE = ("uppercase", "tracking-wider")
+# 영문 ALL CAPS 리터럴 (한글 없음, 변수보간 없음)
+_RX_LABEL_PROP = re.compile(r'label\s*[=:]\s*["\']([^"\'{}]+)["\']')
+_RX_JSX_TEXT = re.compile(r'>\s*([A-Z][A-Z0-9 ._·\-&/]{2,})\s*<')
+_RX_HANGUL = re.compile(r'[가-힣]')
+
+
+def _is_english_allcaps_slop(text: str) -> bool:
+    t = text.strip()
+    if not t or _RX_HANGUL.search(t) or "{" in t:
+        return False
+    letters = [c for c in t if c.isalpha()]
+    if not letters or not all(c.isascii() and c.isupper() for c in letters):
+        return False
+    if len([c for c in letters]) < 2:
+        return False
+    # 토큰이 전부 allowlist면 통과 (예: "CEO", "BMW")
+    tokens = [w for w in re.split(r'[ ·/&\-_.]+', t) if w]
+    if tokens and all(w in EYEBROW_ALLOW for w in tokens):
+        return False
+    return True
+
+
+def check_eyebrow_slop(files: list) -> tuple:
+    """장식 eyebrow / 비기능 영문 UI 라벨 탐지 (세션 수정 파일만)"""
+    hits = []
+    for f in files:
+        if not f.endswith((".tsx", ".jsx", ".ts", ".js")):
+            continue
+        p = Path(f)
+        if not p.exists() or p.name == "quality-check.py":
+            continue
+        try:
+            lines = p.read_text(encoding="utf-8").splitlines()
+        except Exception:
+            continue
+        for i, line in enumerate(lines):
+            stripped = line.lstrip()
+            # 주석 라인 제외 (예시/문서가 오탐 안 되게)
+            if stripped.startswith(("//", "*", "/*", "#")):
+                continue
+            # 1) label= / label: 영문 ALL CAPS 리터럴
+            for m in _RX_LABEL_PROP.finditer(line):
+                if _is_english_allcaps_slop(m.group(1)):
+                    hits.append(f"{p.name}:{i+1}  label \"{m.group(1).strip()}\"")
+            # 2) eyebrow 스타일 className + 인접 영문 ALL CAPS JSX 텍스트
+            window = "\n".join(lines[i:i + 3])
+            if all(s in line for s in _EYEBROW_STYLE):
+                for m in _RX_JSX_TEXT.finditer(window):
+                    if _is_english_allcaps_slop(m.group(1)):
+                        hits.append(f"{p.name}:{i+1}  eyebrow \"{m.group(1).strip()}\"")
+    # 중복 제거 (순서 보존)
+    seen = set()
+    uniq = []
+    for h in hits:
+        if h not in seen:
+            seen.add(h)
+            uniq.append(h)
+    return len(uniq), uniq[:12]
 
 
 def check_typescript_errors(files: list) -> tuple:
@@ -102,12 +173,26 @@ def main():
     # ── 오류 체크 ──────────────────────────────────────
     ts_errors, ts_details = check_typescript_errors(files)
     py_errors, py_details = check_python_errors(files)
+    eb_count, eb_details = check_eyebrow_slop(files)
     total_errors = ts_errors + py_errors
 
     # ── 출력 구성 ───────────────────────────────────────
     lines = []
     lines.append(f"## 🔍 자동 품질 검사 | 수정 파일 {file_count}개")
     lines.append("")
+
+    # 장식 eyebrow / 영문 라벨 — 최상단 강제 (글로벌 Iron Law)
+    if eb_count > 0:
+        lines.append(f"### 🚫 장식 eyebrow / 영문 UI 라벨 슬롭: {eb_count}건 — 반드시 수정")
+        for d in eb_details:
+            lines.append(f"- `{d}`")
+        lines.append("")
+        lines.append(
+            "→ 섹션 타이틀 위 키커 제거 / 영문 라벨 한국어화. "
+            "예외: 브랜드·플랫폼 고유명사, 통용 약어(CEO 등). "
+            "룰: `~/.config/claude-sync/claude/rules/no-decorative-eyebrow.md`"
+        )
+        lines.append("")
 
     # CCTV 기록
     lines.append("### 📋 CCTV 기록 (이번 세션)")
