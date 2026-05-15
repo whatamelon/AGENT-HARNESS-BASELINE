@@ -5,10 +5,12 @@
 
 ## 새 맥북 한 줄 셋업
 
+repo가 **private**이라 anonymous curl/git clone 불가. `gh auth login` 후 `gh repo clone` 필수.
+
 ```bash
 brew install gh && gh auth login && \
-git clone https://github.com/whatamelon/claude-sync.git ~/.config/claude-sync && \
-  ~/.config/claude-sync/bin/mac-setup.sh auto
+gh repo clone whatamelon/claude-sync ~/.config/claude-sync && \
+  bash ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh
 ```
 
 또는 인터랙티브:
