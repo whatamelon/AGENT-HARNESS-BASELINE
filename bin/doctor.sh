@@ -340,5 +340,63 @@ else
 fi
 
 echo ""
+echo "── Phase 5: 신규 자산 (secrets / work-log / srcsht) ──"
+
+# install-secrets.sh
+if [[ -x "$SSOT/bin/install-secrets.sh" ]]; then
+  echo "✓ bin/install-secrets.sh"
+else
+  echo "❌ bin/install-secrets.sh 실행 권한/존재 X"; ((errors++))
+fi
+
+# settings.local.example.json op:// 패턴
+if grep -q "{{ op://" "$SSOT/claude/settings.local.example.json" 2>/dev/null; then
+  echo "✓ settings.local.example.json op:// template"
+else
+  echo "⚠ settings.local.example.json op:// 패턴 없음 (구버전 \$(op read) 패턴일 수 있음)"
+fi
+
+# ~/.claude/settings.local.json env 4개
+if [[ -f "$HOME/.claude/settings.local.json" ]]; then
+  env_count=$(jq '.env | keys | length' "$HOME/.claude/settings.local.json" 2>/dev/null || echo 0)
+  if [[ "$env_count" -ge 4 ]]; then
+    echo "✓ settings.local.json env 필드 (${env_count}개)"
+  else
+    echo "⚠ settings.local.json env 필드 부족 (${env_count}) — install-secrets 실행 권장"
+  fi
+else
+  echo "⚠ ~/.claude/settings.local.json 없음 — install-secrets 실행 필요"
+fi
+
+# agent-work-log-harness
+if [[ -d "$HOME/.config/agent-work-log-harness/.git" ]]; then
+  echo "✓ agent-work-log-harness clone"
+else
+  echo "❌ ~/.config/agent-work-log-harness 미설치"; ((errors++))
+fi
+if [[ -L "$HOME/.local/bin/ensure-work-log-task" ]]; then
+  echo "✓ ensure-work-log-task 심링크"
+else
+  echo "❌ ~/.local/bin/ensure-work-log-task 심링크 없음 — work-log-harness install.sh 실행 필요"; ((errors++))
+fi
+
+# srcsht-rename launchd
+if [[ -f "$SSOT/bin/srcsht-rename.sh" ]]; then
+  echo "✓ bin/srcsht-rename.sh"
+else
+  echo "❌ bin/srcsht-rename.sh 없음"; ((errors++))
+fi
+if [[ -f "$SSOT/launchd/com.denny.srcsht-rename.plist" ]]; then
+  echo "✓ launchd/com.denny.srcsht-rename.plist (template)"
+else
+  echo "❌ srcsht plist template 없음"; ((errors++))
+fi
+if launchctl list 2>/dev/null | grep -q "com.denny.srcsht-rename"; then
+  echo "✓ srcsht-rename launchd active"
+else
+  echo "⚠ srcsht-rename launchd 미등록 (bootstrap step 12에서 처리)"
+fi
+
+echo ""
 [[ $errors -eq 0 ]] && echo "✅ All good ($errors errors)" || echo "❌ $errors errors"
 exit $errors
