@@ -21,8 +21,13 @@ except Exception:
     class _NoopDS:
         @staticmethod
         def run_all(_files):
-            return {"gate": {}, "warn": {}, "gate_count": 0,
-                    "warn_count": 0, "review_ledger": []}
+            z = (0, [])
+            return {
+                "gate": {"eyebrow": z, "icon": z, "border": z,
+                         "emoji": z, "nav": z},
+                "warn": {"hex": z, "list": z, "modal": z, "shadow": z},
+                "gate_count": 0, "warn_count": 0, "review_ledger": [],
+            }
     ds = _NoopDS()
 
 
