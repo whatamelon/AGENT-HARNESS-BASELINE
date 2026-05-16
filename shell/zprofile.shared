@@ -2,5 +2,8 @@
 eval "$(/opt/homebrew/bin/brew shellenv)"
 command -v rbenv >/dev/null && eval "$(rbenv init - --no-rehash zsh)"
 
+# Rust (rustup --no-modify-path 설치 → SSOT에서 PATH 영구화. omx Explore Harness 빌드에 필요)
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
 # 백그라운드 자동 pull (셸 부팅을 막지 않음)
 (cd ~/.config/claude-sync && git pull --quiet --rebase --autostash 2>/dev/null) &!

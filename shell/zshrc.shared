@@ -31,9 +31,6 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 alias python=/usr/bin/python3
 command -v rbenv >/dev/null && eval "$(rbenv init -)"
 
-# Rust (rustup --no-modify-path 설치 → SSOT에서 PATH 영구화. omx Explore Harness 빌드에 필요)
-[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-
 # Google Cloud SDK
 if [ -d "$HOME/google-cloud-sdk" ]; then
   [ -f "$HOME/google-cloud-sdk/path.zsh.inc" ] && . "$HOME/google-cloud-sdk/path.zsh.inc"
