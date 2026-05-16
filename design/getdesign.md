@@ -8,6 +8,8 @@ Use this file when a task needs product, UI, UX, visual, or interaction design c
 getdesign                 # show active design context and project-local docs
 getdesign init            # copy shared DESIGN.md/getdesign.md into current project
 getdesign init --force    # overwrite current project copies
+getdesign init-harness --force   # install shared visual check harness
+getdesign init-mobile-harness --path packages/mobile-ui/src/design-harness.tsx
 getdesign add cursor      # install a getdesign.md catalog inspiration via npx
 getdesign doctor          # verify shared entrypoint symlinks
 ```
@@ -32,6 +34,16 @@ Before doing design work, produce a short summary with:
 - Existing design system or project style:
 - Constraints:
 - Validation plan:
+
+## Mobile Expo comparison harness
+
+For React Native / Expo Web comparison apps, install the shared iPhone preview shell instead of hand-building device chrome every time:
+
+```bash
+getdesign init-mobile-harness --path packages/mobile-ui/src/design-harness.tsx
+```
+
+Use it only for prototype/comparison web previews. It renders a centered iPhone 17 Pro Max class shell with a 440×956 app viewport, 2px bezel, Dynamic Island overlay, home indicator, and direct safe-area context values (`top: 59`, `bottom: 34`) so Expo Web screens behave like native RN safe-area layouts. Production native apps must keep using the real `SafeAreaProvider` path.
 
 ## Output expectations
 
@@ -72,6 +84,7 @@ A strong DESIGN.md should include these sections:
 6. Depth & Elevation
 7. Do's and Don'ts
 8. Responsive Behavior
-9. Agent Prompt Guide
+9. Mobile Expo Preview Harness
+10. Agent Prompt Guide
 
 If a project-local DESIGN.md is missing these sections, improve it before major UI work or explicitly document which project design system replaces them.

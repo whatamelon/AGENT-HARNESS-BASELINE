@@ -170,9 +170,12 @@ init_mobile_harness() {
       --path)
         shift
         [[ $# -gt 0 ]] || { echo "--path requires a file path" >&2; exit 2; }
-        target="$PWD/$1"
+        case "$1" in /*) target="$1" ;; *) target="$PWD/$1" ;; esac
         ;;
-      --path=*) target="$PWD/${1#--path=}" ;;
+      --path=*)
+        raw_path="${1#--path=}"
+        case "$raw_path" in /*) target="$raw_path" ;; *) target="$PWD/$raw_path" ;; esac
+        ;;
       *) echo "Unknown init-mobile-harness argument: $1" >&2; usage >&2; exit 2 ;;
     esac
     shift

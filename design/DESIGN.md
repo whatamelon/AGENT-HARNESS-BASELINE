@@ -475,7 +475,26 @@ Use 4px-based spacing:
 - Preserve status/evidence visibility at all widths.
 - Use reduced motion preferences for animations.
 
-## 9. Agent Prompt Guide
+## 9. Mobile Expo Preview Harness
+
+When a task asks to compare mobile app screens in a browser, use the shared Expo/RN iPhone preview harness instead of improvising a mock device frame.
+
+### Required behavior
+
+- Install with `getdesign init-mobile-harness --path packages/mobile-ui/src/design-harness.tsx` or copy `design/harness/mobile-expo-iphone17-pro-max-harness.tsx`.
+- Wrap comparison/prototype Expo Router roots with `Iphone17ProMaxDesignHarness`.
+- Browser preview must show a centered iPhone 17 Pro Max class shell with a 440×956 app viewport, 2px bezel, Dynamic Island, home indicator, and realistic side controls.
+- The Dynamic Island is overlay chrome; RN content must be protected by safe-area context (`top: 59`, `bottom: 34`) so headers are not hidden under it.
+- On native platforms, the harness must return the real `SafeAreaProvider` path and not render browser chrome.
+- Use this for test/comparison/prototype apps only; production mobile apps should keep device-native layout and safe-area behavior.
+
+### Validation
+
+- Run the target app typecheck/lint.
+- Capture browser screenshots of the comparison app after design edits.
+- Reject thick bezels, missing Dynamic Island, incorrect safe-area overlap, or phone chrome that intercepts app interaction.
+
+## 10. Agent Prompt Guide
 
 ### Standard prompt for UI work
 

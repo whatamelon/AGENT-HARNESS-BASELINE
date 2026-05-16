@@ -27,6 +27,25 @@ and updates `package.json` with:
 - `@axe-core/playwright`
 - `@playwright/test`
 
+
+## Mobile Expo / React Native preview harness
+
+For comparison or prototype Expo apps that run through `expo start --web`, install the shared iPhone preview shell:
+
+```bash
+getdesign init-mobile-harness --path packages/mobile-ui/src/design-harness.tsx
+```
+
+The command copies `mobile-expo-iphone17-pro-max-harness.tsx` into the target project. The template exports `Iphone17ProMaxDesignHarness`, which:
+
+- centers a phone mock on the browser canvas;
+- uses a 440×956 inner app viewport with a 2px iPhone 17 Pro Max class bezel;
+- overlays Dynamic Island and home indicator chrome without intercepting RN gestures;
+- injects safe-area frame/insets directly (`top: 59`, `bottom: 34`) so headers do not sit under the Dynamic Island;
+- falls back to the real `SafeAreaProvider` on native platforms.
+
+Use this only around comparison/prototype app roots, typically around the Expo Router `Stack` in `_layout.tsx`. Do not ship the browser phone shell inside production native app flows.
+
 ## UI data contract
 
 The harness expects the app to mark quality-critical UI with these attributes:
