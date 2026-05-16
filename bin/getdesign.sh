@@ -19,6 +19,8 @@ Usage:
   getdesign copy [--force]  Alias for init
   getdesign init-harness [--force]
                             Copy shared visual quality harness into current project
+  getdesign init-mobile-harness [--force] [--path <file>]
+                            Copy Expo/RN iPhone preview harness into current project
   getdesign add <slug>      Run: npx getdesign@latest add <slug>
   getdesign doctor          Verify shared DESIGN.md entrypoint links
 
@@ -26,6 +28,7 @@ Examples:
   getdesign
   getdesign init
   getdesign init-harness
+  getdesign init-mobile-harness --path packages/mobile-ui/src/design-harness.tsx
   getdesign add linear.app
   getdesign add cursor
 EOF_USAGE
@@ -157,6 +160,44 @@ PY
   echo "Next steps: pnpm install && pnpm lint && pnpm build && pnpm test:visual"
 }
 
+
+init_mobile_harness() {
+  local force=0
+  local target="$PWD/packages/mobile-ui/src/design-harness.tsx"
+  while (($#)); do
+    case "$1" in
+      --force) force=1 ;;
+      --path)
+        shift
+        [[ $# -gt 0 ]] || { echo "--path requires a file path" >&2; exit 2; }
+        target="$PWD/$1"
+        ;;
+      --path=*) target="$PWD/${1#--path=}" ;;
+      *) echo "Unknown init-mobile-harness argument: $1" >&2; usage >&2; exit 2 ;;
+    esac
+    shift
+  done
+
+  local src="$GLOBAL_HARNESS_DIR/mobile-expo-iphone17-pro-max-harness.tsx"
+  [[ -f "$src" ]] || { echo "Missing $src" >&2; exit 1; }
+
+  if [[ -e "$target" && $force -ne 1 ]]; then
+    echo "skip: $target exists (use --force to overwrite)"
+  else
+    mkdir -p "$(dirname "$target")"
+    cp "$src" "$target"
+    echo "copied: $target"
+  fi
+
+  cat <<EOF_NEXT
+Next steps:
+  - Export Iphone17ProMaxDesignHarness from the target module or barrel file.
+  - Wrap the comparison/prototype Expo Router Stack in Iphone17ProMaxDesignHarness.
+  - Keep production native apps on the real SafeAreaProvider path.
+  - Verify with app typecheck/lint and browser screenshots.
+EOF_NEXT
+}
+
 add_inspiration() {
   [[ $# -eq 1 ]] || { echo "getdesign add requires a slug, e.g. cursor, linear.app, vercel" >&2; exit 2; }
   local slug="$1"
@@ -189,6 +230,7 @@ doctor_design() {
     "$GLOBAL_GETDESIGN" \
     "$GLOBAL_HARNESS_DIR/visual-check.mjs" \
     "$GLOBAL_HARNESS_DIR/CLAUDE_CODE_PROMPT.md" \
+    "$GLOBAL_HARNESS_DIR/mobile-expo-iphone17-pro-max-harness.tsx" \
     "$GLOBAL_HARNESS_DIR/README.md"; do
     if [[ -f "$f" ]]; then
       echo "✓ exists: $f"
@@ -205,6 +247,7 @@ case "$cmd" in
   show) shift || true; show_context "$@" ;;
   init|copy) shift; init_project "$@" ;;
   init-harness|harness) shift; init_harness "$@" ;;
+  init-mobile-harness|mobile-harness) shift; init_mobile_harness "$@" ;;
   add) shift; add_inspiration "$@" ;;
   doctor) shift || true; doctor_design "$@" ;;
   -h|--help|help) usage ;;
