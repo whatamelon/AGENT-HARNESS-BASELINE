@@ -1,0 +1,2 @@
+codex/skills/work-log-harness/work-log-harness -> /Users/denny/.config/agent-work-log-harness/codex/skills/work-log-harness
+codex/skills/cua-driver -> /Applications/CuaDriver.app/Contents/Resources/Skills/cua-driver
