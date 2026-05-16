@@ -5,5 +5,13 @@ command -v rbenv >/dev/null && eval "$(rbenv init - --no-rehash zsh)"
 # Rust (rustup --no-modify-path 설치 → SSOT에서 PATH 영구화. omx Explore Harness 빌드에 필요)
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
+# 1Password Service Account 토큰 주입 (시크릿은 머신 로컬 Keychain, SSOT엔 메커니즘만).
+# op가 앱/지문/비번 없이 동작 → Claude Code·Codex 서브프로세스가 상속.
+if [ -z "${OP_SERVICE_ACCOUNT_TOKEN:-}" ]; then
+  __op_sa="$("$HOME/.config/agent-harness-baseline/bin/op-service-account.sh" print 2>/dev/null || true)"
+  [ -n "$__op_sa" ] && export OP_SERVICE_ACCOUNT_TOKEN="$__op_sa"
+  unset __op_sa
+fi
+
 # 백그라운드 자동 pull (셸 부팅을 막지 않음)
 (cd ~/.config/agent-harness-baseline && git pull --quiet --rebase --autostash 2>/dev/null) &!
