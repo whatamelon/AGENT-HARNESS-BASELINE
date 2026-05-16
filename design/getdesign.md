@@ -14,7 +14,7 @@ getdesign add cursor      # install a getdesign.md catalog inspiration via npx
 getdesign doctor          # verify shared entrypoint symlinks
 ```
 
-`getdesign` is an alias for `~/.config/claude-sync/bin/getdesign.sh`. With no arguments, it prints the active global design entrypoints and discovers project-local design files from the current directory upward.
+`getdesign` is an alias for `~/.config/agent-harness-baseline/bin/getdesign.sh`. With no arguments, it prints the active global design entrypoints and discovers project-local design files from the current directory upward.
 
 ## Retrieval order
 
@@ -65,7 +65,7 @@ For review tasks:
 After editing shared design files, run:
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 bash bin/sync-attest.sh
 ```
 

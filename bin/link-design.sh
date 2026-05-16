@@ -2,7 +2,7 @@
 # Link shared DESIGN.md/getdesign.md entrypoints into home, Claude Code, and Codex.
 set -euo pipefail
 
-SSOT="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
+SSOT="${AGENT_HARNESS_BASELINE_HOME:-$HOME/.config/agent-harness-baseline}"
 DESIGN_DIR="$SSOT/design"
 
 [[ -f "$DESIGN_DIR/DESIGN.md" ]] || { echo "Missing $DESIGN_DIR/DESIGN.md" >&2; exit 1; }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bin/test.sh — 모든 bats 테스트 실행
 set -euo pipefail
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 cd "$SSOT" || exit 1
 
 if ! command -v bats >/dev/null; then

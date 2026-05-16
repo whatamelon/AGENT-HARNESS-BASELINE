@@ -1,6 +1,6 @@
-# ~/.config/claude-sync/shell/zshrc.shared
+# ~/.config/agent-harness-baseline/shell/zshrc.shared
 # 두 맥북 공유 zshrc 엔트리.
-# ~/.zshrc 는 1줄: `source ~/.config/claude-sync/shell/zshrc.shared`
+# ~/.zshrc 는 1줄: `source ~/.config/agent-harness-baseline/shell/zshrc.shared`
 # 머신별 추가는 ~/.zshrc.local 에서.
 
 # ─── oh-my-zsh ─────────────────────────────────────────────
@@ -55,30 +55,30 @@ fi
 # ─── alias ────────────────────────────────────────────────
 alias fvrun='flutter run -d C6B43525-A483-4D8D-AC91-BCDCA67A2B1C'
 alias claude-mem='bun "$HOME/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
-alias cs='cd ~/.config/claude-sync'
-alias cs-sync='cd ~/.config/claude-sync && git pull --rebase --autostash && git diff --quiet || (git add . && git commit -m "auto: $(hostname -s) $(date +%FT%T)" && git push)'
-alias cs-doctor='~/.config/claude-sync/bin/doctor.sh'
-alias project-init='~/.config/claude-sync/bin/project-init.sh'
-alias env-sync='~/.config/claude-sync/bin/env-sync.sh'
-alias secrets-migrate='~/.config/claude-sync/bin/migrate-secrets-to-1password.sh'
-alias saas-add='~/.config/claude-sync/bin/saas-add.sh'
-alias install-apps='~/.config/claude-sync/bin/install-apps.sh'
-alias export-desktop='~/.config/claude-sync/bin/export-desktop.sh'
-alias import-desktop='~/.config/claude-sync/bin/import-desktop.sh'
-alias mac-setup='~/.config/claude-sync/bin/mac-setup.sh'
-alias 꾸쮹='~/.config/claude-sync/bin/mac-setup.sh'
-alias codex-bridge='~/.config/claude-sync/bin/codex-bridge.sh'
+alias ahb='cd ~/.config/agent-harness-baseline'
+alias ahb-sync='cd ~/.config/agent-harness-baseline && git pull --rebase --autostash && git diff --quiet || (git add . && git commit -m "auto: $(hostname -s) $(date +%FT%T)" && git push)'
+alias ahb-doctor='~/.config/agent-harness-baseline/bin/doctor.sh'
+alias project-init='~/.config/agent-harness-baseline/bin/project-init.sh'
+alias env-sync='~/.config/agent-harness-baseline/bin/env-sync.sh'
+alias secrets-migrate='~/.config/agent-harness-baseline/bin/migrate-secrets-to-1password.sh'
+alias saas-add='~/.config/agent-harness-baseline/bin/saas-add.sh'
+alias install-apps='~/.config/agent-harness-baseline/bin/install-apps.sh'
+alias export-desktop='~/.config/agent-harness-baseline/bin/export-desktop.sh'
+alias import-desktop='~/.config/agent-harness-baseline/bin/import-desktop.sh'
+alias mac-setup='~/.config/agent-harness-baseline/bin/mac-setup.sh'
+alias 꾸쮹='~/.config/agent-harness-baseline/bin/mac-setup.sh'
+alias codex-bridge='~/.config/agent-harness-baseline/bin/codex-bridge.sh'
 
-# claude-sync 자체에서 git 작업 중일 때 launchd 자동 sync 와의 race 차단.
-# cs-pause 후 작업, 끝나면 cs-resume. 잊고 cs-resume 안 해도 .sync-paused 가 있으면 sync.sh 가 즉시 skip.
-alias cs-pause='launchctl unload ~/Library/LaunchAgents/com.denny.claude-sync.plist 2>/dev/null; launchctl unload ~/Library/LaunchAgents/com.denny.claude-sync-digest.plist 2>/dev/null; touch ~/.config/claude-sync/.sync-paused; echo "claude-sync paused (cs-resume to resume)"'
-alias cs-resume='rm -f ~/.config/claude-sync/.sync-paused; launchctl load ~/Library/LaunchAgents/com.denny.claude-sync.plist 2>/dev/null; launchctl load ~/Library/LaunchAgents/com.denny.claude-sync-digest.plist 2>/dev/null; echo "claude-sync resumed"'
+# agent-harness-baseline 자체에서 git 작업 중일 때 launchd 자동 sync 와의 race 차단.
+# ahb-pause 후 작업, 끝나면 ahb-resume. 잊고 ahb-resume 안 해도 .sync-paused 가 있으면 sync.sh 가 즉시 skip.
+alias ahb-pause='launchctl unload ~/Library/LaunchAgents/com.denny.agent-harness-baseline.plist 2>/dev/null; launchctl unload ~/Library/LaunchAgents/com.denny.agent-harness-baseline-digest.plist 2>/dev/null; touch ~/.config/agent-harness-baseline/.sync-paused; echo "agent-harness-baseline paused (ahb-resume to resume)"'
+alias ahb-resume='rm -f ~/.config/agent-harness-baseline/.sync-paused; launchctl load ~/Library/LaunchAgents/com.denny.agent-harness-baseline.plist 2>/dev/null; launchctl load ~/Library/LaunchAgents/com.denny.agent-harness-baseline-digest.plist 2>/dev/null; echo "agent-harness-baseline resumed"'
 
 # OMC team 계열 실행 전 Claude Code ↔ Codex 공유 상태를 먼저 맞춘다.
 omc() {
   case "${1:-}" in
     team|swarm|ultrawork|ultrapilot)
-      "$HOME/.config/claude-sync/bin/codex-bridge.sh" --quiet >/dev/null 2>&1 || true
+      "$HOME/.config/agent-harness-baseline/bin/codex-bridge.sh" --quiet >/dev/null 2>&1 || true
       ;;
   esac
   command omc "$@"
@@ -98,7 +98,7 @@ __load_project_secrets() {
 
   command -v jq >/dev/null || return 0
 
-  local saas_dir="$HOME/.config/claude-sync/shell/saas"
+  local saas_dir="$HOME/.config/agent-harness-baseline/shell/saas"
   [[ -d "$saas_dir" ]] || return 0
 
   local exported=()
@@ -127,8 +127,8 @@ add-zsh-hook chpwd __load_project_secrets
 # ─── 머신별 분기 ──────────────────────────────────────────
 case "$(hostname -s)" in
   *)
-    [ -f "$HOME/.config/claude-sync/shell/machines/$(hostname -s).sh" ] && \
-      source "$HOME/.config/claude-sync/shell/machines/$(hostname -s).sh"
+    [ -f "$HOME/.config/agent-harness-baseline/shell/machines/$(hostname -s).sh" ] && \
+      source "$HOME/.config/agent-harness-baseline/shell/machines/$(hostname -s).sh"
     ;;
 esac
 
@@ -136,7 +136,7 @@ esac
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 
 # HUD: 두 맥북 상세 정보
-alias hudm='$HOME/.config/claude-sync/bin/hud-machines.sh --format=detail'
+alias hudm='$HOME/.config/agent-harness-baseline/bin/hud-machines.sh --format=detail'
 
 # 셸 시작 시 1회 실행
 __load_project_secrets
@@ -145,52 +145,52 @@ setopt PROMPT_SUBST
 
 # ── HUD: 두 맥북 상태 RPROMPT segment ──────────────
 __claude_sync_hud_rprompt() {
-  [[ -x "$HOME/.config/claude-sync/bin/hud-machines.sh" ]] || return 0
-  "$HOME/.config/claude-sync/bin/hud-machines.sh" --format=line 2>/dev/null
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/hud-machines.sh" ]] || return 0
+  "$HOME/.config/agent-harness-baseline/bin/hud-machines.sh" --format=line 2>/dev/null
 }
 
-if [[ -z "${__CLAUDE_SYNC_RPROMPT_SET:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_RPROMPT_SET:-}" ]]; then
   RPROMPT="${RPROMPT:-}"'$(__claude_sync_hud_rprompt)'
-  export __CLAUDE_SYNC_RPROMPT_SET=1
+  export __AGENT_HARNESS_BASELINE_RPROMPT_SET=1
 fi
 
 # ── HUD: 출퇴근 catchup (4시간+ 휴면 후 1회) ──────────
 __claude_sync_catchup() {
-  [[ -x "$HOME/.config/claude-sync/bin/hud-catchup.sh" ]] || return 0
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/hud-catchup.sh" ]] || return 0
   local out
-  out=$("$HOME/.config/claude-sync/bin/hud-catchup.sh" 2>/dev/null)
+  out=$("$HOME/.config/agent-harness-baseline/bin/hud-catchup.sh" 2>/dev/null)
   [[ -n "$out" ]] && echo "$out"
 }
 
-if [[ -z "${__CLAUDE_SYNC_CATCHUP_HOOKED:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_CATCHUP_HOOKED:-}" ]]; then
   autoload -Uz add-zsh-hook 2>/dev/null
   add-zsh-hook precmd __claude_sync_catchup 2>/dev/null
-  export __CLAUDE_SYNC_CATCHUP_HOOKED=1
+  export __AGENT_HARNESS_BASELINE_CATCHUP_HOOKED=1
 fi
 
 # ── 첫 인사 모먼트 (mac-setup 완료 후 1회) ──────────
 __maybe_greet() {
-  [[ -x "$HOME/.config/claude-sync/bin/greet.sh" ]] || return 0
-  local state="$HOME/.config/claude-sync/state/wizard-state.json"
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/greet.sh" ]] || return 0
+  local state="$HOME/.config/agent-harness-baseline/state/wizard-state.json"
   [[ -f "$state" ]] || return 0
-  "$HOME/.config/claude-sync/bin/greet.sh" 2>/dev/null
+  "$HOME/.config/agent-harness-baseline/bin/greet.sh" 2>/dev/null
 }
 
-if [[ -z "${__CLAUDE_SYNC_GREET_HOOKED:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_GREET_HOOKED:-}" ]]; then
   autoload -Uz add-zsh-hook 2>/dev/null
   add-zsh-hook precmd __maybe_greet 2>/dev/null
-  export __CLAUDE_SYNC_GREET_HOOKED=1
+  export __AGENT_HARNESS_BASELINE_GREET_HOOKED=1
 fi
 
 # 두 맥북 통합 활동 대시보드
-alias activity='$HOME/.config/claude-sync/bin/activity.sh'
+alias activity='$HOME/.config/agent-harness-baseline/bin/activity.sh'
 
 # ── 새 탭/셸 시작 시 백그라운드 sync (5분 throttle) ──
 # launchd 30분 주기 외에, 탭을 열 때마다 최신 상태 보장.
 # state 파일로 throttle해서 같은 머신에 탭 여러 개 열어도 1회만 실행.
 __claude_sync_tab_pull() {
-  [[ -x "$HOME/.config/claude-sync/bin/sync.sh" ]] || return 0
-  local state_file="$HOME/.config/claude-sync/state/last-tab-sync.txt"
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/sync.sh" ]] || return 0
+  local state_file="$HOME/.config/agent-harness-baseline/state/last-tab-sync.txt"
   local now last elapsed
   now=$(date +%s)
   last=0
@@ -200,13 +200,13 @@ __claude_sync_tab_pull() {
   (( elapsed < 300 )) && return 0
   echo "$now" > "$state_file"
   # 완전 분리된 백그라운드 (셸 종료해도 살아있음, 출력 버림)
-  ( nohup "$HOME/.config/claude-sync/bin/sync.sh" >/dev/null 2>&1 & ) &!
+  ( nohup "$HOME/.config/agent-harness-baseline/bin/sync.sh" >/dev/null 2>&1 & ) &!
 }
 
-if [[ -z "${__CLAUDE_SYNC_TAB_PULL_DONE:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_TAB_PULL_DONE:-}" ]]; then
   __claude_sync_tab_pull
-  export __CLAUDE_SYNC_TAB_PULL_DONE=1
+  export __AGENT_HARNESS_BASELINE_TAB_PULL_DONE=1
 fi
 
 # Shared design context
-alias getdesign="$HOME/.config/claude-sync/bin/getdesign.sh"
+alias getdesign="$HOME/.config/agent-harness-baseline/bin/getdesign.sh"

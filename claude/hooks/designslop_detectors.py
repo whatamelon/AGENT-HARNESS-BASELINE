@@ -5,7 +5,7 @@ no-design-slop 디텍터 — 단일 소스 (SSOT).
 quality-check.py(Stop 게이트, 세션 수정파일) 와 designslop-audit.py(전수 감사)
 양쪽이 이 모듈만 호출 → 로직 드리프트 0.
 
-룰 SSOT: ~/.config/claude-sync/claude/rules/no-design-slop.md
+룰 SSOT: ~/.config/agent-harness-baseline/claude/rules/no-design-slop.md
 구조 계층:
   A 강제(exit2): eyebrow/영문라벨, D1 아이콘혼용, D2 border·radius arbitrary,
                  D-EMOJI 이모지데코, D6 네비(프로젝트 매니페스트 선언 시)

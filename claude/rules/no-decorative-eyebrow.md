@@ -57,7 +57,7 @@
 
 본 룰은 문서만이 아니라 **Stop 게이트 hook으로 자동 강제**된다:
 
-- `~/.config/claude-sync/claude/hooks/quality-check.py` 의 `check_eyebrow_slop()`
+- `~/.config/agent-harness-baseline/claude/hooks/quality-check.py` 의 `check_eyebrow_slop()`
 - 매 턴 종료(Stop)마다 그 세션에서 수정된 `.tsx/.jsx/.ts/.js`를 재스캔
 - 위반 발견 시 `exit 2`로 file:line을 에이전트에 강제 피드백 → 수정 전까지 계속 표면화
 - 동시편집 프로세스가 eyebrow를 되돌려도 다음 Stop에서 재적발 (현재 파일 내용 기준 스캔)

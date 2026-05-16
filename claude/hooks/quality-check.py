@@ -166,7 +166,7 @@ def main():
                 lines.append(f"- `{d}`")
         lines.append("")
         lines.append(
-            "→ 룰: `~/.config/claude-sync/claude/rules/no-design-slop.md` · "
+            "→ 룰: `~/.config/agent-harness-baseline/claude/rules/no-design-slop.md` · "
             "`no-decorative-eyebrow.md` (예외: 브랜드 고유명사, 통용 약어, var/theme 토큰)"
         )
         lines.append("")

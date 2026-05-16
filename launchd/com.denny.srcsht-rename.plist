@@ -7,7 +7,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>__HOME__/.config/claude-sync/bin/srcsht-rename.sh</string>
+        <string>__HOME__/.config/agent-harness-baseline/bin/srcsht-rename.sh</string>
     </array>
     <key>WatchPaths</key>
     <array>

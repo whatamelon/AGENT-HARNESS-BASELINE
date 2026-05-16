@@ -2,7 +2,7 @@
 # codex-bridge.sh - keep Claude Code and Codex shared surfaces in sync.
 set -euo pipefail
 
-SSOT="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
+SSOT="${AGENT_HARNESS_BASELINE_HOME:-$HOME/.config/agent-harness-baseline}"
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
 CODEX_SKILLS="${CODEX_SKILLS:-$SSOT/codex/skills}"
@@ -24,7 +24,7 @@ Synchronizes:
   - Claude project memories -> Codex memories (unless --no-memories)
   - Claude subagents -> Codex custom agents
   - ~/AGENTS.md global instructions
-  - Codex agents/hooks/skills/memories through ~/.config/claude-sync/codex
+  - Codex agents/hooks/skills/memories through ~/.config/agent-harness-baseline/codex
 
   Secret-bearing config.toml is intentionally not committed. Use 1Password/env
 for secrets and keep only non-secret shared behavior in this bridge.
@@ -167,7 +167,7 @@ frontmatter_description() {
 display_source_path() {
   local path="$1"
   if [[ "$path" == "$SSOT/"* ]]; then
-    printf '$CLAUDE_SYNC_HOME/%s' "${path#"$SSOT"/}"
+    printf '$AGENT_HARNESS_BASELINE_HOME/%s' "${path#"$SSOT"/}"
   else
     printf '%s' "$path"
   fi
@@ -265,7 +265,7 @@ sync_memories() {
 
   {
     printf '# Memory Handbook\n\n'
-    printf 'This directory is shared through `~/.config/claude-sync/codex/memories` and linked to `~/.codex/memories`.\n\n'
+    printf 'This directory is shared through `~/.config/agent-harness-baseline/codex/memories` and linked to `~/.codex/memories`.\n\n'
     printf 'Generated from Claude project memory indexes by `codex-bridge.sh`.\n\n'
     printf '## Source Indexes\n\n'
     find "$CLAUDE_HOME/projects" -path '*/memory/MEMORY.md' -type f 2>/dev/null | sort | sed 's/^/- `/' | sed 's/$/`/' || true

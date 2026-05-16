@@ -26,7 +26,7 @@ Use this skill to bootstrap the user's standard task documentation without relyi
 Run from the target repository:
 
 ```bash
-~/.config/claude-sync/bin/ensure-work-log-task.sh --title "<task title>" --json
+~/.config/agent-harness-baseline/bin/ensure-work-log-task.sh --title "<task title>" --json
 ```
 
 Optional arguments:

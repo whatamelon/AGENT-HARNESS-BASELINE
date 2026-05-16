@@ -5,11 +5,11 @@
 #   sync.sh --immediate    pull 스킵, commit/push만 (Stop hook 등에서 호출)
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 cd "$SSOT" || exit 1
 
-# 사용자가 cs-pause 로 lock 걸어둔 동안 sync 차단 (사람-데몬 race 방지).
-# cs-resume 또는 .sync-paused 직접 삭제로 해제.
+# 사용자가 ahb-pause 로 lock 걸어둔 동안 sync 차단 (사람-데몬 race 방지).
+# ahb-resume 또는 .sync-paused 직접 삭제로 해제.
 if [[ -f "$SSOT/.sync-paused" ]]; then
   exit 0
 fi
@@ -41,8 +41,8 @@ if [[ "$mode" != "--immediate" ]]; then
 
   # Claude Code ↔ Codex 공유 표면도 자동 갱신.
   # --immediate 에서는 codex-bridge --push 가 다시 sync.sh 를 부르므로 실행하지 않는다.
-  if [[ "${CLAUDE_SYNC_SKIP_CODEX_BRIDGE:-0}" != "1" && -x "$SSOT/bin/codex-bridge.sh" ]]; then
-    CLAUDE_SYNC_SKIP_CODEX_BRIDGE=1 "$SSOT/bin/codex-bridge.sh" --quiet 2>/tmp/claude-sync-codex-bridge.err.log || true
+  if [[ "${AGENT_HARNESS_BASELINE_SKIP_CODEX_BRIDGE:-0}" != "1" && -x "$SSOT/bin/codex-bridge.sh" ]]; then
+    AGENT_HARNESS_BASELINE_SKIP_CODEX_BRIDGE=1 "$SSOT/bin/codex-bridge.sh" --quiet 2>/tmp/agent-harness-baseline-codex-bridge.err.log || true
   fi
 fi
 

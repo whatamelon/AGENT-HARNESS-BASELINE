@@ -2,7 +2,7 @@
 # install.sh — 새 머신에서 한 번만 실행. symlink + 셸 + git config 모두 잡아줌.
 set -euo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 [[ -d "$SSOT" ]] || { echo "❌ SSOT 없음: $SSOT"; exit 1; }
 
 echo "▶ Claude 디렉터리 symlink"
@@ -59,7 +59,7 @@ echo "▶ 셸 설정"
 SHARED_LINE="source $SSOT/shell/zshrc.shared"
 if ! grep -qF "$SHARED_LINE" "$HOME/.zshrc" 2>/dev/null; then
   echo "" >> "$HOME/.zshrc"
-  echo "# claude-sync" >> "$HOME/.zshrc"
+  echo "# agent-harness-baseline" >> "$HOME/.zshrc"
   echo "$SHARED_LINE" >> "$HOME/.zshrc"
   echo "  ✓ ~/.zshrc 에 source 라인 추가"
 else
@@ -69,7 +69,7 @@ fi
 ZPROF_LINE="source $SSOT/shell/zprofile.shared"
 if ! grep -qF "$ZPROF_LINE" "$HOME/.zprofile" 2>/dev/null; then
   echo "" >> "$HOME/.zprofile"
-  echo "# claude-sync" >> "$HOME/.zprofile"
+  echo "# agent-harness-baseline" >> "$HOME/.zprofile"
   echo "$ZPROF_LINE" >> "$HOME/.zprofile"
   echo "  ✓ ~/.zprofile 에 source 라인 추가"
 else
@@ -96,4 +96,4 @@ echo ""
 echo "다음 단계:"
 echo "  1. ~/.zshrc.local 에 머신별 시크릿/이메일 설정"
 echo "  2. ~/.claude/settings.local.json 시크릿 채우기 (또는 op inject 사용)"
-echo "  3. cs-doctor 로 검증"
+echo "  3. ahb-doctor 로 검증"

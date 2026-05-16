@@ -12,7 +12,7 @@ Machine: company MacBook Pro / current Codex session
 - Codex-only skill names missing in Claude: 0
 - Unresolved skill gap after policy allowlist/alias: 0
 
-Important: the original 34 Claude-only entries resolved under `/Users/manager/wishket/claude-settings/...`, not the central `~/.config/claude-sync/codex/skills` surface. This pass promoted portable and guarded skills into the central Codex surface and left only intentional Claude-only or Codex-alias cases.
+Important: the original 34 Claude-only entries resolved under `/Users/manager/wishket/claude-settings/...`, not the central `~/.config/agent-harness-baseline/codex/skills` surface. This pass promoted portable and guarded skills into the central Codex surface and left only intentional Claude-only or Codex-alias cases.
 
 ## Classification Legend
 

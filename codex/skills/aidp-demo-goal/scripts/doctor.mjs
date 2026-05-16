@@ -24,8 +24,8 @@ const checks = {
   gws: has('gws', ['--help']),
   slackMcpConfig: fileExists('~/.codex/config.toml'),
   codexHooks: fileExists('~/.codex/hooks.json'),
-  claudeSync: fileExists('~/.config/claude-sync'),
-  designslopAudit: fileExists('~/.config/claude-sync/claude/hooks/designslop-audit.py')
+  claudeSync: fileExists('~/.config/agent-harness-baseline'),
+  designslopAudit: fileExists('~/.config/agent-harness-baseline/claude/hooks/designslop-audit.py')
 };
 
 let mode = 'portable';

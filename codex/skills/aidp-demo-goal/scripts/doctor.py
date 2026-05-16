@@ -26,8 +26,8 @@ checks = {
     "gws": has("gws", ("--help",)),
     "slackMcpConfig": exists("~/.codex/config.toml"),
     "codexHooks": exists("~/.codex/hooks.json"),
-    "claudeSync": exists("~/.config/claude-sync"),
-    "designslopAudit": exists("~/.config/claude-sync/claude/hooks/designslop-audit.py"),
+    "claudeSync": exists("~/.config/agent-harness-baseline"),
+    "designslopAudit": exists("~/.config/agent-harness-baseline/claude/hooks/designslop-audit.py"),
 }
 
 mode = "manual"

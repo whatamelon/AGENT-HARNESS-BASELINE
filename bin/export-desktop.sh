@@ -4,7 +4,7 @@
 
 set -uo pipefail
 
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 readonly DEST="$SSOT/desktop"
 source "$SSOT/shell/ui-lib.sh"
 

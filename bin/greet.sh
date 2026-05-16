@@ -10,7 +10,7 @@
 
 set -uo pipefail
 
-SSOT="${SSOT:-$HOME/.config/claude-sync}"
+SSOT="${SSOT:-$HOME/.config/agent-harness-baseline}"
 WIZARD_STATE="$SSOT/state/wizard-state.json"
 MACHINE_FILE="$SSOT/.machine.json"
 ACTIVITY_DIR="$SSOT/state/activity"

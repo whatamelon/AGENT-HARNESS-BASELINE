@@ -4,16 +4,16 @@
 #
 # repo가 PRIVATE이라 anonymous curl 불가. gh 인증 후 clone 필수.
 #   brew install gh && gh auth login && \
-#   gh repo clone whatamelon/claude-sync ~/.config/claude-sync && \
-#     bash ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh
+#   gh repo clone whatamelon/AGENT-HARNESS-BASELINE ~/.config/agent-harness-baseline && \
+#     bash ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
 #
 # SSOT 이미 clone되어 있으면:
-#   bash ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh
+#   bash ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
 
 set -euo pipefail
 
-readonly SSOT_DIR="$HOME/.config/claude-sync"
-readonly REPO_URL="https://github.com/whatamelon/claude-sync.git"
+readonly SSOT_DIR="$HOME/.config/agent-harness-baseline"
+readonly REPO_URL="https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git"
 
 # 색상
 readonly G='\033[0;32m'   # green
@@ -92,7 +92,7 @@ else
 fi
 
 # ─── 4. SSOT repo clone (PRIVATE repo — gh 인증 필요) ─────────
-step "4. claude-sync repo"
+step "4. agent-harness-baseline repo"
 mkdir -p "$HOME/.config"
 if [[ -d "$SSOT_DIR/.git" ]]; then
   info "이미 clone됨 — git pull"
@@ -100,7 +100,7 @@ if [[ -d "$SSOT_DIR/.git" ]]; then
 else
   warn "clone 중 (private repo)"
   if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    gh repo clone whatamelon/claude-sync "$SSOT_DIR" -- --quiet
+    gh repo clone whatamelon/AGENT-HARNESS-BASELINE "$SSOT_DIR" -- --quiet
     info "clone 완료 (gh 인증)"
   else
     err "gh 미설치 또는 미인증. 다음 명령 후 재실행:"
@@ -151,7 +151,7 @@ EOF
 fi
 
 # ─── 8. install.sh 실행 (symlink + 셸 + git config) ──────────
-step "8. claude-sync install.sh"
+step "8. agent-harness-baseline install.sh"
 "$SSOT_DIR/bin/install.sh"
 
 # ─── 9. 시크릿 자동 주입 (1Password에 항목이 있을 때만) ──────
@@ -160,7 +160,7 @@ if op vault list >/dev/null 2>&1; then
   if [[ -x "$SSOT_DIR/bin/install-secrets.sh" ]]; then
     "$SSOT_DIR/bin/install-secrets.sh" 2>&1 \
       && info "settings.local.json 주입됨" \
-      || warn "주입 실패 — vault/item 확인 (Employee/claude-sync-machine-env)"
+      || warn "주입 실패 — vault/item 확인 (Employee/agent-harness-baseline-machine-env)"
     "$SSOT_DIR/bin/install.sh" >/dev/null
     info "settings.json 재머지 완료"
   else
@@ -213,23 +213,23 @@ fi
 # 안전하게 cp + modern bootstrap/bootout syntax 사용.
 step "12. launchd 자동 sync (30분 주기)"
 mkdir -p "$HOME/Library/LaunchAgents"
-PLIST_SRC="$SSOT_DIR/launchd/com.denny.claude-sync.plist"
-PLIST_DST="$HOME/Library/LaunchAgents/com.denny.claude-sync.plist"
+PLIST_SRC="$SSOT_DIR/launchd/com.denny.agent-harness-baseline.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/com.denny.agent-harness-baseline.plist"
 [[ -L "$PLIST_DST" ]] && rm "$PLIST_DST"   # 옛 심링크 정리
 cp -f "$PLIST_SRC" "$PLIST_DST"
-launchctl bootout "gui/$UID/com.denny.claude-sync" 2>/dev/null || true
+launchctl bootout "gui/$UID/com.denny.agent-harness-baseline" 2>/dev/null || true
 launchctl bootstrap "gui/$UID" "$PLIST_DST" 2>&1 | tail -1
-launchctl list | grep -q claude-sync && info "launchd 등록됨" || warn "launchd 등록 실패"
+launchctl list | grep -q agent-harness-baseline && info "launchd 등록됨" || warn "launchd 등록 실패"
 
 # daily-digest plist (매일 아침 8시)
-DIGEST_SRC="$SSOT_DIR/launchd/com.denny.claude-sync-digest.plist"
-DIGEST_DST="$HOME/Library/LaunchAgents/com.denny.claude-sync-digest.plist"
+DIGEST_SRC="$SSOT_DIR/launchd/com.denny.agent-harness-baseline-digest.plist"
+DIGEST_DST="$HOME/Library/LaunchAgents/com.denny.agent-harness-baseline-digest.plist"
 if [[ -f "$DIGEST_SRC" ]]; then
   [[ -L "$DIGEST_DST" ]] && rm "$DIGEST_DST"
   cp -f "$DIGEST_SRC" "$DIGEST_DST"
-  launchctl bootout "gui/$UID/com.denny.claude-sync-digest" 2>/dev/null || true
+  launchctl bootout "gui/$UID/com.denny.agent-harness-baseline-digest" 2>/dev/null || true
   launchctl bootstrap "gui/$UID" "$DIGEST_DST" 2>&1 | tail -1
-  launchctl list | grep -q claude-sync-digest && info "daily-digest launchd 등록됨" || warn "digest launchd 등록 실패"
+  launchctl list | grep -q agent-harness-baseline-digest && info "daily-digest launchd 등록됨" || warn "digest launchd 등록 실패"
 fi
 
 # srcsht-rename watcher (template — __HOME__ 치환 후 LaunchAgents로 복사)
@@ -338,7 +338,7 @@ if [[ -x "$WORKLOG_DIR/install.sh" ]]; then
 fi
 
 # ─── 14. 검증 ─────────────────────────────────────────────────
-step "14. 검증 (cs-doctor)"
+step "14. 검증 (ahb-doctor)"
 "$SSOT_DIR/bin/doctor.sh" || true
 
 # ─── 15. 최종 안내 (사람 액션 체크리스트) ────────────────────
@@ -387,7 +387,7 @@ cat <<EOF
 다음:
   1. ${B}exec zsh${N} (또는 새 터미널) 로 alias 활성화
   2. 위 [필수] 로그인 진행
-  3. ${B}cs-doctor${N} 로 다시 검증
+  3. ${B}ahb-doctor${N} 로 다시 검증
   4. 첫 프로젝트 등록: ${B}cd <project> && project-init${N}
 
 EOF

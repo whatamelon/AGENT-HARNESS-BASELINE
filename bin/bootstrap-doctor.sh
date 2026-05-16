@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # bootstrap-doctor.sh
 # 부트스트랩이 제대로 됐는지 광범위 검증.
-# doctor.sh (claude-sync 자체) 보다 더 넓은 범위 — 시스템 + CLI 인증까지.
+# doctor.sh (agent-harness-baseline 자체) 보다 더 넓은 범위 — 시스템 + CLI 인증까지.
 
 set -uo pipefail
 
 readonly G='\033[0;32m'; readonly Y='\033[1;33m'; readonly R='\033[0;31m'; readonly B='\033[1;34m'; readonly N='\033[0m'
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 
 ok=0; warn=0; err=0
 check() {
@@ -51,12 +51,12 @@ check "settings.json valid JSON" "jq empty \$HOME/.claude/settings.json"
 check "settings.local.json" "[[ -f \$HOME/.claude/settings.local.json ]]"
 
 echo -e "\n${B}══ 셸 통합 ══${N}"
-check "~/.zshrc 에 source" "grep -q claude-sync/shell/zshrc.shared \$HOME/.zshrc"
-check "~/.zprofile 에 source" "grep -q claude-sync/shell/zprofile.shared \$HOME/.zprofile"
+check "~/.zshrc 에 source" "grep -q agent-harness-baseline/shell/zshrc.shared \$HOME/.zshrc"
+check "~/.zprofile 에 source" "grep -q agent-harness-baseline/shell/zprofile.shared \$HOME/.zprofile"
 check "~/.config/projects symlink" "[[ -L \$HOME/.config/projects ]]"
 
 echo -e "\n${B}══ 자동 sync ══${N}"
-check "launchd plist" "launchctl list | grep -q com.denny.claude-sync"
+check "launchd plist" "launchctl list | grep -q com.denny.agent-harness-baseline"
 check "git remote 등록" "(cd \$SSOT && git remote get-url origin)"
 
 echo -e "\n${B}══ CLI 인증 ══${N}"

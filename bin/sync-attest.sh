@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-SSOT="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
+SSOT="${AGENT_HARNESS_BASELINE_HOME:-$HOME/.config/agent-harness-baseline}"
 CLAUDE_SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 CODEX_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 LEGACY_SKILLS_DIR="${LEGACY_SKILLS_DIR:-$HOME/.agents/skills}"
@@ -33,7 +33,7 @@ Checks and records:
   - omx doctor reports 0 warnings / 0 failed, unless --skip-doctor is used
 
 Writes a machine-local JSON attestation to:
-  ~/.config/claude-sync/state/sync-attestation.json
+  ~/.config/agent-harness-baseline/state/sync-attestation.json
 EOF
 }
 
@@ -54,7 +54,7 @@ while (($#)); do
   shift
 done
 
-[[ -d "$SSOT/.git" ]] || { echo "FAIL: missing claude-sync git repo: $SSOT" >&2; exit 1; }
+[[ -d "$SSOT/.git" ]] || { echo "FAIL: missing agent-harness-baseline git repo: $SSOT" >&2; exit 1; }
 
 if (( skip_generate == 0 )); then
   if [[ -x "$SSOT/bootstrap/install-shared-skills.sh" ]]; then

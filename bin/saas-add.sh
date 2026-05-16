@@ -7,7 +7,7 @@
 set -euo pipefail
 
 readonly G='\033[0;32m'; readonly Y='\033[1;33m'; readonly R='\033[0;31m'; readonly B='\033[1;34m'; readonly N='\033[0m'
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 readonly SAAS_DIR="$SSOT/shell/saas"
 readonly MAP_DIR="$HOME/.config/projects"
 
@@ -121,10 +121,10 @@ cat > "$PLUGIN" <<HEADER
 # 매핑: ~/.config/projects/$NAME.json
 # Export: $EXPORT_VARS
 #
-# 명시적 마커 경로 지정 (.claude-sync.json):
+# 명시적 마커 경로 지정 (.agent-harness-baseline.json):
 #   { "saas": { "$NAME": { "marker": "subdir/$MARKER" } } }
 
-source "\$HOME/.config/claude-sync/shell/saas/_lib.sh"
+source "\$HOME/.config/agent-harness-baseline/shell/saas/_lib.sh"
 
 __load_$NAME() {
   local map="\$HOME/.config/projects/$NAME.json"
@@ -222,9 +222,9 @@ fi
 echo -e "\n${G}✅ $NAME 플러그인 추가 완료${N}\n"
 echo "다음 단계:"
 echo "  1. ${B}exec zsh${N} (새 플러그인 인식)"
-echo "  2. 프로젝트에서 마커 ($MARKER) 확인 — 비표준 위치면 .claude-sync.json 에 marker 명시"
+echo "  2. 프로젝트에서 마커 ($MARKER) 확인 — 비표준 위치면 .agent-harness-baseline.json 에 marker 명시"
 echo "  3. ${B}\$EDITOR $MAP${N} 매핑 추가"
 echo "  4. 1Password에 vault 항목 추가"
 echo "  5. cd 다시 → ${B}env | grep $(echo $EXPORT_VARS | tr ' ' '|')${N} 확인"
 echo ""
-echo "  ${B}cs-sync${N}  # claude-sync 에 push (다른 머신 동기화)"
+echo "  ${B}ahb-sync${N}  # agent-harness-baseline 에 push (다른 머신 동기화)"

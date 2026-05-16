@@ -14,7 +14,7 @@
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 SETTINGS="$HOME/.claude/settings.local.json"
 MSG_ID_FILE="$SSOT/state/wizard-message-id.txt"
@@ -72,12 +72,12 @@ build_done_message() {
   local bar
   bar=$(build_progress_bar "$total" "$total")
   if [[ -n "$elapsed" ]]; then
-    printf "🎉 %s %s 셋업 완료!\n\n%s %d/%d · 100%%\n\n⏱ %s\n\n🚀 다음: cs-doctor" \
+    printf "🎉 %s %s 셋업 완료!\n\n%s %d/%d · 100%%\n\n⏱ %s\n\n🚀 다음: ahb-doctor" \
       "$emoji" "$persona" \
       "$bar" "$total" "$total" \
       "$elapsed"
   else
-    printf "🎉 %s %s 셋업 완료!\n\n%s %d/%d · 100%%\n\n🚀 다음: cs-doctor" \
+    printf "🎉 %s %s 셋업 완료!\n\n%s %d/%d · 100%%\n\n🚀 다음: ahb-doctor" \
       "$emoji" "$persona" \
       "$bar" "$total" "$total"
   fi

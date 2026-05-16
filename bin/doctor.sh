@@ -2,7 +2,7 @@
 # doctor.sh — symlink/git/secret 상태 점검
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 errors=0
 
 check_link() {
@@ -64,10 +64,10 @@ fi
 
 echo ""
 echo "── 셸 source 라인 ──"
-grep -q "claude-sync/shell/zshrc.shared" "$HOME/.zshrc" 2>/dev/null \
+grep -q "agent-harness-baseline/shell/zshrc.shared" "$HOME/.zshrc" 2>/dev/null \
   && echo "✓ ~/.zshrc 에 source 있음" \
   || { echo "❌ ~/.zshrc 에 source 없음"; ((errors++)); }
-grep -q "claude-sync/shell/zprofile.shared" "$HOME/.zprofile" 2>/dev/null \
+grep -q "agent-harness-baseline/shell/zprofile.shared" "$HOME/.zprofile" 2>/dev/null \
   && echo "✓ ~/.zprofile 에 source 있음" \
   || { echo "❌ ~/.zprofile 에 source 없음"; ((errors++)); }
 
@@ -104,8 +104,8 @@ cd "$SSOT" 2>/dev/null && {
 echo ""
 echo "── launchd 자동 sync ──"
 launchctl_list=$(launchctl list 2>/dev/null)
-if echo "$launchctl_list" | grep -q "com.denny.claude-sync"; then
-  echo "✓ launchd 등록됨 (com.denny.claude-sync)"
+if echo "$launchctl_list" | grep -q "com.denny.agent-harness-baseline"; then
+  echo "✓ launchd 등록됨 (com.denny.agent-harness-baseline)"
 else
   echo "⚠ launchd 미등록 — bin/install-launchd.sh 실행"
 fi
@@ -269,8 +269,8 @@ else
 fi
 
 # launchd digest plist
-if echo "$launchctl_list" | grep -q "com.denny.claude-sync-digest"; then
-  echo "✓ launchd digest 등록 (com.denny.claude-sync-digest)"
+if echo "$launchctl_list" | grep -q "com.denny.agent-harness-baseline-digest"; then
+  echo "✓ launchd digest 등록 (com.denny.agent-harness-baseline-digest)"
 else
   echo "⚠ launchd digest 미등록"
 fi
@@ -398,7 +398,7 @@ else
 fi
 
 # LaunchAgents plist 파일 타입 + 사이즈 검증 (macOS 26.x 심링크 차단 대비)
-for label in com.denny.claude-sync com.denny.claude-sync-digest com.denny.srcsht-rename; do
+for label in com.denny.agent-harness-baseline com.denny.agent-harness-baseline-digest com.denny.srcsht-rename; do
   plist="$HOME/Library/LaunchAgents/${label}.plist"
   if [[ -L "$plist" ]]; then
     echo "⚠ $label.plist 심링크 — macOS 26.x LaunchAgents 차단 가능 (bootstrap step 12 재실행 권장)"

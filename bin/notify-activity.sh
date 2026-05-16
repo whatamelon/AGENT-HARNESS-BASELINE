@@ -14,7 +14,7 @@
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 LEDGER_BIN="$SSOT/bin/ledger-append.sh"
 SYNC_BIN="$SSOT/bin/sync.sh"
 PERSONA_BIN="$SSOT/bin/persona.sh"

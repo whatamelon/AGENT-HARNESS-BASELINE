@@ -454,7 +454,7 @@ Use 4px-based spacing:
 - Do not hide errors behind generic “Something went wrong”.
 - Do not use decorative gradients where hierarchy/spacing would solve the problem.
 - **IRON LAW — no decorative eyebrow/kicker:** never place an ALL-CAPS micro eyebrow/kicker label directly above a section or page heading (e.g. `NOTIFICATION CENTER`, `CONTACT`, `DELIVERY DETAILS`). The heading + spacing carries the section; a repeated micro header reads as auto-generated AI tone, not editorial. Applies even if a project-local DESIGN.md still recommends "ALL CAPS eyebrow" — this global law wins and the project doc must be updated to match.
-- **IRON LAW — localized UI labels:** UI label text defaults to the product's primary language (Korean for these projects). Non-functional/decorative English labels are prohibited. Exceptions only: proper nouns (brand/model names like `BMW`, `GT3`), user-invisible technical tokens (code, API, URL, env keys), and short universally-adopted abbreviations used inside a localized phrase (`CEO 픽`). See global rule `~/.config/claude-sync/claude/rules/no-decorative-eyebrow.md`.
+- **IRON LAW — localized UI labels:** UI label text defaults to the product's primary language (Korean for these projects). Non-functional/decorative English labels are prohibited. Exceptions only: proper nouns (brand/model names like `BMW`, `GT3`), user-invisible technical tokens (code, API, URL, env keys), and short universally-adopted abbreviations used inside a localized phrase (`CEO 픽`). See global rule `~/.config/agent-harness-baseline/claude/rules/no-decorative-eyebrow.md`.
 
 ## 8. Responsive Behavior
 

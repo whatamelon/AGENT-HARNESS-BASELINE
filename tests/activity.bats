@@ -10,9 +10,9 @@ setup_persona_and_ledgers() {
   TS_YEST_PM=$(date -v-1d +%Y-%m-%dT22:00:00%z | sed -E 's/([+-][0-9]{2})([0-9]{2})$/\1:\2/')
 
   cat > "$SSOT/state/activity/홈맥에어.jsonl" <<EOF
-{"ts":"$TS_TODAY_AM","host":"홈맥에어","type":"session_end","cwd":"/dev/claude-sync","duration_min":47,"commits":2,"summary":"feat: cross-tool sync"}
+{"ts":"$TS_TODAY_AM","host":"홈맥에어","type":"session_end","cwd":"/dev/agent-harness-baseline","duration_min":47,"commits":2,"summary":"feat: cross-tool sync"}
 {"ts":"$TS_TODAY_PM","host":"홈맥에어","type":"session_end","cwd":"/dev/lawblaw_dev","duration_min":22,"commits":1,"summary":"fix(auth): SSO 토큰 검증"}
-{"ts":"$TS_YEST_PM","host":"홈맥에어","type":"session_end","cwd":"/dev/claude-sync","duration_min":120,"commits":3}
+{"ts":"$TS_YEST_PM","host":"홈맥에어","type":"session_end","cwd":"/dev/agent-harness-baseline","duration_min":120,"commits":3}
 EOF
   cat > "$SSOT/state/activity/회사맥프로.jsonl" <<EOF
 {"ts":"$(date +%Y-%m-%dT11:00:00%z | sed -E 's/([+-][0-9]{2})([0-9]{2})$/\1:\2/')","host":"회사맥프로","type":"session_end","cwd":"/dev/lawblaw_dev","duration_min":72,"commits":4,"summary":"feat(billing)"}
@@ -48,9 +48,9 @@ EOF
 @test "activity sorts events newest first within day" {
   setup_persona_and_ledgers
   run "$SSOT/bin/activity.sh"
-  # 오늘 13:25 (lawblaw)이 오늘 09:30 (claude-sync)보다 먼저 표시
+  # 오늘 13:25 (lawblaw)이 오늘 09:30 (agent-harness-baseline)보다 먼저 표시
   pm_pos=$(echo "$output" | grep -n "lawblaw_dev" | head -1 | cut -d: -f1)
-  am_pos=$(echo "$output" | grep -n "claude-sync" | head -1 | cut -d: -f1)
+  am_pos=$(echo "$output" | grep -n "agent-harness-baseline" | head -1 | cut -d: -f1)
   [ "$pm_pos" -lt "$am_pos" ]
 }
 
@@ -99,7 +99,7 @@ EOF
   run "$SSOT/bin/activity.sh" 회사맥프로
   [ "$status" -eq 0 ]
   # 홈맥에어 세션 안 보임
-  [[ "$output" != *"claude-sync"* ]] || true
+  [[ "$output" != *"agent-harness-baseline"* ]] || true
   [[ "$output" == *"lawblaw"* ]]
 }
 
@@ -108,8 +108,8 @@ EOF
   run "$SSOT/bin/activity.sh" lawblaw
   [ "$status" -eq 0 ]
   [[ "$output" == *"lawblaw"* ]]
-  # claude-sync 세션 안 보여야
-  [[ "$output" != *"claude-sync"* ]] || true
+  # agent-harness-baseline 세션 안 보여야
+  [[ "$output" != *"agent-harness-baseline"* ]] || true
 }
 
 # ── Task 3: 통계 위젯 ────────────────────────────────────────────────────────

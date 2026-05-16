@@ -1,11 +1,11 @@
 #!/usr/bin/env zsh
 # install-apps.sh — 앱 설치 sub-마법사
 # 사용: install-apps [preset]   # preset: minimal | recommended | full | custom
-# data: ~/.config/claude-sync/bootstrap/apps.json
+# data: ~/.config/agent-harness-baseline/bootstrap/apps.json
 
 set -uo pipefail
 
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 readonly DATA="$SSOT/bootstrap/apps.json"
 source "$SSOT/shell/ui-lib.sh"
 

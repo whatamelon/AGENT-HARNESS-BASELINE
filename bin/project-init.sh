@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 # project-init.sh
 # 새 프로젝트를 sync 시스템에 등록.
-# 신방식: shell/saas/_lib.sh 의 __find_marker 사용 — 자동 탐색 + .claude-sync.json 자동 생성.
+# 신방식: shell/saas/_lib.sh 의 __find_marker 사용 — 자동 탐색 + .agent-harness-baseline.json 자동 생성.
 # zsh 사용 이유: associative array (typeset -A) — macOS bash 3.2 미지원
 
 set -euo pipefail
@@ -9,7 +9,7 @@ set -euo pipefail
 readonly PROJECT_DIR="$PWD"
 readonly PROJECT_NAME="$(basename "$PROJECT_DIR")"
 readonly VAULT="${1:-${VAULT:-Employee}}"
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 
 readonly G='\033[0;32m'; readonly Y='\033[1;33m'; readonly R='\033[0;31m'; readonly B='\033[1;34m'; readonly N='\033[0m'
 step() { echo -e "\n${B}▶${N} $*"; }
@@ -30,7 +30,7 @@ op vault get "$VAULT" >/dev/null 2>&1 || { err "vault '$VAULT' 없음"; op vault
 PROJECT_ROOT="$(__find_project_root)"
 info "project root: $PROJECT_ROOT"
 
-# .claude-sync.json 명시 매핑이 필요한지 추적
+# .agent-harness-baseline.json 명시 매핑이 필요한지 추적
 typeset -A NEEDS_EXPLICIT
 
 # ─── 헬퍼: 마커 발견했는데 비표준 위치면 명시 매핑 후보로 마킹 ──
@@ -41,7 +41,7 @@ __check_explicit_needed() {
   # 표준 위치인지 확인 (예: vercel은 .vercel/project.json, supabase는 supabase/config.toml)
   if [[ "$rel" != "$default_suffix" ]]; then
     NEEDS_EXPLICIT[$plugin]="$rel"
-    info "[$plugin] 비표준 위치 발견: $rel — .claude-sync.json에 기록 권장"
+    info "[$plugin] 비표준 위치 발견: $rel — .agent-harness-baseline.json에 기록 권장"
   fi
 }
 
@@ -115,13 +115,17 @@ else
   warn "Supabase 마커 없음 — 'supabase init && supabase link --project-ref XXX' 후 재실행"
 fi
 
-# ─── 3) .claude-sync.json 자동 생성/갱신 (비표준 위치만) ─────
-step "3. .claude-sync.json (명시 매핑)"
+# ─── 3) .agent-harness-baseline.json 자동 생성/갱신 (비표준 위치만) ─────
+step "3. .agent-harness-baseline.json (명시 매핑)"
 if (( ${#NEEDS_EXPLICIT[@]} > 0 )); then
-  META="$PROJECT_ROOT/.claude-sync.json"
+  META="$PROJECT_ROOT/.agent-harness-baseline.json"
+  LEGACY_META="$PROJECT_ROOT/.claude-sync.json"
   if [[ -f "$META" ]]; then
     cp "$META" "$META.bak.$(date +%s)"
-    info "기존 .claude-sync.json 백업"
+    info "기존 .agent-harness-baseline.json 백업"
+  elif [[ -f "$LEGACY_META" ]]; then
+    cp "$LEGACY_META" "$META"
+    info "legacy .claude-sync.json → .agent-harness-baseline.json 마이그레이션"
   else
     echo '{}' > "$META"
   fi
@@ -135,9 +139,9 @@ if (( ${#NEEDS_EXPLICIT[@]} > 0 )); then
     info "saas.$plugin.marker = $rel"
   done
 
-  info "$PROJECT_ROOT/.claude-sync.json 갱신됨 — git commit 권장"
+  info "$PROJECT_ROOT/.agent-harness-baseline.json 갱신됨 — git commit 권장"
 else
-  info "표준 위치라 .claude-sync.json 불필요 (자동 탐색으로 충분)"
+  info "표준 위치라 .agent-harness-baseline.json 불필요 (자동 탐색으로 충분)"
 fi
 
 # ─── 4) .env.template 자동 생성 ──────────────────────────
@@ -171,7 +175,7 @@ if [[ -f ".gitignore" ]]; then
   else
     cat >> .gitignore <<'EOF'
 
-# Secrets (claude-sync)
+# Secrets (agent-harness-baseline)
 .env
 .env.local
 .env.*.local
@@ -196,13 +200,13 @@ else
   warn "주입 실패 — 1Password 항목/필드 누락. 채운 뒤: env-sync"
 fi
 
-# ─── 7) 매핑 sync (claude-sync repo로 push) ──────────────
+# ─── 7) 매핑 sync (agent-harness-baseline repo로 push) ──────────────
 step "7. 매핑 변경분 sync"
 (cd "$SSOT" && {
   if [[ -n "$(git status --porcelain config/projects)" ]]; then
     git add config/projects
     git commit -m "feat: register $PROJECT_NAME ($(hostname -s))" --quiet
-    git push --quiet 2>/dev/null && info "claude-sync repo에 push" || warn "push 실패"
+    git push --quiet 2>/dev/null && info "agent-harness-baseline repo에 push" || warn "push 실패"
   else
     info "변경 없음"
   fi
@@ -218,8 +222,8 @@ EOF
 
 if (( ${#NEEDS_EXPLICIT[@]} > 0 )); then
   cat <<EOF
-  ${Y}.claude-sync.json 이 새로 만들어졌으니 commit 권장:${N}
-    ${B}cd "$PROJECT_ROOT" && git add .claude-sync.json && git commit -m "chore: claude-sync marker"${N}
+  ${Y}.agent-harness-baseline.json 이 새로 만들어졌으니 commit 권장:${N}
+    ${B}cd "$PROJECT_ROOT" && git add .agent-harness-baseline.json && git commit -m "chore: agent-harness-baseline marker"${N}
 
 EOF
 fi

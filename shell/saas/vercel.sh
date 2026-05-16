@@ -5,10 +5,10 @@
 # Export: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
 #
 # 명시적 마커 경로 지정 (monorepo 등):
-#   project-root/.claude-sync.json
+#   project-root/.agent-harness-baseline.json
 #   { "saas": { "vercel": { "marker": "fe/.vercel/project.json" } } }
 
-source "$HOME/.config/claude-sync/shell/saas/_lib.sh"
+source "$HOME/.config/agent-harness-baseline/shell/saas/_lib.sh"
 
 __load_vercel() {
   local map="$HOME/.config/projects/vercel.json"

@@ -7,7 +7,7 @@
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 
 if [[ $# -lt 1 ]]; then

@@ -91,7 +91,7 @@ When the user explicitly requests the layout:
 - Do not split `docs/` into a private/local-only repo; docs are implementation context.
 - Keep planning templates in `docs/work-log/_template/`: `context.md`, `plan.md`, `checklist.md`.
 - For non-trivial tasks under that layout, create `docs/work-log/YYYY-MM-DD_<feature>/` with `context.md` (why), `plan.md` (how), `checklist.md` (acceptance).
-- Prefer `$work-log-harness` or `~/.config/claude-sync/bin/ensure-work-log-task.sh --title "<task>" --json` at workflow start; do not attach layout creation to SessionStart.
+- Prefer `$work-log-harness` or `~/.config/agent-harness-baseline/bin/ensure-work-log-task.sh --title "<task>" --json` at workflow start; do not attach layout creation to SessionStart.
 - Use Git subtree only later for mirroring/extracting an app/package that truly needs its own repo; do not use subtree to separate core project docs.
 
 ---

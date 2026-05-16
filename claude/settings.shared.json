@@ -124,7 +124,7 @@
           },
           {
             "type": "command",
-            "command": "bash $HOME/.config/claude-sync/bin/rebuild-agents-md.sh --quiet &"
+            "command": "bash $HOME/.config/agent-harness-baseline/bin/rebuild-agents-md.sh --quiet &"
           }
         ]
       }
@@ -143,11 +143,11 @@
           },
           {
             "type": "command",
-            "command": "bash $HOME/.config/claude-sync/bin/notify-session-end.sh &"
+            "command": "bash $HOME/.config/agent-harness-baseline/bin/notify-session-end.sh &"
           },
           {
             "type": "command",
-            "command": "bash $HOME/.config/claude-sync/bin/codex-bridge.sh --quiet --push &"
+            "command": "bash $HOME/.config/agent-harness-baseline/bin/codex-bridge.sh --quiet --push &"
           }
         ]
       }

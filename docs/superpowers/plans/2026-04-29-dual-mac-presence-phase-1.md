@@ -9,7 +9,7 @@
 **Tech Stack:** bash 3.2+ (macOS 기본), jq, bats-core (testing), git, Telegram bot API (Phase 1에서는 호출 인터페이스만 검증)
 
 **전제 조건:**
-- claude-sync repo가 `~/.config/claude-sync/` 에 clone됨
+- agent-harness-baseline repo가 `~/.config/agent-harness-baseline/` 에 clone됨
 - jq, git 설치됨 (Brewfile에 이미 있음)
 - 사용자 hostname이 macOS에서 `scutil --get LocalHostName` 으로 가져올 수 있음
 
@@ -56,16 +56,16 @@ Create `tests/test_helper.bash`:
 
 # 격리된 임시 작업 디렉터리 생성 (각 테스트마다)
 setup() {
-  export TEST_TMPDIR=$(mktemp -d -t claude-sync-test.XXXXXX)
+  export TEST_TMPDIR=$(mktemp -d -t agent-harness-baseline-test.XXXXXX)
   export ORIG_HOME="$HOME"
   export HOME="$TEST_TMPDIR"
-  mkdir -p "$HOME/.config/claude-sync/state/activity"
-  mkdir -p "$HOME/.config/claude-sync/bin"
+  mkdir -p "$HOME/.config/agent-harness-baseline/state/activity"
+  mkdir -p "$HOME/.config/agent-harness-baseline/bin"
   # SSOT 경로 노출
-  export SSOT="$HOME/.config/claude-sync"
+  export SSOT="$HOME/.config/agent-harness-baseline"
   # 실제 bin 스크립트 임시 환경에 복사 (테스트 대상)
-  if [[ -d "$ORIG_HOME/.config/claude-sync/bin" ]]; then
-    cp "$ORIG_HOME/.config/claude-sync/bin/"*.sh "$SSOT/bin/" 2>/dev/null || true
+  if [[ -d "$ORIG_HOME/.config/agent-harness-baseline/bin" ]]; then
+    cp "$ORIG_HOME/.config/agent-harness-baseline/bin/"*.sh "$SSOT/bin/" 2>/dev/null || true
   fi
 }
 
@@ -90,8 +90,8 @@ Create `tests/smoke.bats`:
 load test_helper
 
 @test "test_helper sets isolated HOME" {
-  [[ "$HOME" == *"claude-sync-test."* ]]
-  [ -d "$HOME/.config/claude-sync" ]
+  [[ "$HOME" == *"agent-harness-baseline-test."* ]]
+  [ -d "$HOME/.config/agent-harness-baseline" ]
 }
 
 @test "jq is available" {
@@ -102,7 +102,7 @@ load test_helper
 
 실행:
 ```bash
-cd ~/.config/claude-sync && bats tests/smoke.bats
+cd ~/.config/agent-harness-baseline && bats tests/smoke.bats
 # Expected: 2 tests, 0 failures
 ```
 
@@ -114,7 +114,7 @@ Create `bin/test.sh`:
 #!/usr/bin/env bash
 # bin/test.sh — 모든 bats 테스트 실행
 set -euo pipefail
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 cd "$SSOT" || exit 1
 
 if ! command -v bats >/dev/null; then
@@ -127,13 +127,13 @@ bats tests/
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/test.sh
+chmod +x ~/.config/agent-harness-baseline/bin/test.sh
 ```
 
 - [ ] **Step 0.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bootstrap/Brewfile tests/ bin/test.sh
 git commit -m "test: bats-core 테스트 인프라 도입
 
@@ -158,7 +158,7 @@ git commit -m "test: bats-core 테스트 인프라 도입
 - `persona.sh --json` → 페르소나 + 색 + 이모지 JSON 출력
 - `persona.sh --other` → 상대 머신 페르소나 이름 출력 (홈맥에어 ↔ 회사맥프로)
 - `persona.sh --init` → `.machine.json` 없으면 hostname 기반 자동 추측 후 생성
-- `~/.config/claude-sync/.machine.json` 이 권위 자료 (수동 override 가능)
+- `~/.config/agent-harness-baseline/.machine.json` 이 권위 자료 (수동 override 가능)
 
 **hostname 자동 매칭 규칙** (init 시):
 - hostname에 `Air` 포함 → 홈맥에어 (핫핑크)
@@ -230,7 +230,7 @@ load test_helper
 - [ ] **Step 1.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/persona.bats
+cd ~/.config/agent-harness-baseline && bats tests/persona.bats
 # Expected: 7 tests, 7 failures (persona.sh 없음)
 ```
 
@@ -249,7 +249,7 @@ Create `bin/persona.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 MACHINE_FILE="$SSOT/.machine.json"
 
 # 테스트에서 hostname 주입 가능
@@ -304,23 +304,23 @@ esac
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/persona.sh
+chmod +x ~/.config/agent-harness-baseline/bin/persona.sh
 ```
 
 - [ ] **Step 1.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/persona.bats
+cd ~/.config/agent-harness-baseline && bats tests/persona.bats
 # Expected: 7 tests, 0 failures
 ```
 
 - [ ] **Step 1.5: 자기 머신에 .machine.json 생성**
 
 ```bash
-~/.config/claude-sync/bin/persona.sh --init
+~/.config/agent-harness-baseline/bin/persona.sh --init
 # Expected: ✓ 홈맥에어 또는 ✓ 회사맥프로 메시지
 
-cat ~/.config/claude-sync/.machine.json
+cat ~/.config/agent-harness-baseline/.machine.json
 # Expected: persona/emoji/color/label JSON
 ```
 
@@ -330,15 +330,15 @@ cat ~/.config/claude-sync/.machine.json
 
 ```bash
 # 기존 .gitignore 끝에 추가
-echo "" >> ~/.config/claude-sync/.gitignore
-echo "# 머신 페르소나 (머신별 다름)" >> ~/.config/claude-sync/.gitignore
-echo ".machine.json" >> ~/.config/claude-sync/.gitignore
+echo "" >> ~/.config/agent-harness-baseline/.gitignore
+echo "# 머신 페르소나 (머신별 다름)" >> ~/.config/agent-harness-baseline/.gitignore
+echo ".machine.json" >> ~/.config/agent-harness-baseline/.gitignore
 ```
 
 - [ ] **Step 1.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/persona.sh tests/persona.bats .gitignore
 git commit -m "feat(persona): 머신 페르소나 helper
 
@@ -448,7 +448,7 @@ setup_persona() {
 - [ ] **Step 2.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/ledger-append.bats
+cd ~/.config/agent-harness-baseline && bats tests/ledger-append.bats
 # Expected: 6 tests, 6 failures
 ```
 
@@ -466,7 +466,7 @@ Create `bin/ledger-append.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 
 if [[ $# -lt 1 ]]; then
@@ -511,27 +511,27 @@ echo "$json" >> "$ledger_file"
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/ledger-append.sh
+chmod +x ~/.config/agent-harness-baseline/bin/ledger-append.sh
 ```
 
 - [ ] **Step 2.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/ledger-append.bats
+cd ~/.config/agent-harness-baseline && bats tests/ledger-append.bats
 # Expected: 6 tests, 0 failures
 ```
 
 - [ ] **Step 2.5: state/activity 디렉터리 git 추적**
 
 ```bash
-mkdir -p ~/.config/claude-sync/state/activity
-touch ~/.config/claude-sync/state/activity/.gitkeep
+mkdir -p ~/.config/agent-harness-baseline/state/activity
+touch ~/.config/agent-harness-baseline/state/activity/.gitkeep
 ```
 
 - [ ] **Step 2.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/ledger-append.sh tests/ledger-append.bats state/activity/.gitkeep
 git commit -m "feat(ledger): 활동 ledger append helper
 
@@ -660,7 +660,7 @@ EOF
 - [ ] **Step 3.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/ledger-query.bats
+cd ~/.config/agent-harness-baseline && bats tests/ledger-query.bats
 # Expected: 6 tests, 6 failures
 ```
 
@@ -680,7 +680,7 @@ Create `bin/ledger-query.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 LEDGER_DIR="$SSOT/state/activity"
 
 filter_type=""
@@ -748,20 +748,20 @@ fi
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/ledger-query.sh
+chmod +x ~/.config/agent-harness-baseline/bin/ledger-query.sh
 ```
 
 - [ ] **Step 3.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/ledger-query.bats
+cd ~/.config/agent-harness-baseline && bats tests/ledger-query.bats
 # Expected: 6 tests, 0 failures
 ```
 
 - [ ] **Step 3.5: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/ledger-query.sh tests/ledger-query.bats
 git commit -m "feat(ledger): 양 머신 ledger 통합 query
 
@@ -831,7 +831,7 @@ setup_git_repo() {
 - [ ] **Step 4.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/sync-immediate.bats
+cd ~/.config/agent-harness-baseline && bats tests/sync-immediate.bats
 # Expected: 3 tests, 일부 실패 (--immediate flag 미인식)
 ```
 
@@ -847,7 +847,7 @@ cd ~/.config/claude-sync && bats tests/sync-immediate.bats
 #   sync.sh --immediate    pull 스킵, commit/push만 (Stop hook 등에서 호출)
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 cd "$SSOT" || exit 1
 
 mode="${1:-full}"
@@ -877,21 +877,21 @@ fi
 - [ ] **Step 4.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/sync-immediate.bats
+cd ~/.config/agent-harness-baseline && bats tests/sync-immediate.bats
 # Expected: 3 tests, 0 failures
 ```
 
 - [ ] **Step 4.5: 회귀 테스트 — 기존 doctor + 다른 테스트 모두 통과**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/
+cd ~/.config/agent-harness-baseline && bats tests/
 # Expected: 모든 task의 모든 테스트 통과
 ```
 
 - [ ] **Step 4.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/sync.sh tests/sync-immediate.bats
 git commit -m "feat(sync): --immediate 모드 추가
 
@@ -971,7 +971,7 @@ setup_persona() {
 - [ ] **Step 5.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/notify-activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/notify-activity.bats
 # Expected: 4 tests 실패
 ```
 
@@ -996,7 +996,7 @@ Create `bin/notify-activity.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 LEDGER_BIN="$SSOT/bin/ledger-append.sh"
 SYNC_BIN="$SSOT/bin/sync.sh"
 PERSONA_BIN="$SSOT/bin/persona.sh"
@@ -1078,13 +1078,13 @@ disown 2>/dev/null || true
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/notify-activity.sh
+chmod +x ~/.config/agent-harness-baseline/bin/notify-activity.sh
 ```
 
 - [ ] **Step 5.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/notify-activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/notify-activity.bats
 # Expected: 4 tests, 0 failures
 ```
 
@@ -1092,11 +1092,11 @@ cd ~/.config/claude-sync && bats tests/notify-activity.bats
 
 ```bash
 # 자기 머신에서 실제 호출
-~/.config/claude-sync/bin/notify-activity.sh "wake"
+~/.config/agent-harness-baseline/bin/notify-activity.sh "wake"
 
 # 검증:
 # 1. ledger 추가
-cat ~/.config/claude-sync/state/activity/홈맥에어.jsonl | tail -1
+cat ~/.config/agent-harness-baseline/state/activity/홈맥에어.jsonl | tail -1
 # Expected: 마지막 줄이 type=wake
 
 # 2. Telegram 도착 확인 (휴대폰)
@@ -1104,14 +1104,14 @@ cat ~/.config/claude-sync/state/activity/홈맥에어.jsonl | tail -1
 
 # 3. git push 백그라운드 실행 확인
 sleep 3
-cd ~/.config/claude-sync && git log --oneline -1
+cd ~/.config/agent-harness-baseline && git log --oneline -1
 # Expected: "auto: ..." 자동 커밋
 ```
 
 - [ ] **Step 5.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/notify-activity.sh tests/notify-activity.bats
 git commit -m "feat(activity): 3채널 동시 발사 helper
 
@@ -1185,14 +1185,14 @@ fi
 - [ ] **Step 6.2: doctor 실행 → 통과**
 
 ```bash
-~/.config/claude-sync/bin/doctor.sh
+~/.config/agent-harness-baseline/bin/doctor.sh
 # Expected: 새 섹션의 모든 ✓, 0 errors
 ```
 
 - [ ] **Step 6.3: 모든 bats 테스트 회귀 확인**
 
 ```bash
-~/.config/claude-sync/bin/test.sh
+~/.config/agent-harness-baseline/bin/test.sh
 # Expected: 모든 task의 모든 테스트 통과 (0 failures)
 ```
 
@@ -1201,11 +1201,11 @@ fi
 회사 맥북에서:
 ```bash
 # 1. 회사 맥북에서 활동 발생
-~/.config/claude-sync/bin/notify-activity.sh "wake"
+~/.config/agent-harness-baseline/bin/notify-activity.sh "wake"
 
 # 2. 개인 맥북에서 (다른 셸):
 sleep 30
-cd ~/.config/claude-sync && git pull --quiet
+cd ~/.config/agent-harness-baseline && git pull --quiet
 cat state/activity/회사맥프로.jsonl | tail -1
 # Expected: 30초 이내 wake 이벤트 도착
 ```
@@ -1215,7 +1215,7 @@ cat state/activity/회사맥프로.jsonl | tail -1
 - [ ] **Step 6.5: Phase 1 마무리 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/doctor.sh
 git commit -m "chore(doctor): Phase 1 인프라 검증 추가
 

@@ -5,7 +5,7 @@
 # - add <slug>: run getdesign.md catalog installer for a brand inspiration.
 set -euo pipefail
 
-SSOT="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
+SSOT="${AGENT_HARNESS_BASELINE_HOME:-$HOME/.config/agent-harness-baseline}"
 GLOBAL_DESIGN="$SSOT/design/DESIGN.md"
 GLOBAL_GETDESIGN="$SSOT/design/getdesign.md"
 GLOBAL_HARNESS_DIR="$SSOT/design/harness"

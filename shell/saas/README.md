@@ -11,14 +11,14 @@
 `_lib.sh`의 헬퍼를 사용:
 
 ```bash
-source "$HOME/.config/claude-sync/shell/saas/_lib.sh"
+source "$HOME/.config/agent-harness-baseline/shell/saas/_lib.sh"
 
 __load_<name>() {
   local map="$HOME/.config/projects/<name>.json"
   [[ -f "$map" ]] || return 0
   __is_saas_disabled <name> && return 0
 
-  # 1) 마커 찾기 (.claude-sync.json 우선, 없으면 자동 탐색)
+  # 1) 마커 찾기 (.agent-harness-baseline.json 우선, 없으면 자동 탐색)
   local marker_file
   marker_file=$(__find_marker <name> "<default-marker-suffix>" 4)
   [[ -z "$marker_file" ]] && return 0
@@ -35,15 +35,15 @@ __load_<name>() {
 
 `__find_marker` 함수의 동작 우선순위:
 
-1. **명시적 (C)**: 프로젝트 루트의 `.claude-sync.json` 안에 `saas.<plugin>.marker` 키가 있으면 그 경로 사용 (project-root 기준 상대경로)
+1. **명시적 (C)**: 프로젝트 루트의 `.agent-harness-baseline.json` 안에 `saas.<plugin>.marker` 키가 있으면 그 경로 사용 (project-root 기준 상대경로)
 2. **자동 탐색 (B)**: 프로젝트 루트에서 `-maxdepth N` 까지 `*<default-suffix>` 패턴으로 find. `node_modules`, `.git`, `dist`, `build` 디렉터리는 제외. 가장 얕은 경로 우선.
 
 **프로젝트 루트 감지**: 현재 위치에서 위로 거슬러 올라가며 다음 중 하나가 있는 첫 디렉터리:
 - `.git/` (가장 일반적)
 - `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`
-- `.claude-sync.json` (강제 지정용)
+- `.agent-harness-baseline.json` (강제 지정용)
 
-## .claude-sync.json 예시 (프로젝트별 옵션)
+## .agent-harness-baseline.json 예시 (프로젝트별 옵션)
 
 ```json
 {

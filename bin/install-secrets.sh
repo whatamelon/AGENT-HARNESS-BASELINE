@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 readonly TPL="$SSOT/claude/settings.local.example.json"
 readonly TARGET="$HOME/.claude/settings.local.json"
 

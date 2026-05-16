@@ -7,10 +7,10 @@
 # Export: SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD
 #
 # 명시적 마커 경로 지정:
-#   project-root/.claude-sync.json
+#   project-root/.agent-harness-baseline.json
 #   { "saas": { "supabase": { "marker": "db/supabase/config.toml" } } }
 
-source "$HOME/.config/claude-sync/shell/saas/_lib.sh"
+source "$HOME/.config/agent-harness-baseline/shell/saas/_lib.sh"
 
 __load_supabase() {
   local map="$HOME/.config/projects/supabase.json"

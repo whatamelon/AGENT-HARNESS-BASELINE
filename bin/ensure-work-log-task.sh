@@ -88,7 +88,7 @@ feature="$(printf '%s' "$feature" | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}[_-]+//
 [ -n "$feature" ] || feature="task"
 SLUG="${DATE}_${feature}"
 
-SYNC_HOME="${CLAUDE_SYNC_HOME:-$HOME/.config/claude-sync}"
+SYNC_HOME="${AGENT_HARNESS_BASELINE_HOME:-$HOME/.config/agent-harness-baseline}"
 if [ -x "$SYNC_HOME/bin/ensure-project-layout.sh" ]; then
   printf '{"cwd":"%s"}\n' "$ROOT" | "$SYNC_HOME/bin/ensure-project-layout.sh" >/dev/null 2>&1 || true
 fi

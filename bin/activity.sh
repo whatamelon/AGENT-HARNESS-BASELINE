@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-SSOT="${SSOT:-$HOME/.config/claude-sync}"
+SSOT="${SSOT:-$HOME/.config/agent-harness-baseline}"
 LEDGER_QUERY="$SSOT/bin/ledger-query.sh"
 
 # TUI helper 함수 (--source-only 테스트용)

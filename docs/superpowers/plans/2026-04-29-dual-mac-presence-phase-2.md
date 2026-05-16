@@ -37,7 +37,7 @@ shell/
 └── zshrc.shared            (Task 3, 8) RPROMPT + alias hudm + precmd hook
 
 launchd/
-└── com.denny.claude-sync-digest.plist  (Task 9)  매일 08:00 daily-digest 트리거
+└── com.denny.agent-harness-baseline-digest.plist  (Task 9)  매일 08:00 daily-digest 트리거
 
 state/
 ├── hud-cache/              (Task 1)    {persona}.txt 5초 TTL 캐시
@@ -173,7 +173,7 @@ EOF
 - [ ] **Step 1.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-machines.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-machines.bats
 # Expected: 8 tests, 8 failures (script 없음)
 ```
 
@@ -193,7 +193,7 @@ Create `bin/hud-machines.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 LEDGER_DIR="$SSOT/state/activity"
 CACHE_DIR="$SSOT/state/hud-cache"
@@ -293,21 +293,21 @@ fi
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/hud-machines.sh
+chmod +x ~/.config/agent-harness-baseline/bin/hud-machines.sh
 ```
 
 - [ ] **Step 1.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-machines.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-machines.bats
 # Expected: 8 tests, 0 failures
 ```
 
 - [ ] **Step 1.5: state/hud-cache 디렉터리 + .gitkeep**
 
 ```bash
-mkdir -p ~/.config/claude-sync/state/hud-cache
-touch ~/.config/claude-sync/state/hud-cache/.gitkeep
+mkdir -p ~/.config/agent-harness-baseline/state/hud-cache
+touch ~/.config/agent-harness-baseline/state/hud-cache/.gitkeep
 ```
 
 또 `.gitignore` 끝에 캐시 파일 자체는 ignore:
@@ -319,14 +319,14 @@ state/hud-cache/*.txt
 - [ ] **Step 1.6: 자기 PC 실측**
 
 ```bash
-~/.config/claude-sync/bin/hud-machines.sh --format=line
+~/.config/agent-harness-baseline/bin/hud-machines.sh --format=line
 # Expected: 🏠 홈맥에어 ●  💼 회사맥프로 [상태]  (또는 🌑 if 상대 ledger 비어있음)
 ```
 
 - [ ] **Step 1.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/hud-machines.sh tests/hud-machines.bats state/hud-cache/.gitkeep .gitignore
 git commit -m "feat(hud): hud-machines.sh line format + 5초 캐시
 
@@ -351,7 +351,7 @@ git commit -m "feat(hud): hud-machines.sh line format + 5초 캐시
 **예시 출력:**
 ```
 🏠 홈맥에어 ● 활동 중
-   - 마지막: claude session in /dev/claude-sync (방금)
+   - 마지막: claude session in /dev/agent-harness-baseline (방금)
    - 오늘 commits: 7개
 
 💼 회사맥프로 ⚡ 5분 전
@@ -400,7 +400,7 @@ EOF
 - [ ] **Step 2.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-machines.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-machines.bats
 # Expected: 11 tests, 3 새 failures (detail format 미구현)
 ```
 
@@ -470,7 +470,7 @@ fi
 - [ ] **Step 2.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-machines.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-machines.bats
 # Expected: 11 tests, 0 failures
 ```
 
@@ -480,7 +480,7 @@ cd ~/.config/claude-sync && bats tests/hud-machines.bats
 
 ```bash
 # HUD: 두 맥북 상태 한눈
-alias hudm='$HOME/.config/claude-sync/bin/hud-machines.sh --format=detail'
+alias hudm='$HOME/.config/agent-harness-baseline/bin/hud-machines.sh --format=detail'
 ```
 
 - [ ] **Step 2.6: 자기 PC 실측**
@@ -494,7 +494,7 @@ hudm
 - [ ] **Step 2.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/hud-machines.sh tests/hud-machines.bats shell/zshrc.shared
 git commit -m "feat(hud): hud-machines.sh detail format + hudm alias
 
@@ -525,14 +525,14 @@ zsh RPROMPT는 bats로 테스트하기 어려움 — manual smoke test 위주.
 # ── HUD: 두 맥북 상태 RPROMPT segment ──────────────
 __claude_sync_hud_rprompt() {
   # silent fail: 스크립트 없으면 비움
-  [[ -x "$HOME/.config/claude-sync/bin/hud-machines.sh" ]] || return 0
-  "$HOME/.config/claude-sync/bin/hud-machines.sh" --format=line 2>/dev/null
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/hud-machines.sh" ]] || return 0
+  "$HOME/.config/agent-harness-baseline/bin/hud-machines.sh" --format=line 2>/dev/null
 }
 
 # 기존 RPROMPT 보존하면서 끝에 HUD 추가
-if [[ -z "${__CLAUDE_SYNC_RPROMPT_SET:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_RPROMPT_SET:-}" ]]; then
   RPROMPT='${RPROMPT:-}$(__claude_sync_hud_rprompt)'
-  export __CLAUDE_SYNC_RPROMPT_SET=1
+  export __AGENT_HARNESS_BASELINE_RPROMPT_SET=1
 fi
 ```
 
@@ -552,14 +552,14 @@ for i in 1 2 3 4 5; do echo $i; done
 - [ ] **Step 3.3: 회귀 — 전체 bats 통과**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/
+cd ~/.config/agent-harness-baseline && bats tests/
 # Expected: 모든 tests pass (zsh RPROMPT 변경은 bats 영향 없음)
 ```
 
 - [ ] **Step 3.4: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add shell/zshrc.shared
 git commit -m "feat(hud): zsh RPROMPT segment — 매 prompt 두 맥북 상태
 
@@ -617,7 +617,7 @@ git commit -m "feat(hud): zsh RPROMPT segment — 매 prompt 두 맥북 상태
 - [ ] **Step 4.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-machines.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-machines.bats
 # Expected: 13 tests, 2 새 failures
 ```
 
@@ -651,7 +651,7 @@ if [[ "$format" == "line" ]]; then
 - [ ] **Step 4.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-machines.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-machines.bats
 # Expected: 13 tests, 0 failures
 ```
 
@@ -659,7 +659,7 @@ cd ~/.config/claude-sync && bats tests/hud-machines.bats
 
 먼저 omc-hud.mjs 구조 확인:
 ```bash
-head -50 ~/.config/claude-sync/claude/hud/omc-hud.mjs
+head -50 ~/.config/agent-harness-baseline/claude/hud/omc-hud.mjs
 ```
 
 기존 구조에 따라 새 segment 추가. 일반적으로 segment 함수 패턴:
@@ -672,7 +672,7 @@ async function twoMacSegment() {
   try {
     const { execSync } = await import('node:child_process');
     const out = execSync(
-      `${process.env.HOME}/.config/claude-sync/bin/hud-machines.sh --format=line`,
+      `${process.env.HOME}/.config/agent-harness-baseline/bin/hud-machines.sh --format=line`,
       { encoding: 'utf-8', timeout: 1000 }
     );
     return out.trim();
@@ -698,7 +698,7 @@ state/hud-flash.txt
 - [ ] **Step 4.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/hud-machines.sh tests/hud-machines.bats claude/hud/omc-hud.mjs .gitignore
 git commit -m "feat(hud): 5초 ✨반짝 인디케이터 + Claude statusline segment
 
@@ -782,7 +782,7 @@ load test_helper
 - [ ] **Step 5.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/summarize-session.bats
+cd ~/.config/agent-harness-baseline && bats tests/summarize-session.bats
 # Expected: 5 tests, 5 failures
 ```
 
@@ -838,19 +838,19 @@ done
 echo "$out"
 ```
 
-권한: `chmod +x ~/.config/claude-sync/bin/summarize-session.sh`
+권한: `chmod +x ~/.config/agent-harness-baseline/bin/summarize-session.sh`
 
 - [ ] **Step 5.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/summarize-session.bats
+cd ~/.config/agent-harness-baseline && bats tests/summarize-session.bats
 # Expected: 5 tests, 0 failures
 ```
 
 - [ ] **Step 5.5: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/summarize-session.sh tests/summarize-session.bats
 git commit -m "feat(activity): summarize-session.sh — 헤드라인 합성
 
@@ -953,7 +953,7 @@ EOF
 - [ ] **Step 6.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/notify-session-end.bats
+cd ~/.config/agent-harness-baseline && bats tests/notify-session-end.bats
 # Expected: 5 tests, 5 failures
 ```
 
@@ -978,7 +978,7 @@ Create `bin/notify-session-end.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 LEDGER_DIR="$SSOT/state/activity"
 NOTIFY_BIN="$SSOT/bin/notify-activity.sh"
@@ -1028,19 +1028,19 @@ summary=$("$SUMMARIZE_BIN" "$cwd" "$duration_min" "$commits" "$files_changed" 2>
   "summary=$summary" || true
 ```
 
-권한: `chmod +x ~/.config/claude-sync/bin/notify-session-end.sh`
+권한: `chmod +x ~/.config/agent-harness-baseline/bin/notify-session-end.sh`
 
 - [ ] **Step 6.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/notify-session-end.bats
+cd ~/.config/agent-harness-baseline && bats tests/notify-session-end.bats
 # Expected: 5 tests, 0 failures
 ```
 
 - [ ] **Step 6.5: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/notify-session-end.sh tests/notify-session-end.bats
 git commit -m "feat(activity): notify-session-end.sh — Stop hook 트리거
 
@@ -1071,12 +1071,12 @@ jq '.hooks.Stop' ~/.claude/settings.json
 
 - [ ] **Step 7.2: jq로 새 hook 추가**
 
-`~/.claude/settings.json` 와 `~/.config/claude-sync/claude/settings.shared.json` 둘 다:
+`~/.claude/settings.json` 와 `~/.config/agent-harness-baseline/claude/settings.shared.json` 둘 다:
 
 ```bash
-for f in ~/.claude/settings.json ~/.config/claude-sync/claude/settings.shared.json; do
+for f in ~/.claude/settings.json ~/.config/agent-harness-baseline/claude/settings.shared.json; do
   jq '(.hooks.Stop[] | select(.matcher == "*") | .hooks) += [
-    {"type":"command","command":"bash /Users/denny/.config/claude-sync/bin/notify-session-end.sh &"}
+    {"type":"command","command":"bash /Users/denny/.config/agent-harness-baseline/bin/notify-session-end.sh &"}
   ]' "$f" > "$f.new" && mv "$f.new" "$f"
 done
 ```
@@ -1090,7 +1090,7 @@ jq '.hooks.Stop[0].hooks | length' ~/.claude/settings.json
 # Expected: 3 (quality-check + notify.sh + notify-session-end.sh)
 
 jq '.hooks.Stop[0].hooks[2].command' ~/.claude/settings.json
-# Expected: "bash /Users/denny/.config/claude-sync/bin/notify-session-end.sh &"
+# Expected: "bash /Users/denny/.config/agent-harness-baseline/bin/notify-session-end.sh &"
 ```
 
 - [ ] **Step 7.4: 다음 Claude 응답 후 manual smoke**
@@ -1098,14 +1098,14 @@ jq '.hooks.Stop[0].hooks[2].command' ~/.claude/settings.json
 응답 끝나면 백그라운드로 notify-session-end 호출됨. ledger 변동 확인:
 ```bash
 sleep 5
-tail -1 ~/.config/claude-sync/state/activity/홈맥에어.jsonl
+tail -1 ~/.config/agent-harness-baseline/state/activity/홈맥에어.jsonl
 # 의미 있는 세션이면 session_end 이벤트 추가됨
 ```
 
 - [ ] **Step 7.5: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add claude/settings.shared.json
 git commit -m "feat(activity): Stop hook — notify-session-end 등록
 
@@ -1190,7 +1190,7 @@ setup_persona() {
 - [ ] **Step 8.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-catchup.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-catchup.bats
 # Expected: 4 tests, 4 failures
 ```
 
@@ -1205,7 +1205,7 @@ Create `bin/hud-catchup.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 LEDGER_DIR="$SSOT/state/activity"
 TS_FILE="$SSOT/state/last-prompt-ts.txt"
@@ -1269,12 +1269,12 @@ if [[ -f "$other_ledger" ]]; then
 fi
 ```
 
-권한: `chmod +x ~/.config/claude-sync/bin/hud-catchup.sh`
+권한: `chmod +x ~/.config/agent-harness-baseline/bin/hud-catchup.sh`
 
 - [ ] **Step 8.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/hud-catchup.bats
+cd ~/.config/agent-harness-baseline && bats tests/hud-catchup.bats
 # Expected: 4 tests, 0 failures
 ```
 
@@ -1285,16 +1285,16 @@ cd ~/.config/claude-sync && bats tests/hud-catchup.bats
 ```bash
 # ── HUD: 출퇴근 catchup (4시간+ 휴면 후 1회) ──────────
 __claude_sync_catchup() {
-  [[ -x "$HOME/.config/claude-sync/bin/hud-catchup.sh" ]] || return 0
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/hud-catchup.sh" ]] || return 0
   local out
-  out=$("$HOME/.config/claude-sync/bin/hud-catchup.sh" 2>/dev/null)
+  out=$("$HOME/.config/agent-harness-baseline/bin/hud-catchup.sh" 2>/dev/null)
   [[ -n "$out" ]] && echo "$out"
 }
 
-if [[ -z "${__CLAUDE_SYNC_CATCHUP_HOOKED:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_CATCHUP_HOOKED:-}" ]]; then
   autoload -Uz add-zsh-hook 2>/dev/null
   add-zsh-hook precmd __claude_sync_catchup 2>/dev/null
-  export __CLAUDE_SYNC_CATCHUP_HOOKED=1
+  export __AGENT_HARNESS_BASELINE_CATCHUP_HOOKED=1
 fi
 ```
 
@@ -1309,7 +1309,7 @@ state/last-prompt-ts.txt
 - [ ] **Step 8.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/hud-catchup.sh tests/hud-catchup.bats shell/zshrc.shared .gitignore
 git commit -m "feat(hud): hud-catchup.sh — 4시간+ 휴면 후 출퇴근 모먼트
 
@@ -1326,7 +1326,7 @@ git commit -m "feat(hud): hud-catchup.sh — 4시간+ 휴면 후 출퇴근 모�
 **Files:**
 - Create: `bin/daily-digest.sh`
 - Create: `tests/daily-digest.bats`
-- Create: `launchd/com.denny.claude-sync-digest.plist`
+- Create: `launchd/com.denny.agent-harness-baseline-digest.plist`
 
 **기능:**
 - 매일 아침 08:00 launchd 트리거
@@ -1388,7 +1388,7 @@ EOF
 - [ ] **Step 9.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/daily-digest.bats
+cd ~/.config/agent-harness-baseline && bats tests/daily-digest.bats
 # Expected: 4 tests, 4 failures
 ```
 
@@ -1405,7 +1405,7 @@ Create `bin/daily-digest.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 LEDGER_DIR="$SSOT/state/activity"
 SETTINGS="$HOME/.claude/settings.local.json"
 
@@ -1462,18 +1462,18 @@ else
 fi
 ```
 
-권한: `chmod +x ~/.config/claude-sync/bin/daily-digest.sh`
+권한: `chmod +x ~/.config/agent-harness-baseline/bin/daily-digest.sh`
 
 - [ ] **Step 9.4: 테스트 통과 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/daily-digest.bats
+cd ~/.config/agent-harness-baseline && bats tests/daily-digest.bats
 # Expected: 4 tests, 0 failures
 ```
 
 - [ ] **Step 9.5: launchd plist 작성**
 
-Create `launchd/com.denny.claude-sync-digest.plist`:
+Create `launchd/com.denny.agent-harness-baseline-digest.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1481,12 +1481,12 @@ Create `launchd/com.denny.claude-sync-digest.plist`:
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.denny.claude-sync-digest</string>
+  <string>com.denny.agent-harness-baseline-digest</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
     <string>-c</string>
-    <string>$HOME/.config/claude-sync/bin/daily-digest.sh</string>
+    <string>$HOME/.config/agent-harness-baseline/bin/daily-digest.sh</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>
@@ -1496,9 +1496,9 @@ Create `launchd/com.denny.claude-sync-digest.plist`:
     <integer>0</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>/tmp/claude-sync-digest.out.log</string>
+  <string>/tmp/agent-harness-baseline-digest.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/tmp/claude-sync-digest.err.log</string>
+  <string>/tmp/agent-harness-baseline-digest.err.log</string>
   <key>RunAtLoad</key>
   <false/>
 </dict>
@@ -1508,25 +1508,25 @@ Create `launchd/com.denny.claude-sync-digest.plist`:
 - [ ] **Step 9.6: launchd 등록 (자기 PC 실측)**
 
 ```bash
-cp ~/.config/claude-sync/launchd/com.denny.claude-sync-digest.plist \
+cp ~/.config/agent-harness-baseline/launchd/com.denny.agent-harness-baseline-digest.plist \
    ~/Library/LaunchAgents/
 
-launchctl load ~/Library/LaunchAgents/com.denny.claude-sync-digest.plist
+launchctl load ~/Library/LaunchAgents/com.denny.agent-harness-baseline-digest.plist
 
-launchctl list | grep claude-sync-digest
+launchctl list | grep agent-harness-baseline-digest
 # Expected: PID 또는 - 와 status 0
 ```
 
 - [ ] **Step 9.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
-git add bin/daily-digest.sh tests/daily-digest.bats launchd/com.denny.claude-sync-digest.plist
+cd ~/.config/agent-harness-baseline
+git add bin/daily-digest.sh tests/daily-digest.bats launchd/com.denny.agent-harness-baseline-digest.plist
 git commit -m "feat(activity): daily-digest.sh + launchd plist (매일 08:00)
 
 - bin/daily-digest.sh: 어제 sessions/duration/commits 통합 요약
 - --print 모드 (테스트/디버그) + 기본 Telegram push
-- launchd com.denny.claude-sync-digest.plist (StartCalendarInterval 08:00)
+- launchd com.denny.agent-harness-baseline-digest.plist (StartCalendarInterval 08:00)
 - 4 bats tests"
 ```
 
@@ -1572,31 +1572,31 @@ else
 fi
 
 # launchd digest plist
-if launchctl list | grep -q "com.denny.claude-sync-digest"; then
-  echo "✓ launchd digest 등록 (com.denny.claude-sync-digest)"
+if launchctl list | grep -q "com.denny.agent-harness-baseline-digest"; then
+  echo "✓ launchd digest 등록 (com.denny.agent-harness-baseline-digest)"
 else
-  echo "⚠ launchd digest 미등록 — launchd/com.denny.claude-sync-digest.plist 등록 필요"
+  echo "⚠ launchd digest 미등록 — launchd/com.denny.agent-harness-baseline-digest.plist 등록 필요"
 fi
 ```
 
 - [ ] **Step 10.2: doctor 실행 → 통과**
 
 ```bash
-~/.config/claude-sync/bin/doctor.sh
+~/.config/agent-harness-baseline/bin/doctor.sh
 # Expected: 새 Phase 2 섹션 모두 ✓ (또는 launchd 미등록 ⚠ — 자기 PC만 등록되면 OK)
 ```
 
 - [ ] **Step 10.3: 모든 bats 회귀**
 
 ```bash
-~/.config/claude-sync/bin/test.sh
+~/.config/agent-harness-baseline/bin/test.sh
 # Expected: 모든 tests pass (Phase 1 + Phase 2 통합)
 ```
 
 - [ ] **Step 10.4: Phase 2 마무리 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/doctor.sh
 git commit -m "chore(doctor): Phase 2 검증 추가 — HUD + Stop hook + Catchup + 일일요약
 

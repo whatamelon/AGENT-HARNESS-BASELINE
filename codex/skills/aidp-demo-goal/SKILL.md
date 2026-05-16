@@ -50,7 +50,7 @@ Mode meanings:
 Fallback rules:
 - If `omx` is missing, do not invoke `$ultragoal`, `$team`, or `omx` commands; create portable run artifacts and print manual next commands.
 - If `tmux` is missing, do not launch Team; use native subagents only for bounded analysis or emit Team launch text.
-- If designslop hooks are missing, run audit manually when available: `python3 ~/.config/claude-sync/claude/hooks/designslop-audit.py <repo> --quiet`; if unavailable, record `designslop_unavailable` in completion audit and require human visual/design review.
+- If designslop hooks are missing, run audit manually when available: `python3 ~/.config/agent-harness-baseline/claude/hooks/designslop-audit.py <repo> --quiet`; if unavailable, record `designslop_unavailable` in completion audit and require human visual/design review.
 - If Vercel is missing or credentials unavailable, do not claim deploy completion; use another provider adapter or approved offline fallback.
 - If Node.js is missing, prefer Python fallback scripts. If both Node.js and Python 3 are missing, use templates manually and mark validation as manual.
 

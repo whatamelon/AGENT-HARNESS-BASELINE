@@ -1,7 +1,7 @@
 # Shared DESIGN.md Quality Harness
 
 This folder is the central template for the Claude Code/Codex DESIGN.md quality loop.
-It is shared by `~/.config/claude-sync`, so the company MacBook Pro and home MacBook Air can install the same harness into project repos.
+It is shared by `~/.config/agent-harness-baseline`, so the company MacBook Pro and home MacBook Air can install the same harness into project repos.
 
 ## Install into a project
 

@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.denny.claude-sync</string>
+  <string>com.denny.agent-harness-baseline</string>
 
   <key>ProgramArguments</key>
   <array>
     <string>/bin/zsh</string>
     <string>-lc</string>
-    <string>$HOME/.config/claude-sync/bin/sync.sh</string>
+    <string>$HOME/.config/agent-harness-baseline/bin/sync.sh</string>
   </array>
 
   <!-- 30분(1800초)마다 -->
@@ -22,9 +22,9 @@
 
   <!-- 로그 -->
   <key>StandardOutPath</key>
-  <string>/tmp/claude-sync.out.log</string>
+  <string>/tmp/agent-harness-baseline.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/tmp/claude-sync.err.log</string>
+  <string>/tmp/agent-harness-baseline.err.log</string>
 
   <!-- PATH (homebrew, gh) -->
   <key>EnvironmentVariables</key>

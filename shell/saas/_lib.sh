@@ -4,7 +4,8 @@
 
 # 프로젝트 루트 찾기.
 # 현재 디렉터리에서 위로 거슬러 올라가며 .git / package.json / pyproject.toml /
-# Cargo.toml / go.mod / .claude-sync.json 중 하나라도 있는 첫 디렉터리.
+# Cargo.toml / go.mod / .agent-harness-baseline.json 중 하나라도 있는 첫 디렉터리.
+# 기존 프로젝트의 .claude-sync.json 은 legacy fallback으로 계속 읽는다.
 # 없으면 PWD 반환.
 __find_project_root() {
   local d="$PWD"
@@ -14,6 +15,7 @@ __find_project_root() {
        || -f "$d/pyproject.toml" \
        || -f "$d/Cargo.toml" \
        || -f "$d/go.mod" \
+       || -f "$d/.agent-harness-baseline.json" \
        || -f "$d/.claude-sync.json" ]]; then
       echo "$d"
       return 0
@@ -23,13 +25,22 @@ __find_project_root() {
   echo "$PWD"
 }
 
+__agent_harness_meta_file() {
+  local root="$1"
+  if [[ -f "$root/.agent-harness-baseline.json" ]]; then
+    echo "$root/.agent-harness-baseline.json"
+  elif [[ -f "$root/.claude-sync.json" ]]; then
+    echo "$root/.claude-sync.json"
+  fi
+}
+
 # 마커 파일 위치 찾기 (C 우선, B fallback).
 #
 # 사용:
 #   __find_marker <plugin-name> <default-suffix> [maxdepth]
 #
 # 동작:
-#   1) 프로젝트 루트의 .claude-sync.json 에 saas.<plugin>.marker 가 있으면 → 그 경로 사용
+#   1) 프로젝트 루트의 .agent-harness-baseline.json 에 saas.<plugin>.marker 가 있으면 → 그 경로 사용
 #   2) 없으면 프로젝트 루트에서 -maxdepth 까지 *<default-suffix> 패턴으로 find
 #   3) 둘 다 못 찾으면 빈 문자열
 #
@@ -43,8 +54,9 @@ __find_marker() {
   proj_root="$(__find_project_root)"
 
   # 1) C: 명시적 경로
-  local meta="$proj_root/.claude-sync.json"
-  if [[ -f "$meta" ]]; then
+  local meta
+  meta="$(__agent_harness_meta_file "$proj_root")"
+  if [[ -n "$meta" && -f "$meta" ]]; then
     local explicit
     explicit=$(jq -r --arg k "$plugin_name" '.saas[$k].marker // empty' "$meta" 2>/dev/null)
     if [[ -n "$explicit" && "$explicit" != "null" ]]; then
@@ -68,13 +80,14 @@ __find_marker() {
 }
 
 # 명시적 disable 체크.
-# .claude-sync.json 에 "saas.<plugin>.disabled": true 면 0 (false) 반환 → 플러그인이 빈 echo로 종료해야 함.
+# .agent-harness-baseline.json 에 "saas.<plugin>.disabled": true 면 0 (false) 반환 → 플러그인이 빈 echo로 종료해야 함.
 __is_saas_disabled() {
   local plugin_name="$1"
   local proj_root
   proj_root="$(__find_project_root)"
-  local meta="$proj_root/.claude-sync.json"
-  [[ -f "$meta" ]] || return 1
+  local meta
+  meta="$(__agent_harness_meta_file "$proj_root")"
+  [[ -n "$meta" && -f "$meta" ]] || return 1
   local v
   v=$(jq -r --arg k "$plugin_name" '.saas[$k].disabled // false' "$meta" 2>/dev/null)
   [[ "$v" == "true" ]]

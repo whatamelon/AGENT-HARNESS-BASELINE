@@ -9,7 +9,7 @@
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 LEDGER_DIR="$SSOT/state/activity"
 
 filter_type=""

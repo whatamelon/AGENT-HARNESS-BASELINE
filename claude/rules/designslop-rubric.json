@@ -1,7 +1,7 @@
 {
   "_meta": {
     "purpose": "C-tier(판단/시각) 디자인 슬롭의 구조화. 정규식 불가 영역을 머신리더블 루브릭으로 전환 — 리뷰/비전 에이전트가 렌더된 화면에 일관 적용하는 채점 계약.",
-    "rule_ssot": "~/.config/claude-sync/claude/rules/no-design-slop.md",
+    "rule_ssot": "~/.config/agent-harness-baseline/claude/rules/no-design-slop.md",
     "consumed_by": ["visual-verdict", "code-reviewer", "vision agent", "designslop review gate"],
     "scoring": "각 probe pass/fail. category score = pass/total. gate 권고: 모든 category >= 0.8 그리고 severity=high fail 0건",
     "evidence_required": "screenshot(라이트+다크) 또는 DOM. 코드만으론 판정 불가 — 렌더 근거 필수"

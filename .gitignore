@@ -70,5 +70,5 @@ state/sync-attestation*.json
 # 부트스트랩 wizard 메시지 ID (머신별, 일회용)
 state/wizard-message-id.txt
 
-# cs-pause 로 만든 sync 일시정지 lock (머신별, 휘발성)
+# ahb-pause 로 만든 sync 일시정지 lock (머신별, 휘발성)
 .sync-paused

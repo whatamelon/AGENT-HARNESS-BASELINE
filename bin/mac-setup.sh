@@ -9,7 +9,7 @@
 
 set -uo pipefail
 
-readonly SSOT="$HOME/.config/claude-sync"
+readonly SSOT="$HOME/.config/agent-harness-baseline"
 readonly STATE_FILE="$SSOT/state/wizard-state.json"
 readonly TOTAL_STEPS=14
 
@@ -144,15 +144,15 @@ step_03_1password() {
 }
 
 step_04_claude_sync() {
-  ui_step_header 4 $TOTAL_STEPS "claude-sync clone + install.sh"
-  _notify_step 4 "claude-sync clone + install.sh"
+  ui_step_header 4 $TOTAL_STEPS "agent-harness-baseline clone + install.sh"
+  _notify_step 4 "agent-harness-baseline clone + install.sh"
 
   if [[ -d "$SSOT/.git" ]]; then
     ui_ok "이미 clone됨 — git pull"
     (cd "$SSOT" && git pull --rebase --autostash --quiet 2>/dev/null) && ui_ok "최신" || ui_warn "pull 실패 (네트워크?)"
   else
     ui_doing "clone 중"
-    git clone --quiet https://github.com/whatamelon/claude-sync.git "$SSOT"
+    git clone --quiet https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git "$SSOT"
     ui_ok "clone 완료"
   fi
 
@@ -281,17 +281,17 @@ step_08_launchd() {
   ui_step_header 8 $TOTAL_STEPS "launchd 자동 sync (30분 주기)"
   _notify_step 8 "launchd 자동 sync"
 
-  local plist_src="$SSOT/launchd/com.denny.claude-sync.plist"
-  local plist_dst="$HOME/Library/LaunchAgents/com.denny.claude-sync.plist"
+  local plist_src="$SSOT/launchd/com.denny.agent-harness-baseline.plist"
+  local plist_dst="$HOME/Library/LaunchAgents/com.denny.agent-harness-baseline.plist"
 
-  if launchctl list 2>/dev/null | grep -q claude-sync; then
+  if launchctl list 2>/dev/null | grep -q agent-harness-baseline; then
     ui_ok "launchd 이미 등록됨"
   else
     mkdir -p "$HOME/Library/LaunchAgents"
     ln -sfn "$plist_src" "$plist_dst"
     launchctl load "$plist_dst" 2>/dev/null
-    if launchctl list 2>/dev/null | grep -q claude-sync; then
-      ui_ok "com.denny.claude-sync 등록 완료 (30분 주기)"
+    if launchctl list 2>/dev/null | grep -q agent-harness-baseline; then
+      ui_ok "com.denny.agent-harness-baseline 등록 완료 (30분 주기)"
     else
       ui_err "launchd 등록 실패"
     fi

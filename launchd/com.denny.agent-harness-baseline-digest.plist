@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.denny.claude-sync-digest</string>
+  <string>com.denny.agent-harness-baseline-digest</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
     <string>-c</string>
-    <string>$HOME/.config/claude-sync/bin/daily-digest.sh</string>
+    <string>$HOME/.config/agent-harness-baseline/bin/daily-digest.sh</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>
@@ -18,9 +18,9 @@
     <integer>0</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>/tmp/claude-sync-digest.out.log</string>
+  <string>/tmp/agent-harness-baseline-digest.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/tmp/claude-sync-digest.err.log</string>
+  <string>/tmp/agent-harness-baseline-digest.err.log</string>
   <key>RunAtLoad</key>
   <false/>
 </dict>

@@ -7,7 +7,7 @@ Load the shared design operating system before product/UI/UX/visual work.
 1. Run or conceptually follow:
    ```bash
    getdesign
-   # or: ~/.config/claude-sync/bin/getdesign.sh
+   # or: ~/.config/agent-harness-baseline/bin/getdesign.sh
    ```
 2. Read the nearest project-local design docs discovered by the command.
 3. Read the global shared files:

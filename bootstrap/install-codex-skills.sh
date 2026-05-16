@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-CC_SKILLS_DIR="$HOME/.config/claude-sync/claude/skills"
+CC_SKILLS_DIR="$HOME/.config/agent-harness-baseline/claude/skills"
 CODEX_SKILLS_DIR="$HOME/.codex/skills"
 
 if [[ ! -d "$CODEX_SKILLS_DIR" ]]; then
@@ -86,7 +86,7 @@ if [[ -e "$AGENTS_SKILLS_DIR" || -L "$AGENTS_SKILLS_DIR" ]]; then
   AGENTS_REAL="$(real_path "$AGENTS_SKILLS_DIR")"
 fi
 
-POLICY_FILE="$HOME/.config/claude-sync/config/skill-sync-policy.json"
+POLICY_FILE="$HOME/.config/agent-harness-baseline/config/skill-sync-policy.json"
 POLICY_SKIP_NAMES=""
 if [[ -f "$POLICY_FILE" ]]; then
   POLICY_SKIP_NAMES="$(python3 - "$POLICY_FILE" <<'PY'

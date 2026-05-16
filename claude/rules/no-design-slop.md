@@ -82,7 +82,7 @@
 
 ## 구조 (5계층 — "정규식 불가"를 맞는 구조로 전환)
 
-단일 소스: `~/.config/claude-sync/claude/hooks/designslop_detectors.py`.
+단일 소스: `~/.config/agent-harness-baseline/claude/hooks/designslop_detectors.py`.
 `quality-check.py`(Stop, 세션 수정파일) 와 `designslop-audit.py`(전수) 가 동일 `run_all` 호출 → 드리프트 0.
 
 | 계층 | 방식 | 분야 | 상태 |
@@ -98,7 +98,7 @@
 - **C 판단영역** (정규식 불가) → `designslop-rubric.json` 의 머신리더블 probe(질문/pass·fail/severity/evidence)로 구조화. 리뷰·비전 에이전트가 렌더 화면에 일관 채점. 게이트는 Stop이 아니라 명시 리뷰 게이트.
 - **세션만 스캔** (옛 파일 잠재 슬롭 못 봄) → 전수 `designslop-audit.py` + `.designslop-baseline.json`(수용 residue). CI는 신규 회귀만 비영점 종료.
 - **도메인 영어 오탐**(SUV/CAR 등) → 매니페스트 `allow.englishLabels` 프로젝트 선언. 테스트/스토리 파일은 출하 UI 아니므로 디텍터 전역 제외.
-- **cancel MCP false-success** → `~/.config/claude-sync/bin/omc-cancel-verify.sh <mode>` 로 검증된 복구 절차 스크립트화(MCP 비의존, 잔존0 단언).
+- **cancel MCP false-success** → `~/.config/agent-harness-baseline/bin/omc-cancel-verify.sh <mode>` 로 검증된 복구 절차 스크립트화(MCP 비의존, 잔존0 단언).
 
 라이브 게이트: `file-tracker.py`(PostToolUse) → 세션파일 → `quality-check.py`(Stop) → `exit 2`(A)/`⚠️`(B)/레저. 동시편집 재발도 다음 Stop 재적발.
 

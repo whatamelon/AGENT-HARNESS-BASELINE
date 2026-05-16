@@ -55,10 +55,10 @@ tests/
 📅 04-29 화 (오늘)  🏠 47m + 💼 1h12m
        13:25  🏠 lawblaw_dev · 22m · "fix(auth): SSO 토큰..."
        11:00  💼 lawblaw_dev · 1h12m · "feat(billing): 결제 모달"
-       09:30  🏠 claude-sync · 47m · "feat: cross-tool sync"
+       09:30  🏠 agent-harness-baseline · 47m · "feat: cross-tool sync"
 
 📅 04-28 월         🏠 2h00m + 💼 35m
-       22:00  🏠 claude-sync · 2h · "feat: skill pool unification"
+       22:00  🏠 agent-harness-baseline · 2h · "feat: skill pool unification"
        18:30  💼 lawblaw_dev · 35m · "chore: deps update"
 ```
 
@@ -78,9 +78,9 @@ setup_persona_and_ledgers() {
   TS_YEST_PM=$(date -v-1d +%Y-%m-%dT22:00:00%z | sed -E 's/([+-][0-9]{2})([0-9]{2})$/\1:\2/')
 
   cat > "$SSOT/state/activity/홈맥에어.jsonl" <<EOF
-{"ts":"$TS_TODAY_AM","host":"홈맥에어","type":"session_end","cwd":"/dev/claude-sync","duration_min":47,"commits":2,"summary":"feat: cross-tool sync"}
+{"ts":"$TS_TODAY_AM","host":"홈맥에어","type":"session_end","cwd":"/dev/agent-harness-baseline","duration_min":47,"commits":2,"summary":"feat: cross-tool sync"}
 {"ts":"$TS_TODAY_PM","host":"홈맥에어","type":"session_end","cwd":"/dev/lawblaw_dev","duration_min":22,"commits":1,"summary":"fix(auth): SSO 토큰 검증"}
-{"ts":"$TS_YEST_PM","host":"홈맥에어","type":"session_end","cwd":"/dev/claude-sync","duration_min":120,"commits":3}
+{"ts":"$TS_YEST_PM","host":"홈맥에어","type":"session_end","cwd":"/dev/agent-harness-baseline","duration_min":120,"commits":3}
 EOF
   cat > "$SSOT/state/activity/회사맥프로.jsonl" <<EOF
 {"ts":"$(date +%Y-%m-%dT11:00:00%z | sed -E 's/([+-][0-9]{2})([0-9]{2})$/\1:\2/')","host":"회사맥프로","type":"session_end","cwd":"/dev/lawblaw_dev","duration_min":72,"commits":4,"summary":"feat(billing)"}
@@ -114,9 +114,9 @@ EOF
 @test "activity sorts events newest first within day" {
   setup_persona_and_ledgers
   run "$SSOT/bin/activity.sh"
-  # 오늘 13:25 (lawblaw)이 오늘 09:30 (claude-sync)보다 먼저 표시
+  # 오늘 13:25 (lawblaw)이 오늘 09:30 (agent-harness-baseline)보다 먼저 표시
   pm_pos=$(echo "$output" | grep -n "lawblaw_dev" | head -1 | cut -d: -f1)
-  am_pos=$(echo "$output" | grep -n "claude-sync" | head -1 | cut -d: -f1)
+  am_pos=$(echo "$output" | grep -n "agent-harness-baseline" | head -1 | cut -d: -f1)
   [ "$pm_pos" -lt "$am_pos" ]
 }
 
@@ -138,7 +138,7 @@ EOF
 - [ ] **Step 1.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/activity.bats
 # Expected: 6 tests, 6 failures
 ```
 
@@ -160,7 +160,7 @@ Create `bin/activity.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 LEDGER_QUERY="$SSOT/bin/ledger-query.sh"
 LEDGER_DIR="$SSOT/state/activity"
 
@@ -276,27 +276,27 @@ done
 
 권한:
 ```bash
-chmod +x ~/.config/claude-sync/bin/activity.sh
+chmod +x ~/.config/agent-harness-baseline/bin/activity.sh
 ```
 
 - [ ] **Step 1.4: 테스트 통과 확인 → 6/6**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/activity.bats
 # Expected: 6 tests, 0 failures
 ```
 
 - [ ] **Step 1.5: 자기 PC 실측**
 
 ```bash
-~/.config/claude-sync/bin/activity.sh
+~/.config/agent-harness-baseline/bin/activity.sh
 # Expected: 헤더 + 일자별 섹션 (현재 ledger 데이터 따라)
 ```
 
 - [ ] **Step 1.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/activity.sh tests/activity.bats
 git commit -m "feat(activity): 통합 대시보드 기본 텍스트 출력
 
@@ -349,7 +349,7 @@ git commit -m "feat(activity): 통합 대시보드 기본 텍스트 출력
   run "$SSOT/bin/activity.sh" 회사맥프로
   [ "$status" -eq 0 ]
   # 홈맥에어 세션 안 보임
-  [[ "$output" != *"claude-sync"* ]] || true
+  [[ "$output" != *"agent-harness-baseline"* ]] || true
   [[ "$output" == *"lawblaw"* ]]
 }
 
@@ -358,15 +358,15 @@ git commit -m "feat(activity): 통합 대시보드 기본 텍스트 출력
   run "$SSOT/bin/activity.sh" lawblaw
   [ "$status" -eq 0 ]
   [[ "$output" == *"lawblaw"* ]]
-  # claude-sync 세션 안 보여야
-  [[ "$output" != *"claude-sync"* ]] || true
+  # agent-harness-baseline 세션 안 보여야
+  [[ "$output" != *"agent-harness-baseline"* ]] || true
 }
 ```
 
 - [ ] **Step 2.2: 테스트 통과 확인 → 10/10**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/activity.bats
 # Expected: 10 tests, 0 failures (필터는 이미 Task 1에서 구현됨)
 ```
 
@@ -375,16 +375,16 @@ cd ~/.config/claude-sync && bats tests/activity.bats
 - [ ] **Step 2.3: 자기 PC 실측**
 
 ```bash
-~/.config/claude-sync/bin/activity.sh today
-~/.config/claude-sync/bin/activity.sh 30d
-~/.config/claude-sync/bin/activity.sh 회사맥프로
-~/.config/claude-sync/bin/activity.sh claude-sync
+~/.config/agent-harness-baseline/bin/activity.sh today
+~/.config/agent-harness-baseline/bin/activity.sh 30d
+~/.config/agent-harness-baseline/bin/activity.sh 회사맥프로
+~/.config/agent-harness-baseline/bin/activity.sh agent-harness-baseline
 ```
 
 - [ ] **Step 2.4: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add tests/activity.bats
 git commit -m "test(activity): 필터 옵션 검증 (30d/today/persona/project)
 
@@ -519,21 +519,21 @@ fi
 - [ ] **Step 3.4: 테스트 통과 → 12/12**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/activity.bats
 # Expected: 12 tests pass
 ```
 
 - [ ] **Step 3.5: 자기 PC 실측**
 
 ```bash
-~/.config/claude-sync/bin/activity.sh
+~/.config/agent-harness-baseline/bin/activity.sh
 # Expected: 헤더 + 일자 + 통계 섹션 (요일 bar + 모멘텀)
 ```
 
 - [ ] **Step 3.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/activity.sh tests/activity.bats
 git commit -m "feat(activity): 요일 막대그래프 + 모멘텀 위젯
 
@@ -581,7 +581,7 @@ git commit -m "feat(activity): 요일 막대그래프 + 모멘텀 위젯
 - [ ] **Step 4.2: 테스트 실행**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/activity.bats
 # Expected: 14 tests, 0 failures (Task 1 골격으로 이미 작동)
 ```
 
@@ -590,14 +590,14 @@ cd ~/.config/claude-sync && bats tests/activity.bats
 - [ ] **Step 4.3: 자기 PC 실측**
 
 ```bash
-~/.config/claude-sync/bin/activity.sh --json | jq -c
+~/.config/agent-harness-baseline/bin/activity.sh --json | jq -c
 # Expected: 각 이벤트가 jq로 파싱 가능
 ```
 
 - [ ] **Step 4.4: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add tests/activity.bats
 git commit -m "test(activity): --json 출력 검증
 
@@ -693,14 +693,14 @@ fi
 - [ ] **Step 5.4: 테스트 통과**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/activity.bats
+cd ~/.config/agent-harness-baseline && bats tests/activity.bats
 # Expected: 16 tests pass (또는 첫 1개 skip — fzf 설치 환경)
 ```
 
 - [ ] **Step 5.5: 자기 PC manual smoke**
 
 ```bash
-~/.config/claude-sync/bin/activity.sh --tui
+~/.config/agent-harness-baseline/bin/activity.sh --tui
 # Expected: fzf 인터랙티브 → 세션 선택 → 그 줄 출력 후 종료
 # (fzf 미설치 환경에선 plain text fallback)
 ```
@@ -708,7 +708,7 @@ cd ~/.config/claude-sync && bats tests/activity.bats
 - [ ] **Step 5.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/activity.sh tests/activity.bats
 git commit -m "feat(activity): --tui 모드 (fzf 인터랙티브)
 
@@ -730,7 +730,7 @@ git commit -m "feat(activity): --tui 모드 (fzf 인터랙티브)
 `shell/zshrc.shared` 끝에:
 ```bash
 # 두 맥북 통합 활동 대시보드
-alias activity='$HOME/.config/claude-sync/bin/activity.sh'
+alias activity='$HOME/.config/agent-harness-baseline/bin/activity.sh'
 ```
 
 - [ ] **Step 6.2: doctor.sh 에 Phase 4 섹션 추가**
@@ -766,14 +766,14 @@ fi
 - [ ] **Step 6.3: doctor 실행**
 
 ```bash
-~/.config/claude-sync/bin/doctor.sh
+~/.config/agent-harness-baseline/bin/doctor.sh
 # Expected: Phase 4 섹션 모두 ✓
 ```
 
 - [ ] **Step 6.4: 모든 bats 회귀**
 
 ```bash
-~/.config/claude-sync/bin/test.sh
+~/.config/agent-harness-baseline/bin/test.sh
 # Expected: 80+ tests pass
 ```
 
@@ -791,7 +791,7 @@ activity --tui              # fzf 인터랙티브 (있으면)
 - [ ] **Step 6.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add shell/zshrc.shared bin/doctor.sh
 git commit -m "feat+chore(activity): alias activity + doctor Phase 4 검증
 

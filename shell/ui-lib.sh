@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # ui-lib.sh — 휘황찬란 터미널 UI 헬퍼 라이브러리
-# 사용: source "$HOME/.config/claude-sync/shell/ui-lib.sh"
+# 사용: source "$HOME/.config/agent-harness-baseline/shell/ui-lib.sh"
 
 # ──── Truecolor 팔레트 ────────────────────────────────────
 typeset -g UI_ROSE='\033[38;2;255;105;180m'      # 핫핑크
@@ -76,7 +76,7 @@ ui_main_banner() {
   ui_gradient "✦  개발환경 꾸쮹  ✦" 255 105 180 99 102 241
   echo -e "             ${UI_BOLD}${UI_ROSE}║${UI_R}"
   echo -e "${UI_BOLD}${UI_ROSE}    ║${UI_R}        ${UI_DIM}${UI_GRAY}─────────────────────────────────────────${UI_R}         ${UI_BOLD}${UI_ROSE}║${UI_R}"
-  echo -e "${UI_BOLD}${UI_ROSE}    ║${UI_R}            ${UI_CYAN}${UI_ITAL}Mac Setup Wizard${UI_R}  ${UI_DIM}·${UI_R}  ${UI_AMBER}claude-sync v1.0${UI_R}            ${UI_BOLD}${UI_ROSE}║${UI_R}"
+  echo -e "${UI_BOLD}${UI_ROSE}    ║${UI_R}            ${UI_CYAN}${UI_ITAL}Mac Setup Wizard${UI_R}  ${UI_DIM}·${UI_R}  ${UI_AMBER}agent-harness-baseline v1.0${UI_R}            ${UI_BOLD}${UI_ROSE}║${UI_R}"
   echo -e "${UI_BOLD}${UI_ROSE}    ║${UI_R}                                                          ${UI_BOLD}${UI_ROSE}║${UI_R}"
   echo -e "${UI_BOLD}${UI_ROSE}    ╚══════════════════════════════════════════════════════════╝${UI_R}"
   echo

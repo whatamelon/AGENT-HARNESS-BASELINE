@@ -4,8 +4,8 @@
 
 ## Canonical source
 
-- `~/.config/claude-sync/design/DESIGN.md`
-- `~/.config/claude-sync/design/getdesign.md`
+- `~/.config/agent-harness-baseline/design/DESIGN.md`
+- `~/.config/agent-harness-baseline/design/getdesign.md`
 
 These are linked to:
 
@@ -17,4 +17,4 @@ These are linked to:
 
 Before UI/UX/product/visual work, load `getdesign.md`, then `DESIGN.md`, then project-local design docs. Summarize active design constraints and validate visually when possible.
 
-Do not create machine-local divergent copies. Update the canonical files in `~/.config/claude-sync/design/` and run `bash ~/.config/claude-sync/bin/sync-attest.sh` to certify sync.
+Do not create machine-local divergent copies. Update the canonical files in `~/.config/agent-harness-baseline/design/` and run `bash ~/.config/agent-harness-baseline/bin/sync-attest.sh` to certify sync.

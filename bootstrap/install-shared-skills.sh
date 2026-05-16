@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # install-shared-skills.sh
-# claude-sync/agents/skill-lock.json 을 권위 자료로 Codex canonical
+# agent-harness-baseline/agents/skill-lock.json 을 권위 자료로 Codex canonical
 # ~/.codex/skills/ 를 재구성한다. 호환성을 위해 ~/.agents/skills 는
 # ~/.codex/skills 로 향하는 symlink 로 유지한다.
 #
@@ -13,11 +13,11 @@
 
 set -euo pipefail
 
-LOCK="$HOME/.config/claude-sync/agents/skill-lock.json"
+LOCK="$HOME/.config/agent-harness-baseline/agents/skill-lock.json"
 AGENTS_DIR="$HOME/.agents"
 CODEX_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 SKILLS_DIR="$CODEX_SKILLS_DIR"
-CACHE="$HOME/.cache/claude-sync/skill-sources"
+CACHE="$HOME/.cache/agent-harness-baseline/skill-sources"
 
 # 의존성 체크
 for cmd in jq git; do

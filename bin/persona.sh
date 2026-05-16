@@ -8,7 +8,7 @@
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 MACHINE_FILE="$SSOT/.machine.json"
 
 # 테스트에서 hostname 주입 가능

@@ -130,7 +130,7 @@ setup_persona() {
 - [ ] **Step 1.2: 테스트 실패 확인**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/notify-step.bats
+cd ~/.config/agent-harness-baseline && bats tests/notify-step.bats
 # Expected: 6 tests, 6 failures
 ```
 
@@ -155,7 +155,7 @@ Create `bin/notify-step.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 SETTINGS="$HOME/.claude/settings.local.json"
 MSG_ID_FILE="$SSOT/state/wizard-message-id.txt"
@@ -205,7 +205,7 @@ build_done_message() {
 
   local bar
   bar=$(build_progress_bar "$total" "$total")
-  printf "🎉 %s %s 셋업 완료!\n\n%s %d/%d · 100%%\n\n%s\n\n🚀 다음: cs-doctor" \
+  printf "🎉 %s %s 셋업 완료!\n\n%s %d/%d · 100%%\n\n%s\n\n🚀 다음: ahb-doctor" \
     "$emoji" "$persona" \
     "$bar" "$total" "$total" \
     "${elapsed:+⏱ $elapsed}"
@@ -311,7 +311,7 @@ case "${1:-}" in
 esac
 ```
 
-권한: `chmod +x ~/.config/claude-sync/bin/notify-step.sh`
+권한: `chmod +x ~/.config/agent-harness-baseline/bin/notify-step.sh`
 
 - [ ] **Step 1.4: 테스트 통과 확인 → 6/6**
 
@@ -326,19 +326,19 @@ state/wizard-message-id.txt
 - [ ] **Step 1.6: 자기 PC 실측 (선택)**
 
 ```bash
-~/.config/claude-sync/bin/notify-step.sh start 13
+~/.config/agent-harness-baseline/bin/notify-step.sh start 13
 sleep 1
-~/.config/claude-sync/bin/notify-step.sh update 4 13 "🔄" "테스트 단계" "1분 경과"
+~/.config/agent-harness-baseline/bin/notify-step.sh update 4 13 "🔄" "테스트 단계" "1분 경과"
 sleep 1
-~/.config/claude-sync/bin/notify-step.sh done 13 "5분"
-~/.config/claude-sync/bin/notify-step.sh reset
+~/.config/agent-harness-baseline/bin/notify-step.sh done 13 "5분"
+~/.config/agent-harness-baseline/bin/notify-step.sh reset
 # 휴대폰 Telegram 에 한 메시지가 변하는 모습 확인
 ```
 
 - [ ] **Step 1.7: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/notify-step.sh tests/notify-step.bats .gitignore
 git commit -m "feat(setup): notify-step.sh — Telegram editMessageText 라이브 progress
 
@@ -366,9 +366,9 @@ git commit -m "feat(setup): notify-step.sh — Telegram editMessageText 라이�
 - [ ] **Step 2.1: mac-setup.sh의 step 함수 위치 확인**
 
 ```bash
-grep -n "^step()" ~/.config/claude-sync/bin/mac-setup.sh
+grep -n "^step()" ~/.config/agent-harness-baseline/bin/mac-setup.sh
 # 또는
-grep -n "^step " ~/.config/claude-sync/bin/mac-setup.sh
+grep -n "^step " ~/.config/agent-harness-baseline/bin/mac-setup.sh
 ```
 
 다른 에이전트가 작성한 step 함수 형태 (UI lib 호출). 정확한 위치 확인.
@@ -409,14 +409,14 @@ DRY_RUN=1 mac-setup --step 1
 - [ ] **Step 2.4: 회귀 — 전체 bats**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/
+cd ~/.config/agent-harness-baseline && bats tests/
 # Expected: 모든 tests pass (mac-setup 변경은 bats 영향 X)
 ```
 
 - [ ] **Step 2.5: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/mac-setup.sh
 git commit -m "feat(setup): mac-setup step 함수에 notify-step 통합
 
@@ -437,9 +437,9 @@ bootstrap-new-mac.sh는 비대화형 자동 모드. mac-setup 과 비슷한 step
 - [ ] **Step 3.1: bootstrap-new-mac.sh의 step 함수 확인**
 
 ```bash
-grep -n "^step\(\) {" ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh
+grep -n "^step\(\) {" ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
 # 또는
-grep -n "step \"" ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh | head -5
+grep -n "step \"" ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh | head -5
 ```
 
 - [ ] **Step 3.2: step 함수에 notify-step hook 추가**
@@ -467,13 +467,13 @@ fi
 bootstrap-new-mac.sh 는 회사 맥북 첫 셋업용 — 자기 PC 에선 실측 어려움. `--dry-run` 같은 옵션이 있는지 확인. 없으면 `head` 로 step 호출만 확인:
 
 ```bash
-grep -A 2 "^step \"" ~/.config/claude-sync/bootstrap/bootstrap-new-mac.sh | head -20
+grep -A 2 "^step \"" ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh | head -20
 ```
 
 - [ ] **Step 3.4: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bootstrap/bootstrap-new-mac.sh
 git commit -m "feat(setup): bootstrap-new-mac step 함수에 notify-step 통합
 
@@ -498,7 +498,7 @@ mac-setup 의 step_03_1password / step_11_cli_login 함수 안에 추가.
 - [ ] **Step 4.1: 함수 위치 찾기**
 
 ```bash
-grep -n "^step_03_\|^step_11_" ~/.config/claude-sync/bin/mac-setup.sh
+grep -n "^step_03_\|^step_11_" ~/.config/agent-harness-baseline/bin/mac-setup.sh
 ```
 
 - [ ] **Step 4.2: step_03 (1Password) 보강**
@@ -537,7 +537,7 @@ fi
 - [ ] **Step 4.5: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/mac-setup.sh
 git commit -m "feat(setup): step 3/11 human-action Telegram 별도 알림
 
@@ -654,7 +654,7 @@ Create `bin/greet.sh`:
 
 set -uo pipefail
 
-SSOT="$HOME/.config/claude-sync"
+SSOT="$HOME/.config/agent-harness-baseline"
 PERSONA_BIN="$SSOT/bin/persona.sh"
 LEDGER_DIR="$SSOT/state/activity"
 WIZARD_STATE="$SSOT/state/wizard-state.json"
@@ -794,21 +794,21 @@ if [[ "$mode" != "--replay" ]]; then
 fi
 ```
 
-권한: `chmod +x ~/.config/claude-sync/bin/greet.sh`
+권한: `chmod +x ~/.config/agent-harness-baseline/bin/greet.sh`
 
 - [ ] **Step 5.4: 테스트 통과 → 6/6**
 
 - [ ] **Step 5.5: 자기 PC 실측 (시연 모드)**
 
 ```bash
-~/.config/claude-sync/bin/greet.sh --replay
+~/.config/agent-harness-baseline/bin/greet.sh --replay
 # Expected: 핸드셰이크 + 환영 배너 + 컨텍스트 출력
 ```
 
 - [ ] **Step 5.6: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/greet.sh tests/greet.bats
 git commit -m "feat(setup): greet.sh — 첫 인사 모먼트
 
@@ -836,17 +836,17 @@ git commit -m "feat(setup): greet.sh — 첫 인사 모먼트
 ```bash
 # ── 첫 인사 모먼트 (mac-setup 완료 후 1회) ──────────
 __maybe_greet() {
-  [[ -x "$HOME/.config/claude-sync/bin/greet.sh" ]] || return 0
-  local state="$HOME/.config/claude-sync/state/wizard-state.json"
+  [[ -x "$HOME/.config/agent-harness-baseline/bin/greet.sh" ]] || return 0
+  local state="$HOME/.config/agent-harness-baseline/state/wizard-state.json"
   [[ -f "$state" ]] || return 0
   # greet.sh 가 자체 조건 검사 (completed && !greeted)
-  "$HOME/.config/claude-sync/bin/greet.sh" 2>/dev/null
+  "$HOME/.config/agent-harness-baseline/bin/greet.sh" 2>/dev/null
 }
 
-if [[ -z "${__CLAUDE_SYNC_GREET_HOOKED:-}" ]]; then
+if [[ -z "${__AGENT_HARNESS_BASELINE_GREET_HOOKED:-}" ]]; then
   autoload -Uz add-zsh-hook 2>/dev/null
   add-zsh-hook precmd __maybe_greet 2>/dev/null
-  export __CLAUDE_SYNC_GREET_HOOKED=1
+  export __AGENT_HARNESS_BASELINE_GREET_HOOKED=1
 fi
 ```
 
@@ -854,8 +854,8 @@ fi
 
 ```bash
 # wizard-state 마커 reset (시뮬레이션)
-jq '.greeted = false' ~/.config/claude-sync/state/wizard-state.json > /tmp/ws.json && \
-  mv /tmp/ws.json ~/.config/claude-sync/state/wizard-state.json
+jq '.greeted = false' ~/.config/agent-harness-baseline/state/wizard-state.json > /tmp/ws.json && \
+  mv /tmp/ws.json ~/.config/agent-harness-baseline/state/wizard-state.json
 
 # 새 셸 → greet 자동 발동 (1회)
 exec zsh
@@ -867,14 +867,14 @@ echo "ok"
 - [ ] **Step 6.3: 회귀**
 
 ```bash
-cd ~/.config/claude-sync && bats tests/
+cd ~/.config/agent-harness-baseline && bats tests/
 # Expected: 모든 tests pass
 ```
 
 - [ ] **Step 6.4: 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add shell/zshrc.shared
 git commit -m "feat(setup): zsh precmd __maybe_greet hook
 
@@ -942,21 +942,21 @@ fi
 - [ ] **Step 7.2: doctor 실행**
 
 ```bash
-~/.config/claude-sync/bin/doctor.sh
+~/.config/agent-harness-baseline/bin/doctor.sh
 # Expected: Phase 3 섹션 모두 ✓ (또는 ⚠ — 자기 PC 환경)
 ```
 
 - [ ] **Step 7.3: 모든 bats 회귀**
 
 ```bash
-~/.config/claude-sync/bin/test.sh
+~/.config/agent-harness-baseline/bin/test.sh
 # Expected: 60+ tests pass
 ```
 
 - [ ] **Step 7.4: Phase 3 마무리 커밋**
 
 ```bash
-cd ~/.config/claude-sync
+cd ~/.config/agent-harness-baseline
 git add bin/doctor.sh
 git commit -m "chore(doctor): Phase 3 검증 추가 — 셋업 라이브 중계 + 첫 인사
 
