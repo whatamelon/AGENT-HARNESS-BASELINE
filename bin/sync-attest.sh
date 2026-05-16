@@ -338,6 +338,7 @@ add_check("shared_design_entrypoints_linked", all(x["is_symlink"] and x["resolve
 harness_expected = [
     design_root / "harness" / "visual-check.mjs",
     design_root / "harness" / "CLAUDE_CODE_PROMPT.md",
+    design_root / "harness" / "mobile-expo-iphone17-pro-max-harness.tsx",
     design_root / "harness" / "README.md",
 ]
 harness_files = []
