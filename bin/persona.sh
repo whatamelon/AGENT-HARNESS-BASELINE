@@ -54,8 +54,16 @@ case "${1:-}" in
     [[ -f "$MACHINE_FILE" ]] || { echo "❌ $MACHINE_FILE 없음 — 'persona.sh --init' 먼저" >&2; exit 1; }
     jq -r '.persona' "$MACHINE_FILE"
     ;;
+  --machine-type)
+    # 폼팩터 (laptop | macmini-headless). 미설정이면 'unknown'.
+    if [[ -f "$MACHINE_FILE" ]]; then
+      jq -r '.machineType // "unknown"' "$MACHINE_FILE"
+    else
+      echo "unknown"
+    fi
+    ;;
   *)
-    echo "사용법: persona.sh [--init|--json|--other]" >&2
+    echo "사용법: persona.sh [--init|--json|--other|--machine-type]" >&2
     exit 1
     ;;
 esac

@@ -59,6 +59,20 @@ echo -e "\n${B}══ 자동 sync ══${N}"
 check "launchd plist" "launchctl list | grep -q com.denny.agent-harness-baseline"
 check "git remote 등록" "(cd \$SSOT && git remote get-url origin)"
 
+# 무인화 머신(맥미니)으로 표시됐을 때만 전원/잠금 굳힘 상태를 검증
+MACHINE_TYPE="$( [[ -f "$SSOT/.machine.json" ]] && jq -r '.machineType // "unknown"' "$SSOT/.machine.json" 2>/dev/null || echo unknown )"
+if [[ "$MACHINE_TYPE" == "macmini-headless" ]]; then
+  echo -e "\n${B}══ 무인화 (맥미니 항시가동) ══${N}"
+  check "시스템 잠자기 끔 (pmset sleep 0)"        "pmset -g | grep -E '^ *sleep ' | grep -q ' 0'"
+  check "디스크 잠자기 끔 (pmset disksleep 0)"     "pmset -g | grep -E '^ *disksleep ' | grep -q ' 0'"
+  check "정전 후 자동 재시작 (autorestart 1)"      "pmset -g | grep -qE '^ *autorestart *1'"
+  soft  "원격 깨우기 (womp 1)"                     "pmset -g | grep -qE '^ *womp *1'"
+  soft  "화면보호기 끔 (screensaver idleTime 0)"    "[[ \$(defaults -currentHost read com.apple.screensaver idleTime 2>/dev/null) == 0 ]]"
+else
+  echo -e "\n${B}══ 무인화 ══${N}"
+  soft "맥미니 무인화 미적용 (machineType=$MACHINE_TYPE)" "true"
+fi
+
 echo -e "\n${B}══ CLI 인증 ══${N}"
 soft "1Password (op vault list)" "op vault list"
 soft "GitHub (gh auth status)" "gh auth status"

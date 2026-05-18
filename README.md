@@ -33,7 +33,7 @@
 - `mac-setup` — 인터랙티브 (모드 선택)
 - `mac-setup auto` — 처음부터 끝까지 자동
 - `mac-setup verify` — 검증만
-- `mac-setup --step N` — 특정 단계 (1~13)
+- `mac-setup --step N` — 특정 단계 (1~14)
 - `mac-setup reset` — 진행 상태 초기화
 
 ## 이 부트스트랩이 설치/설정하는 것 (15단계, 멱등)
@@ -41,6 +41,7 @@
 | # | 단계 | 내용 |
 |---|------|------|
 | 1 | Xcode CLT | `git` 등 — 다이얼로그 동의 필요 |
+| 1 | **머신 프로파일** | step 1 내 — 맥북/맥미니 선택. 맥미니면 풀 무인화 자동 (`mac-power-mode headless`) |
 | 2 | Rosetta | Apple Silicon만 (라이선스 자동 동의) |
 | 3 | Homebrew | 없으면 설치 (이미 한 줄에서 깔았으면 스킵) |
 | 4 | SSOT repo | clone 또는 `git pull` (public — 인증 불필요) |
@@ -59,6 +60,33 @@
 | 13e | work-log harness | `whatamelon/agent-work-log-harness` clone + 심링크 |
 | 14 | 검증 | `ahb-doctor` |
 | 15 | 남은 로그인 안내 | 자동화 불가 OAuth 체크리스트 출력 |
+
+## 맥미니 무인화 (`mac-power-mode`)
+
+맥미니처럼 **항시가동·원격 접속용 헤드리스 박스**는 잠자기/화면잠금이 켜져 있으면
+원격 접근이 끊기고 에이전트가 멈춘다. `mac-setup` step 1 의 **머신 프로파일**에서
+`맥미니`를 고르면 자동 적용되며, 수동으로도 가능:
+
+```bash
+mac-power-mode headless   # 풀 무인화 적용
+mac-power-mode laptop     # 노트북 안전 기본값으로 전부 복귀
+mac-power-mode status     # 현재 전원/잠금/자동로그인/FileVault 상태
+```
+
+`headless` 가 굳히는 것 (모두 멱등·복구 가능):
+
+| 항목 | 효과 |
+|------|------|
+| `pmset sleep/displaysleep/disksleep 0` | 시스템·디스플레이·디스크 잠자기 끔 |
+| `pmset autorestart 1` | 정전 후 자동 재시작 |
+| `pmset womp 1` | 네트워크로 원격 깨우기 |
+| 화면보호기 `idleTime 0` + `askForPassword 0` | 콘솔 잠금 트리거 차단 |
+| (선택) 자동 로그인 | 부팅 시 데스크톱 자동 진입 — **FileVault OFF + 명시 동의 시에만** |
+
+> 자동 로그인은 콘솔 물리접근 시 무방비라 기본 **묻고 진행**(default N).
+> FileVault 가 켜져 있으면 자동 스킵(부팅 시 디스크 잠금해제 암호가 필요).
+> `machineType` 은 `.machine.json` 에 기록되고, `ahb-doctor` 가 무인화 머신의
+> 전원 상태를 검증한다. 되돌리려면 `mac-power-mode laptop`.
 
 ## 부트스트랩 전에 미리 준비해두면 좋은 것
 

@@ -68,7 +68,54 @@ step_01_system_check() {
   else
     ui_skip "Intel Mac — Rosetta 불필요"
   fi
+
+  _machine_profile
   __step_done 1
+}
+
+# 머신 폼팩터 선택 → 맥미니면 풀 무인화 전원/잠금 프로비저닝.
+# step_01 안에서 호출 — 모든 모드에서 가장 먼저 실행돼,
+# 무인 맥미니가 이후 긴 brew/npm 단계 도중에도 잠들지 않는다.
+_machine_profile() {
+  ui_section "머신 프로파일 (맥북 / 맥미니)"
+
+  local mfile="$SSOT/.machine.json"
+  local existing=""
+  [[ -f "$mfile" ]] && existing="$(jq -r '.machineType // empty' "$mfile" 2>/dev/null)"
+
+  if [[ -n "$existing" ]]; then
+    ui_ok "이미 설정됨: ${existing} (.machine.json)"
+    ui_ask_yn "    머신 프로파일을 다시 선택할까요?" "n" || { ui_skip "현재 프로파일 유지"; return; }
+  fi
+
+  local sel
+  sel=$(ui_ask_select "이 머신은 어떤 용도인가요?" \
+    "맥북 — 노트북 (잠자기/화면잠금 기본값 유지, 안전)" \
+    "맥미니/항시가동 — 풀 무인화 (잠자기·잠금 끔, 정전복구, 원격깨우기, 선택적 자동로그인)")
+
+  case "$sel" in
+    2)
+      ui_doing "맥미니 풀 무인화 적용 (mac-power-mode headless — sudo 비밀번호 요구할 수 있음)"
+      echo
+      if bash "$SSOT/bin/mac-power-mode.sh" headless; then
+        ui_ok "무인화 프로비저닝 완료 — 이 머신은 잠들지 않고 콘솔 잠금이 해제됨"
+      else
+        ui_err "mac-power-mode 일부 실패 — 'mac-power-mode status' 로 확인 후 'mac-power-mode headless' 재실행"
+      fi
+      ;;
+    *)
+      # 맥북: 기존 전원/잠금 설정을 건드리지 않고 타입만 기록
+      [[ -f "$mfile" ]] || echo '{}' > "$mfile"
+      local tmp; tmp=$(mktemp)
+      if jq '.machineType = "laptop"' "$mfile" > "$tmp" 2>/dev/null; then
+        mv "$tmp" "$mfile"
+        ui_ok "맥북으로 기록 (.machine.json machineType=laptop) — 전원/잠금 설정 변경 없음"
+      else
+        rm -f "$tmp"
+        ui_warn ".machine.json 갱신 실패 — 무시하고 진행"
+      fi
+      ;;
+  esac
 }
 
 step_02_homebrew() {
@@ -490,6 +537,12 @@ run_step_by_step() {
 
 # ─── 진입점 ──────────────────────────────────────────────
 main() {
+  ui_hello_aidp
+  # 8비트 BGM: 자동/검증/리셋/스텝/헬프 모드는 무음 (사용자 승인 게이팅)
+  case "${1:-}" in
+    auto|verify|reset|--step|-h|--help) : ;;
+    *) ui_chiptune_bgm ;;
+  esac
   ui_main_banner
 
   # 인자 처리
