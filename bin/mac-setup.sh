@@ -73,7 +73,27 @@ step_01_system_check() {
   __step_done 1
 }
 
-# 머신 폼팩터 선택 → 맥미니면 풀 무인화 전원/잠금 프로비저닝.
+# Hermes Agent 설치 (맥미니 무인 박스 전용 — 자동 에이전트 런타임).
+# NousResearch 공식 인스톨러. 멱등(이미 있으면 스킵). uv 없으면 인스톨러가
+# 자체 부트스트랩하므로 step 1(Brewfile 전)에서 호출해도 안전.
+# --skip-setup: 대화형 설정 위저드 생략(비대화 셋업). 설정/API키는 나중에 'hermes setup'.
+_install_hermes() {
+  if command -v hermes >/dev/null 2>&1 || [[ -d "$HOME/.hermes" ]]; then
+    ui_skip "Hermes 이미 설치됨 — 스킵 ('hermes setup' 으로 설정)"
+    return 0
+  fi
+  ui_doing "Hermes Agent 설치 (NousResearch 공식 인스톨러, --skip-setup)"
+  echo
+  # 공식 문서 방식: curl | bash. 자동 박스 프로비저닝 용도(사용자 명시 요청).
+  if curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh \
+       | bash -s -- --skip-setup; then
+    ui_ok "Hermes 설치 완료 — 설정/API키: 'hermes setup' (나중에 수동)"
+  else
+    ui_err "Hermes 설치 실패 — 수동: curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash"
+  fi
+}
+
+# 머신 폼팩터 선택 → 맥미니면 풀 무인화 전원/잠금 프로비저닝 + Hermes.
 # step_01 안에서 호출 — 모든 모드에서 가장 먼저 실행돼,
 # 무인 맥미니가 이후 긴 brew/npm 단계 도중에도 잠들지 않는다.
 _machine_profile() {
@@ -102,6 +122,8 @@ _machine_profile() {
       else
         ui_err "mac-power-mode 일부 실패 — 'mac-power-mode status' 로 확인 후 'mac-power-mode headless' 재실행"
       fi
+      echo
+      _install_hermes   # 맥미니 = 자동 에이전트 박스 → Hermes 런타임도 설치
       ;;
     *)
       # 맥북: 기존 전원/잠금 설정을 건드리지 않고 타입만 기록
