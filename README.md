@@ -5,13 +5,14 @@
 
 ## 새 맥북 한 줄 셋업
 
-repo가 **private**이라 anonymous curl/git clone 불가. `gh auth login` 후 `gh repo clone` 필수.
+repo가 **public**이라 인증 없이 바로 clone 가능.
 
 ```bash
-brew install gh && gh auth login && \
-gh repo clone whatamelon/AGENT-HARNESS-BASELINE ~/.config/agent-harness-baseline && \
+git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/agent-harness-baseline && \
   bash ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
 ```
+
+> `gh`를 선호하면: `gh repo clone whatamelon/AGENT-HARNESS-BASELINE ~/.config/agent-harness-baseline` (인증 불필요)
 
 또는 인터랙티브:
 ```bash
