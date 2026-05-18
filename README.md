@@ -5,14 +5,24 @@
 
 ## 새 맥북 한 줄 셋업
 
-repo가 **public**이라 인증 없이 바로 clone 가능.
+**기본(공장초기화) 맥엔 git·brew가 없다.** Homebrew 설치 한 줄이면 Command Line Tools(= `git`)까지 함께 깔리고, 나머지(`gh`·앱·셸·1Password CLI 등)는 부트스트랩이 자동 설치한다. repo가 **public**이라 clone에 인증 불필요. 공장초기화 → 완료까지 아래 한 줄:
 
 ```bash
-git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/agent-harness-baseline && \
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+  git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/agent-harness-baseline && \
   bash ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
 ```
 
-> `gh`를 선호하면: `gh repo clone whatamelon/AGENT-HARNESS-BASELINE ~/.config/agent-harness-baseline` (인증 불필요)
+> 중간에 macOS 암호·CLT 설치 동의가 한두 번 필요 (완전 무인은 아님).
+> 이미 brew가 있으면 첫 줄은 "이미 설치됨"으로 건너뜀 (idempotent).
+> 이미 git이 있으면 Homebrew 줄 생략하고 아래 clone 줄만 실행해도 됨:
+>
+> ```bash
+> git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/agent-harness-baseline && \
+>   bash ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
+> ```
+>
+> `gh` clone을 선호하면: `gh repo clone whatamelon/AGENT-HARNESS-BASELINE ~/.config/agent-harness-baseline`
 
 또는 인터랙티브:
 ```bash
@@ -25,6 +35,60 @@ git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/age
 - `mac-setup verify` — 검증만
 - `mac-setup --step N` — 특정 단계 (1~13)
 - `mac-setup reset` — 진행 상태 초기화
+
+## 이 부트스트랩이 설치/설정하는 것 (15단계, 멱등)
+
+| # | 단계 | 내용 |
+|---|------|------|
+| 1 | Xcode CLT | `git` 등 — 다이얼로그 동의 필요 |
+| 2 | Rosetta | Apple Silicon만 (라이선스 자동 동의) |
+| 3 | Homebrew | 없으면 설치 (이미 한 줄에서 깔았으면 스킵) |
+| 4 | SSOT repo | clone 또는 `git pull` (public — 인증 불필요) |
+| 5 | **Brewfile 일괄** | CLI: `node git gh tmux postgresql@16 python@3.11 uv pandoc poppler ffmpeg supabase vercel-cli` + zsh 플러그인 + 모던 CLI(`eza bat fd git-delta zoxide atuin fzf`) + `bats-core claude-squad` · Cask: `1password-cli claude codex cursor visual-studio-code docker-desktop gcloud-cli claude-usage-tracker` · VS Code 확장 13개 |
+| 6 | 1Password CLI | `op` 설치 |
+| 7 | **1Password 인증** | ★사람 액션 — 데스크톱 앱 CLI 연동 ON + `op signin` |
+| 8 | install.sh | symlink + 셸(zsh) + git config 일괄 적용 |
+| 9 | 시크릿 자동 주입 | 1Password vault → `settings.local.json`, supabase PAT 있으면 자동 login |
+| 10 | npm globals | `bootstrap/npm-globals-names.txt` 일괄 |
+| 11 | Bun | `bun.sh/install` |
+| 12 | launchd | 자동 sync(30분) + daily-digest(매일 8시) + srcsht-rename watcher |
+| 13 | 에디터 확장 | VS Code / Cursor extension 설치 |
+| 13b | 공유 자산 | CC↔Codex 스킬 풀 + 글로벌 AGENTS.md 재생성 |
+| 13c | Claude 플러그인 | OMC(oh-my-claudecode) + BMAD marketplace/plugin |
+| 13d | **wishket 회사 정본** | `wishket-aidp/claude-settings` clone — ★여전히 private (gh 인증 + 접근 권한 필요, 없으면 글로벌 심링크 broken) |
+| 13e | work-log harness | `whatamelon/agent-work-log-harness` clone + 심링크 |
+| 14 | 검증 | `ahb-doctor` |
+| 15 | 남은 로그인 안내 | 자동화 불가 OAuth 체크리스트 출력 |
+
+## 부트스트랩 전에 미리 준비해두면 좋은 것
+
+이게 준비 안 되면 중간에 막히거나 일부가 자동으로 안 된다:
+
+- **macOS 로그인 암호** — Homebrew/Rosetta 설치 시 `sudo` 요구
+- **1Password 데스크톱 앱** — 설치 + 계정 로그인 + `Settings → Developer → Integrate with 1Password CLI` 토글 ON
+  - 안 되어 있으면 **7단계에서 멈춤**, 시크릿 자동 주입(9단계) 스킵됨
+- **1Password vault(Employee)에 있어야 자동화되는 항목**
+  - `agent-harness-baseline-machine-env` — 없으면 `settings.local.json` 시크릿 주입 스킵 (수동 주입 필요)
+  - `supabase-pat` — (선택) 있으면 supabase 자동 login, 없으면 나중에 수동
+- **GitHub 계정 + 권한** — 13d의 `wishket-aidp/claude-settings`는 여전히 private. 이 org 접근 권한 있는 계정으로 `gh auth login` 안 하면 회사 정본 clone 실패 → 글로벌 심링크 다수 broken
+
+## 부트스트랩 후 사람이 직접 해야 하는 로그인 (자동화 불가 OAuth)
+
+부트스트랩 15단계가 끝에서 이 목록을 출력한다. 새 맥마다 한 번씩:
+
+| 구분 | 명령 | 용도 |
+|------|------|------|
+| 필수 | `gh auth login` | GitHub (+ wishket private 정본 접근) |
+| 필수 | `op signin` | 1Password (7단계에서 안 했다면) |
+| 필수 | `claude` | Claude Code 첫 인증 |
+| 필수 | `gws schema gmail.users.messages.list >/dev/null` | Google Workspace(Gmail/Drive/Sheets/Docs/Calendar) — 1회 OAuth, keyring 영구 |
+| 프로젝트 | `vercel login` | Vercel |
+| 프로젝트 | `supabase login --token "$(op read 'op://Employee/supabase-pat/credential')"` | Supabase (browser OAuth는 자주 실패 → PAT 권장) |
+| 프로젝트 | `gcloud init` + `gcloud auth application-default login` | GCP 인프라 (Workspace는 `gws` 우선) |
+| 프로젝트 | `firebase login` / `wrangler login` / `docker login` / `aws configure` | 해당 도구 쓸 때만 |
+| 선택 | npm private registry / Android Studio·Xcode 라이선스 / macOS 권한(전체 디스크 접근·알림 허용) | 필요 시 |
+
+> 상세 가이드·트러블슈팅·토큰 회전 주기: **[`bootstrap/cli-login-checklist.md`](bootstrap/cli-login-checklist.md)**
 
 ## 디렉터리 구조
 ```

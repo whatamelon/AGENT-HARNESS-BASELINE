@@ -2,9 +2,9 @@
 # bootstrap-new-mac.sh
 # 새 맥북 한 방 셋업. idempotent (재실행 안전).
 #
-# repo가 PRIVATE이라 anonymous curl 불가. gh 인증 후 clone 필수.
-#   brew install gh && gh auth login && \
-#   gh repo clone whatamelon/AGENT-HARNESS-BASELINE ~/.config/agent-harness-baseline && \
+# repo가 PUBLIC이라 인증 없이 clone 가능. 기본 맥은 Homebrew(=git)부터:
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+#   git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/agent-harness-baseline && \
 #     bash ~/.config/agent-harness-baseline/bootstrap/bootstrap-new-mac.sh
 #
 # SSOT 이미 clone되어 있으면:
@@ -91,20 +91,22 @@ else
   info "설치 완료"
 fi
 
-# ─── 4. SSOT repo clone (PRIVATE repo — gh 인증 필요) ─────────
+# ─── 4. SSOT repo clone (PUBLIC repo — 인증 불필요) ──────────
 step "4. agent-harness-baseline repo"
 mkdir -p "$HOME/.config"
 if [[ -d "$SSOT_DIR/.git" ]]; then
   info "이미 clone됨 — git pull"
   (cd "$SSOT_DIR" && git pull --rebase --autostash --quiet) || warn "pull 실패 (네트워크?)"
 else
-  warn "clone 중 (private repo)"
-  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    gh repo clone whatamelon/AGENT-HARNESS-BASELINE "$SSOT_DIR" -- --quiet
-    info "clone 완료 (gh 인증)"
+  warn "clone 중 (public repo — 인증 불필요)"
+  if git clone --quiet "$REPO_URL" "$SSOT_DIR"; then
+    info "clone 완료 (anonymous git)"
+  elif command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 && \
+       gh repo clone whatamelon/AGENT-HARNESS-BASELINE "$SSOT_DIR" -- --quiet; then
+    info "clone 완료 (gh fallback)"
   else
-    err "gh 미설치 또는 미인증. 다음 명령 후 재실행:"
-    err "  brew install gh && gh auth login"
+    err "clone 실패 — 네트워크 확인 후 재실행:"
+    err "  git clone $REPO_URL $SSOT_DIR"
     exit 1
   fi
 fi
