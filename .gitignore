@@ -59,10 +59,10 @@ state/last-prompt-ts.txt
 # 머신별 tab pull throttle 마커 (zsh hook이 매 5분 갱신, 추적 시 양쪽 맥 race로 conflict marker 박힘)
 state/last-tab-sync.txt
 
-# Codex 메모리 빌드 결과물 (codex-bridge.sh가 머신별로 매번 재생성, source는 ~/.claude/projects/ 머신 로컬)
-codex/memories/raw_memories.md
-codex/memories/MEMORY.md
-codex/memories/memory_summary.md
+# Codex 메모리 — 전체 차단. codex-bridge.sh가 머신별로 매번 재생성하는
+# 로컬 산출물이며 고객/PII 맥락이 섞일 수 있어 git 추적 금지(2026-05-18 히스토리 purge).
+# 절대 git add 금지 — 전 디렉터리 ignore로 재유출 방지.
+codex/memories/
 
 # 머신별 sync 인증 결과
 state/sync-attestation*.json
