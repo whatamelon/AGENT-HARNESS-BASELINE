@@ -332,6 +332,28 @@ bootstrap-doctor       # 시스템 전체 (CLI 인증까지)
 양쪽 머신에서 같은 파일 수정 → 표준 git merge.
 자동 commit이 켜져 있어 자주 push되니 충돌은 드묾.
 
+## 히스토리 재작성 후 다른 맥 복구
+
+`git filter-repo` 등으로 **히스토리를 재작성하고 force-push**한 경우(예: 민감정보 purge),
+다른 맥의 로컬 클론은 옛 히스토리를 그대로 갖고 있어 그 맥의 자동 sync가 옛 히스토리를
+되밀어 **재유출**시킬 수 있다. 그 맥의 sync가 돌기 전에 **한 줄로 재clone**
+(옛 디렉터리는 새 clone·install 성공 후에만 삭제):
+
+```bash
+touch ~/.config/agent-harness-baseline/.sync-paused 2>/dev/null; mv ~/.config/agent-harness-baseline ~/.config/agent-harness-baseline.OLD && git clone https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git ~/.config/agent-harness-baseline && bash ~/.config/agent-harness-baseline/bin/install.sh && touch ~/.config/agent-harness-baseline/.sync-paused && rm -rf ~/.config/agent-harness-baseline.OLD && echo "✅ 재clone 완료 — sync 일시정지 상태"
+```
+
+1. 기존 디렉터리 sync 정지 → `.OLD` 이동 (launchd가 옛 히스토리 못 건드림)
+2. 교정된 원격에서 새 clone → `install.sh`로 심링크(`~/.claude` 등) 재연결
+3. 새 clone에도 `.sync-paused` — 양쪽 확인 전 자동 sync 방지
+4. 새 clone·install 성공 시에만 옛 디렉터리(옛 사본 포함) 삭제
+
+양쪽 맥 정상 확인 후 각 맥에서 `rm ~/.config/agent-harness-baseline/.sync-paused` 로 재개.
+
+> 주의: force-push로 그 시점 이후 **모든 커밋 SHA가 바뀐다**. 이미 public이었다면
+> GitHub 캐시·포크·아카이브·크롤러가 옛 내용을 복제했을 수 있어, 완전 제거는
+> GitHub Support에 캐시·옛 SHA 퍼지 요청이 추가로 필요하다.
+
 ## 로그
 - 자동 sync: `/tmp/agent-harness-baseline.{out,err}.log`
 - file-tracker: `~/.claude/logs/file-changes.log`
