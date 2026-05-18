@@ -324,25 +324,79 @@ step_07_npm_bun() {
   __step_done 7
 }
 
+# launchd 등록 헬퍼 — macOS 26.x 는 LaunchAgents 내 심링크를 거부하므로
+# 반드시 cp + modern bootout/bootstrap. 옛 심링크가 있으면 정리.
+# 매 실행마다 SSOT 기준으로 재배포(멱등) → 레포 개명 등으로 배포본이
+# stale 되는 사고 방지 ("이미 등록됨" 조기 스킵을 두지 않는 이유).
+_launchd_redeploy() {
+  local label="$1" src="$2" dst="$3" use_sed="${4:-}"
+  local uid; uid="$(id -u)"
+  [[ -L "$dst" ]] && rm -f "$dst"            # 옛 심링크 정리
+  if [[ "$use_sed" == "sed" ]]; then
+    sed "s|__HOME__|$HOME|g" "$src" > "$dst" # WatchPaths는 절대경로 필요
+  else
+    cp -f "$src" "$dst"
+  fi
+  chmod 644 "$dst"
+  # 이미 로드돼 있으면 bootout 후 잠시 정착 대기 (bootout→bootstrap 레이스 회피)
+  if launchctl list 2>/dev/null | grep -qE "[[:space:]]${label}\$"; then
+    launchctl bootout "gui/$uid/$label" 2>/dev/null || true
+    sleep 1
+  fi
+  launchctl bootstrap "gui/$uid" "$dst" 2>/dev/null || true
+  # bootstrap 은 already-bootstrapped 시 non-zero 가능 → 최종 진실은 launchctl list.
+  # 비동기 등록을 감안해 최대 ~3s 재시도 후 판정 (오탐 방지).
+  local i
+  for i in 1 2 3 4 5 6; do
+    if launchctl list 2>/dev/null | grep -qE "[[:space:]]${label}\$"; then
+      ui_ok "$label 등록됨"
+      return 0
+    fi
+    sleep 0.5
+  done
+  ui_err "$label 등록 실패 — 'ahb-doctor' 로 확인"
+  return 1
+}
+
 step_08_launchd() {
   ui_step_header 8 $TOTAL_STEPS "launchd 자동 sync (30분 주기)"
   _notify_step 8 "launchd 자동 sync"
 
-  local plist_src="$SSOT/launchd/com.denny.agent-harness-baseline.plist"
-  local plist_dst="$HOME/Library/LaunchAgents/com.denny.agent-harness-baseline.plist"
+  mkdir -p "$HOME/Library/LaunchAgents"
 
-  if launchctl list 2>/dev/null | grep -q agent-harness-baseline; then
-    ui_ok "launchd 이미 등록됨"
+  # 1) 자동 sync (30분 주기)
+  ui_doing "agent-harness-baseline (자동 sync)"
+  _launchd_redeploy "com.denny.agent-harness-baseline" \
+    "$SSOT/launchd/com.denny.agent-harness-baseline.plist" \
+    "$HOME/Library/LaunchAgents/com.denny.agent-harness-baseline.plist"
+
+  # 2) daily-digest (매일 아침 8시)
+  local digest_src="$SSOT/launchd/com.denny.agent-harness-baseline-digest.plist"
+  if [[ -f "$digest_src" ]]; then
+    ui_doing "agent-harness-baseline-digest (daily-digest)"
+    _launchd_redeploy "com.denny.agent-harness-baseline-digest" \
+      "$digest_src" \
+      "$HOME/Library/LaunchAgents/com.denny.agent-harness-baseline-digest.plist"
   else
-    mkdir -p "$HOME/Library/LaunchAgents"
-    ln -sfn "$plist_src" "$plist_dst"
-    launchctl load "$plist_dst" 2>/dev/null
-    if launchctl list 2>/dev/null | grep -q agent-harness-baseline; then
-      ui_ok "com.denny.agent-harness-baseline 등록 완료 (30분 주기)"
-    else
-      ui_err "launchd 등록 실패"
-    fi
+    ui_skip "digest plist 없음 — 스킵"
   fi
+
+  # 3) srcsht-rename watcher (__HOME__ 치환 템플릿)
+  local srcsht_tpl="$SSOT/launchd/com.denny.srcsht-rename.plist"
+  if [[ -f "$srcsht_tpl" ]]; then
+    mkdir -p "$HOME/srcsht" "$HOME/Library/Logs"
+    # 옛 com.manager.* 라벨 잔재 정리
+    launchctl bootout "gui/$(id -u)/com.manager.srcsht-rename" 2>/dev/null || true
+    rm -f "$HOME/Library/LaunchAgents/com.manager.srcsht-rename.plist"
+    ui_doing "srcsht-rename (스크린샷 파일명 정리 watcher)"
+    _launchd_redeploy "com.denny.srcsht-rename" \
+      "$srcsht_tpl" \
+      "$HOME/Library/LaunchAgents/com.denny.srcsht-rename.plist" \
+      sed
+  else
+    ui_skip "srcsht plist 템플릿 없음 — 스킵"
+  fi
+
   __step_done 8
 }
 
