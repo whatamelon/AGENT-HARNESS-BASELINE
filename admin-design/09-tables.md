@@ -20,6 +20,11 @@ must:
   - pk_is_sole_detail_navigation               # 상세 이동은 PK 클릭만. 다른 셀은 네비게이션 금지
   - sticky_list_table_header                   # thead sticky top-0 + opaque bg (스크롤 시 헤더 고정)
   - status_filter_semantic_color               # status 필터 칩은 StatusBadge tone 색 (무채 금지)
+  # 강화 (2026-05-29 audit) — §12.12~12.15
+  - pagination_preserves_search_params         # page 이동 link 가 q/status/sort 등 보존 (sp.toString() clone)
+  - column_sort_opt_in_server_side             # sortKey 있는 헤더만 클릭 정렬 + URL sort/order (server-side)
+  - date_cell_exact_timestamp_tooltip          # date 셀은 DateCell (title=정확 timestamp)
+  - clear_all_filters_affordance               # active param 있을 때 단일 필터 초기화 노출
 must_not:
   - ag_grid_without_license_decision
   - unbounded_list_query
@@ -32,6 +37,11 @@ must_not:
   - name_or_title_cell_links_to_detail         # 이름/제목/번호판 등 비-PK 셀에 <Link> 금지 — 진입은 PK 단일
   - non_sticky_list_header                     # thead 가 스크롤에 같이 사라지면 위반
   - monochrome_status_filter                   # status 필터 칩을 흑백 토글로만 두면 위반 (의미색 필수)
+  # 강화 (2026-05-29 audit)
+  - pagination_replaces_whole_query            # <Link href={{query:{page}}}> 로 search string 전체 교체 (필터 소실)
+  - all_headers_clickable_without_sortkey      # sortKey 없는 컬럼까지 정렬 버튼 (computed 컬럼 500/dead)
+  - bare_formatdate_in_table_cell              # 테이블 date 셀에서 DateCell 없이 formatDate/formatDateTime 직접 (tooltip 누락)
+  - fake_hover_underline_on_nonlink            # 비-link 셀에 hover:underline (눌릴 것 같은 fake affordance)
 cross_ref: [00-non-negotiable, 01-stack, 05-spacing-type-grid, 06-shell-pages, 07-states, 11-routing-data, 12-rbac, 17-status]
 verifier_probes:
   - id: tanstack-default
@@ -64,6 +74,18 @@ verifier_probes:
   - id: status-filter-colored
     layer: L2
     rule: "FilterChip 은 tone(StatusTone) 지원 + paramName==='status' 일 때 toneFor(value) 자동 색칠. 컬러 dot + tint. 흑백 토글만이면 위반"
+  - id: pagination-preserves-params
+    layer: L2
+    rule: "pagination-links.tsx 의 page link 는 useSearchParams + new URLSearchParams(sp.toString()) clone 후 page 만 set. bare `href={{ query: { page } }}` (search string 전체 교체) 금지"
+  - id: column-sort-opt-in
+    layer: L2
+    rule: "data-table.tsx 가 sortKey meta + useSearchParams 기반 server-side 정렬 헤더 지원 (sortKey 있는 컬럼만 클릭 가능). getSortedRowModel(클라 정렬) 미사용"
+  - id: date-cell-tooltip
+    layer: L2
+    rule: "date-cell.tsx(DateCell, title=정확 timestamp) 존재. 테이블 셀이 formatDate/formatDateTime 직접 호출하면 warn (DateCell 사용 권장)"
+  - id: clear-all-filters
+    layer: L2
+    rule: "DataToolbar 가 active param 있을 때 단일 clear-all(필터 초기화) affordance 노출"
   - id: detail-page-exists-for-each-list
     layer: L2
     rule: "for every /(protected)/{domain}/page.tsx (list), /(protected)/{domain}/[id]/page.tsx (detail) must exist"
@@ -254,3 +276,55 @@ status 필터 칩을 흑백 토글로만 두면 운영자가 색으로 상태를
 const resolvedTone = tone ?? (paramName === 'status' ? toneFor(value) : undefined)
 // resolvedTone 있으면 CHIP_TONE[tone] (border/bg/dot) 적용, 없으면 흑백 토글
 ```
+
+## 12.12 페이지네이션은 필터/정렬 state 를 보존한다 (non-negotiable)
+
+list page 의 page 이동 link 가 현재 search param 을 날리면 운영자의 작업 set(검색·필터·정렬)이 매 페이지 이동마다 초기화된다 — 가장 치명적인 list-page 결함. 2026-05-29 audit 에서 `PaginationLinks` 가 `<Link href={{ query: { page } }}>` 만 emit 해 (App Router 에서 query 객체는 search string 전체를 **교체**) q/status/scope/sort/order 를 전량 drop 하는 실제 버그 발견.
+
+```tsx
+// 페이지 이동 link — 반드시 현재 param clone 후 page 만 교체 (DataToolbar.commit 과 동일 패턴)
+const sp = useSearchParams()
+const params = new URLSearchParams(sp.toString())
+params.set('page', String(page))
+return <Link href={`${pathname}?${params.toString()}`} replace>…</Link>
+```
+
+- 금지: 빈 `{ query: { page } }` 객체 href (search string 전체 교체 → 필터 소실). "다른 컴포넌트가 보존한다" 같은 근거 없는 주석 금지.
+- toolbar(`DataToolbar.commit`)·filter chip·sort 모두 `new URLSearchParams(sp.toString())` clone 패턴을 쓴다 — pagination 만 예외였던 비대칭이 버그였다.
+
+## 12.13 컬럼 정렬 = opt-in server-side, dead affordance/500 금지 (non-negotiable)
+
+§12 의 `column_sort_via_url_param` MUST 가 "헤더 클릭 → URL sort/order" 인데, audit 결과 server query 는 `.order(params.sort)` 로 정렬을 받지만 UI 헤더가 클릭 불가 + indicator 없음 = **dead MUST** 였다. 동시에 server 가 sort 키를 whitelist 안 하면 (`vehicles.queries.ts`) 임의 컬럼명이 곧장 PostgREST 로 가 unknown 컬럼은 500.
+
+규칙 (둘 다 충족):
+
+1. **opt-in.** 컬럼 meta `sortKey?: string` (= 실제 orderable DB 컬럼명) 가 설정된 헤더만 클릭 가능한 정렬 토글로 렌더. computed/join 컬럼(`sortKey` 없음)은 평범한 `<th>` — dead affordance/500 둘 다 방지.
+2. **server-side.** 헤더 클릭은 URL `sort`/`order` 만 다시 쓰고(`page` reset) 서버가 정렬된 row 반환. `getSortedRowModel`(클라이언트 정렬) 쓰지 않는다.
+3. **indicator.** 활성 정렬 = ChevronUp(asc)/ChevronDown(desc), 비활성 sortKey 컬럼 = ChevronsUpDown(neutral) + `aria-sort`.
+
+```tsx
+// DataTable: sortKey 있는 헤더만 <button> + chevron, click → URL sort/order toggle
+const sortKey = (meta as AdminColumnMeta)?.sortKey
+{sortKey ? <button onClick={() => onSort(sortKey)}>…<ChevronUp/Down/ChevronsUpDown/></button> : headerContent}
+```
+
+## 12.14 Date 셀은 정확 timestamp tooltip (§12.5 강제 형태)
+
+§12.5 "Date: human-readable + tooltip with exact timestamp" 가 자주 누락(formatDate 결과를 bare `<span>` 에 출력, title 없음). 공유 `DateCell` 경유로 강제:
+
+```tsx
+// components/admin/data-table/date-cell.tsx
+export function DateCell({ value, withTime, className }: {...}) {
+  if (!value) return <span className={className}>—</span>
+  const d = typeof value === 'string' ? new Date(value) : value
+  const exact = Number.isNaN(d.getTime()) ? undefined : d.toLocaleString('ko-KR')
+  return <span className={className} title={exact}>{withTime ? formatDateTime(value) : formatDate(value)}</span>
+}
+```
+
+- table 의 date 컬럼은 `formatDate`/`formatDateTime` 를 셀에서 직접 부르지 말고 `DateCell` 사용. (상대시간 `formatRelative` 은 예외 — 그 자체가 추정 표현.)
+
+## 12.15 Clear-all 필터 + fake affordance 금지
+
+- 검색·필터·정렬 param 이 하나라도 active 면 toolbar 에 단일 "필터 초기화"(전체 reset) affordance 노출. 각 chip 개별 토글만으로 끝내지 않는다. param 0 일 때는 숨김(dead affordance 방지).
+- **비-link 셀에 `hover:underline` 금지.** PK 단일 진입(§12.9) 전환 시 이름/제목 셀을 `<div>` 로 바꾸면서 `hover:underline` 를 남기면 "눌릴 것 같은데 안 눌리는" fake affordance. 행에서 underline 되는 건 PkLink 뿐.

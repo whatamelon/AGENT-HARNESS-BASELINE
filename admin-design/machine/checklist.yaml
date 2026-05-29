@@ -185,6 +185,48 @@ probes:
     severity: error
     rule: "src/components/admin/data-table/pk-cell.tsx 가 존재하고 pkColumn + PkLink export (PK 단일 진입 공유 출구)"
 
+  - id: pagination-preserves-params
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "pagination-links.tsx page link 가 useSearchParams + new URLSearchParams(sp.toString()) clone 후 page 만 set. bare href={{query:{page}}}(search string 전체 교체) 금지 — 필터/정렬 소실"
+    glob_target: "src/components/admin/data-table/pagination-links.tsx"
+
+  - id: column-sort-opt-in
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "data-table.tsx 가 sortKey meta + useSearchParams 기반 opt-in server-side 정렬 지원(sortKey 있는 헤더만 클릭). getSortedRowModel 미사용(서버 정렬)"
+    glob_target: "src/components/admin/data-table/data-table.tsx"
+
+  - id: date-cell-tooltip
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "src/components/admin/data-table/date-cell.tsx(DateCell, title=정확 timestamp) 존재"
+    glob_target: "src/components/admin/data-table/date-cell.tsx"
+
+  - id: bare-formatdate-in-table
+    section: 09-tables
+    layer: L2
+    severity: warn
+    rule: "(protected)/*/_components/*-table.tsx 가 formatDate/formatDateTime 를 셀에서 직접 호출하면 warn — DateCell 사용해 exact-timestamp tooltip 보장 (formatRelative 예외)"
+
+  - id: clear-all-filters
+    section: 09-tables
+    layer: L2
+    severity: warn
+    rule: "DataToolbar 가 active search param 있을 때 단일 clear-all(필터 초기화) affordance 노출"
+    glob_target: "src/components/admin/data-table/data-toolbar.tsx"
+
+  - id: no-fake-hover-underline
+    section: 09-tables
+    layer: L1
+    severity: error
+    grep: "hover:underline"
+    forbid_paths: ["src/app/(protected)/**/_components/*-table.tsx"]
+    reason: "비-link 셀 hover:underline = fake affordance. 행에서 underline 은 PkLink 만 (§12.15)"
+
   # --- Detail page 의무 (2026-05-28 신규) ---
   - id: detail-page-paired-with-list
     section: 06-shell-pages

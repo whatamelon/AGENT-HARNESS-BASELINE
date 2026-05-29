@@ -97,6 +97,12 @@ generic SaaS 테이블로 흘러가는 것을 막는 list-page 필수 패턴. ta
 1. **PK 단일 진입 (§12.9).** 1번 *데이터* 컬럼 = PK(`id`), `#`+bold+underline (`PkLink`/`pkColumn()` 공유 factory). 상세 이동은 PK 클릭만 — 이름/제목/번호판 등 비-PK 셀은 평문(`<Link>` 금지). (구 `primary_identifier_links_to_detail` = 폐기.)
 2. **Sticky 헤더 (§12.10).** DataTable `thead` 는 `sticky top-0 z-10` + opaque bg(`bg-muted` 등, 반투명 금지). 래퍼에 `overflow-hidden` 걸어 sticky 무력화 금지 (스크롤 컨테이너 = AdminShell `<main overflow-y-auto>`).
 3. **상태 필터 의미색 (§12.11).** `FilterChip` 은 `tone` 지원 + `paramName==='status'` 면 `toneFor(value)` 자동 색칠(컬러 dot + tint). 흑백 토글만 금지. (status 의미색은 Tier 0 monochrome-first 의 정당 예외.)
+4. **페이지네이션 param 보존 (§12.12).** page 이동 link 는 `new URLSearchParams(sp.toString())` clone 후 page 만 set. bare `<Link href={{query:{page}}}>`(search string 전체 교체 → 필터/정렬 소실) 금지.
+5. **컬럼 정렬 opt-in server-side (§12.13).** `meta.sortKey`(실 orderable DB 컬럼) 있는 헤더만 클릭 정렬 + chevron/aria-sort, 클릭 시 URL sort/order 만 rewrite(서버 정렬). computed 컬럼은 비-sortable(dead/500 방지). `getSortedRowModel` 금지.
+6. **Date 셀 tooltip (§12.14).** 공유 `DateCell`(title=정확 timestamp) 경유. 셀에서 `formatDate`/`formatDateTime` 직접 호출 금지(formatRelative 예외).
+7. **Clear-all + fake affordance (§12.15).** active param 있을 때 단일 "필터 초기화" 노출. 비-link 셀에 `hover:underline` 금지(행 underline 은 PkLink 만).
+
+위 7종은 `admin-build verify` 의 probe(`pagination-preserves-params`/`column-sort-opt-in`/`date-cell-tooltip`/`clear-all-filters`/`no-fake-hover-underline` 등)로 강제. 2026-05-29 audit 학습(POSTMORTEM-2026-05-29 참조): "SSOT 가 MUST 라 해도 UI 가 dead 일 수 있다 — 생성 후 반드시 verify 로 실동작 확인."
 
 ## Worker lane 매핑
 

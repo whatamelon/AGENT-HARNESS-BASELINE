@@ -54,3 +54,21 @@
 4. 작업
 5. `admin-build verify` (없으면 최소 `static-grep.py` + tsx-ast) 실행해 통과 확인 후 완료 선언
 6. baseline gap 을 발견하면 로컬 패치로 끝내지 말고 SSOT+verifier+skill 동시 갱신
+
+## 후속 — 같은 부류 능동 audit (2026-05-29, 동일 세션)
+
+운영자 지시로 "같은 부류(SSOT MUST 인데 실제 dead/missing)" 결함을 explore-high 로 전수 audit → 5건 추가 확정, 전부 수정 + 하네스 영구화:
+
+| # | 결함 | 등급 | 비고 |
+|---|---|---|---|
+| 1 | **페이지네이션이 모든 필터/정렬 param 을 drop** | P0 broken | `PaginationLinks` 가 `href={{query:{page}}}` 로 search string 전체 교체. App Router 는 query 객체를 merge 안 하고 replace. 매 페이지 이동마다 작업 set 초기화 — 최악 (10개 list 전부). 주석은 존재하지 않는 "RouteListener 가 보존"이라 거짓 |
+| 2 | **컬럼 정렬 dead** | P1 dead MUST | server 는 `.order(sort)` 받는데 헤더 클릭 불가 + indicator 없음. `getCoreRowModel` 만. + server whitelist 없어 임의 sort 키 500 위험 |
+| 3 | **Date 셀 tooltip 누락** | P1 | §12.5 "exact timestamp tooltip" 인데 bare formatDate, title 없음 |
+| 4 | **fake hover:underline** | P3 (직전 PR 회귀) | PK 단일 진입 전환 시 이름 셀 `<div className="block hover:underline">` 잔존 — 안 눌리는데 밑줄 hover |
+| 5 | **clear-all 필터 부재** | P2 | chip 개별 토글만, 전체 reset affordance 없음 |
+
+수정: pagination clone 패턴 / 정렬 opt-in(`sortKey` meta, server-side, computed 컬럼 제외) / 공유 `DateCell` / hover:underline 전량 제거 / DataToolbar "필터 초기화". typecheck+build green, 새 probe total 0 PASS.
+
+영구화: §12.12~12.15 + checklist probe 6종 + static-grep `check_shared_table_components()` 확장(probe 의 negative-control 통과 확인: bad 패턴 fire / good 패턴 pass) + SKILL 7종으로 확장.
+
+**핵심 교훈 재확인:** "SSOT 가 MUST 라고 써 있어도 UI 가 dead 일 수 있다." server 플러밍 존재 ≠ 기능 동작. 생성 후 `admin-build verify` + 실제 클릭 검증 필수. dead affordance(정렬·페이지네이션·hover)는 동작 안 하는데 동작할 것처럼 보여 운영자 신뢰를 깎는다.
