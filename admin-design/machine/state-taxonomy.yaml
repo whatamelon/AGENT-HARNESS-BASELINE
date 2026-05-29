@@ -1,0 +1,51 @@
+# machine/state-taxonomy.yaml — state 19종 + page type 별 의무 매트릭스
+version: 1.0.0
+
+states:
+  - id: idle;           ui: normal-surface
+  - id: loading;        ui: skeleton-shaped-like-content
+  - id: refreshing;     ui: subtle-progress-or-toolbar-indicator
+  - id: processing;     ui: disable-affected-controls-plus-spinner
+  - id: confirm;        ui: AlertDialog-or-ConfirmDialog
+  - id: success;        ui: toast-plus-updated-ui
+  - id: complete;       ui: StatusBadge-plus-timestamp
+  - id: empty;          ui: EmptyState-permission-aware-cta
+  - id: error;          ui: ErrorState-with-retry
+  - id: warning;        ui: inline-warning-or-banner
+  - id: forbidden;      ui: ForbiddenState-no-sensitive-data
+  - id: notFound;       ui: NotFoundState
+  - id: disabled;       ui: disabled-control-plus-explanation
+  - id: partial;        ui: progress-plus-neutral-indicator
+  - id: failed;         ui: error-badge-plus-retry-or-action
+  - id: archived;       ui: muted-badge-or-surface
+  - id: scheduled;      ui: neutral-badge-plus-timestamp
+  - id: draft;          ui: muted-badge
+
+page_type_matrix:
+  list-page:
+    required: [loading, empty, error, forbidden, success]
+    optional: [refreshing, notFound, warning]
+  detail-page:
+    required: [loading, error, forbidden, notFound]
+    optional: [warning, archived, scheduled]
+  create-edit-page:
+    required: [idle, processing, confirm, success, error, warning, forbidden]
+    optional: [partial, failed]
+  dashboard-page:
+    required: [loading, empty, error, forbidden]
+    optional: [refreshing, partial]
+
+destructive_mutation_kinds:
+  - delete
+  - refund
+  - cancel
+  - destroy
+  - revoke
+  - reset
+  - purge
+  - archive
+  - unpublish
+
+destructive_rule:
+  - "all destructive mutations require ConfirmDialog"
+  - "high-risk subset {refund, cancel, destroy, revoke, purge} requires typed-confirmation"

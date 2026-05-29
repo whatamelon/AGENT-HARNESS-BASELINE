@@ -1,0 +1,99 @@
+# machine/rbac-matrix.yaml — RBAC fixture × route × action 매트릭스
+# admin-security/_rbac-matrix.yaml 와 SSOT 동기. 본 파일은 design SSOT cross-cut copy.
+version: 1.0.0
+
+roles:
+  - owner
+  - admin
+  - manager
+  - operator
+  - analyst
+  - viewer
+  - forbidden     # 음성 fixture — 모든 action deny 확인용
+
+fixtures:
+  owner:           { description: "최상위 권한, 모든 action allow" }
+  admin:           { description: "settings.manage 포함, owner-only action 제외" }
+  manager:         { description: "domain CRUD + approve, settings.manage 제외" }
+  operator:        { description: "domain read + 일부 update, delete 제외" }
+  analyst:         { description: "read-only + export" }
+  viewer:          { description: "read-only" }
+  forbidden:       { description: "어떤 도메인도 권한 없음 — ForbiddenState 검증용" }
+
+permission_format: "{domain}.{action}"
+
+standard_actions:
+  - read
+  - create
+  - update
+  - delete
+  - approve
+  - refund
+  - export
+  - import
+  - invite
+  - manage
+
+route_action_matrix:
+  list_page:
+    required_permission: "{domain}.read"
+    fixtures_allow: [owner, admin, manager, operator, analyst, viewer]
+    fixtures_deny: [forbidden]
+  detail_page:
+    required_permission: "{domain}.read"
+    fixtures_allow: [owner, admin, manager, operator, analyst, viewer]
+    fixtures_deny: [forbidden]
+  create_action:
+    required_permission: "{domain}.create"
+    fixtures_allow: [owner, admin, manager]
+    fixtures_deny: [operator, analyst, viewer, forbidden]
+  update_action:
+    required_permission: "{domain}.update"
+    fixtures_allow: [owner, admin, manager, operator]
+    fixtures_deny: [analyst, viewer, forbidden]
+  delete_action:
+    required_permission: "{domain}.delete"
+    fixtures_allow: [owner, admin]
+    fixtures_deny: [manager, operator, analyst, viewer, forbidden]
+  refund_action:
+    required_permission: "{domain}.refund"
+    fixtures_allow: [owner, admin]
+    fixtures_deny: [manager, operator, analyst, viewer, forbidden]
+  settings_manage:
+    required_permission: "settings.manage"
+    fixtures_allow: [owner, admin]
+    fixtures_deny: [manager, operator, analyst, viewer, forbidden]
+
+enforcement_layers:
+  ui_layer: "PermissionGate / useCan() — UX hide/disable only"
+  server_layer:
+    one_of:
+      - api_route_handler
+      - server_action
+      - edge_function
+      - database_rls_policy
+      - stored_procedure
+  test_layer: "L3 verifier 가 fixture 4종 (owner/ops/viewer/forbidden) 으로 route + action 호출 → expected deny/allow 검증"
+
+audit_log_required_on:
+  - create
+  - update
+  - delete
+  - approve
+  - refund
+  - invite
+  - manage
+
+secret_leak_paths_forbidden:
+  - "src/components/**"
+  - "src/features/**/components/**"
+  - "app/**/page.tsx"
+  - "app/**/layout.tsx"
+  - "public/**"
+secret_leak_patterns:
+  - "SUPABASE_SERVICE_ROLE_KEY"
+  - "service_role"
+  - "STRIPE_SECRET_KEY"
+  - "DATABASE_URL"
+  - "JWT_SECRET"
+  - "OPENAI_API_KEY"

@@ -1,0 +1,16 @@
+{
+  "name": "admin-build-verifiers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reference dependency list for admin-build L2/L3/L4 verifiers. Install in target repo, not here.",
+  "type": "module",
+  "peerDependencies": {
+    "ts-morph": "^22.0.0",
+    "js-yaml": "^4.1.0",
+    "playwright": "^1.46.0",
+    "@axe-core/playwright": "^4.9.0"
+  },
+  "scripts": {
+    "_doc": "Install peers in target repo: pnpm add -D ts-morph js-yaml playwright @axe-core/playwright && npx playwright install --with-deps chromium"
+  }
+}

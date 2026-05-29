@@ -1,0 +1,331 @@
+# machine/checklist.yaml — 4-Layer verifier 통합 probe spec
+# admin-build CLI 가 직접 consume. 사람이 보는 체크리스트 X.
+# layer: L1(grep) / L2(AST) / L3(runtime) / L4(visual)
+# severity: fatal(차단) / error(차단) / warn(경고) / info
+
+version: 1.0.0
+probes:
+
+  # --- Tier 0 (non-negotiable) ---
+  - id: no-dark-class
+    section: 00-non-negotiable
+    layer: L1
+    severity: fatal
+    grep: "dark:|\\.dark\\b|className=\"dark|prefers-color-scheme:\\s*dark"
+    expect: 0
+    allow_paths: []
+    reason: "Tier 0 — light mode only."
+
+  - id: no-arbitrary-hex-in-components
+    section: 00-non-negotiable
+    layer: L1
+    severity: error
+    grep: "#[0-9a-fA-F]{6}\\b|#[0-9a-fA-F]{3}\\b"
+    forbid_paths: ["src/components/admin/**/*.tsx", "src/features/**/components/**/*.tsx"]
+    allow_paths: ["src/styles/globals.css", "src/theme.ts", "tokens.ts", "components.json"]
+    reason: "Components use semantic tokens, not hardcoded hex."
+
+  - id: ag-grid-enterprise-justification
+    section: 00-non-negotiable
+    layer: L2
+    severity: error
+    rule: "if package.json deps contains 'ag-grid-enterprise', then .admin-build/runs/<latest>/assumptions.md must contain a line matching /AG Grid Enterprise/i with justification"
+
+  - id: state-taxonomy-min-set
+    section: 07-states
+    layer: L3
+    severity: fatal
+    rule: "every list-page route renders {loading, empty, error, forbidden, success}"
+    fixtures: ["empty-data", "error-500", "forbidden-role", "happy-path"]
+
+  - id: confirm-for-destructive
+    section: 07-states
+    layer: L2
+    severity: error
+    rule: "every onClick wired to delete/refund/cancel/destroy mutation must wrap in ConfirmDialog (or AlertDialog) — detect via ast-grep"
+
+  - id: no-stack-trace-in-ui
+    section: 07-states
+    layer: L1
+    severity: error
+    grep: "error\\.stack|err\\.stack|\\.stack\\)\\s*\\}"
+    forbid_paths: ["src/components/**", "src/features/**/components/**", "app/**/page.tsx"]
+    allow_paths: ["src/lib/errors/**", "debug/**", "dev/**"]
+
+  # --- Tokens / visual ---
+  - id: dark-token-block-absent
+    section: 04-tokens
+    layer: L1
+    severity: fatal
+    grep: "^\\s*\\.dark\\s*\\{|\\.dark:root\\s*\\{|@media\\s*\\(prefers-color-scheme:\\s*dark\\)"
+    expect: 0
+
+  - id: primary-occurrence-cap
+    section: 04-tokens
+    layer: L2
+    severity: warn
+    rule: "bg-primary occurrence <= 1 per route file"
+
+  - id: no-tinted-card-background
+    section: 04-tokens
+    layer: L2
+    severity: error
+    rule: "Card component className must not contain bg-primary|bg-blue-|bg-indigo-|bg-purple-|bg-emerald- as background"
+
+  - id: no-heavy-card-shadow
+    section: 05-spacing-type-grid
+    layer: L1
+    severity: warn
+    grep: "shadow-2xl|drop-shadow-\\[0_.+_40px\\]|shadow-\\[0_.+_60px\\]"
+    expect: 0
+
+  - id: row-height-canonical
+    section: 05-spacing-type-grid
+    layer: L4
+    severity: warn
+    rule: "DataTable row height in {32, 36, 40, 48} px"
+
+  - id: viewport-matrix-snapshots
+    section: 05-spacing-type-grid
+    layer: L3
+    severity: error
+    rule: "every list/detail/form route renders without horizontal overflow at viewports {834, 1280, 1512, 1728, 2560}"
+
+  # --- Shell / pages ---
+  - id: admin-shell-exists
+    section: 06-shell-pages
+    layer: L2
+    severity: fatal
+    rule: "exports from src/components/admin/index.ts must include AdminShell, SidebarNav, Topbar, Breadcrumbs, Page, PageHeader"
+
+  - id: breadcrumb-rule
+    section: 06-shell-pages
+    layer: L2
+    severity: warn
+    rule: "any route with path depth >=2 must render Breadcrumbs (or PageHeader breadcrumbs prop)"
+
+  # --- Components inventory ---
+  - id: foundation-components-present
+    section: 08-components
+    layer: L2
+    severity: fatal
+    rule: "components/admin exports: AdminShell, SidebarNav, Topbar, Breadcrumbs, Page, PageHeader, Section, EmptyState, ErrorState, ForbiddenState, NotFoundState, LoadingState, ConfirmDialog, StatusBadge, PermissionGate"
+
+  # --- Tables ---
+  - id: tanstack-default
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "list-page imports '@tanstack/react-table' or local DataTable abstraction; ag-grid only when assumptions.md justifies"
+
+  - id: url-state-sync
+    section: 09-tables
+    layer: L3
+    severity: error
+    rule: "filter/sort/pagination/dateRange interactions update window.location.search; browser back/forward restores"
+
+  - id: bulk-action-bar-on-selection
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "selectionEnabled tables must conditionally render BulkActionBar when selectedCount > 0"
+
+  # --- List page 필수 4종 (2026-05-28 강화) ---
+  - id: list-page-has-data-table
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "list page must use DataTable abstraction (not native <table>) — detect by JSX element"
+    glob_target: "src/app/(protected)/**/page.tsx"
+
+  - id: list-page-has-filter-bar
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "list page must render FilterBar OR (Input search + Badge filter chips) with at least 1 filter control"
+    glob_target: "src/app/(protected)/**/page.tsx"
+
+  - id: list-page-has-pagination-bar
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "list page must render PaginationBar OR similar (page/total/next/prev controls)"
+    glob_target: "src/app/(protected)/**/page.tsx"
+
+  - id: list-page-supports-sort
+    section: 09-tables
+    layer: L2
+    severity: warn
+    rule: "DataTable column headers should be sortable (column.enableSorting !== false) AND URL `sort` param honored"
+
+  - id: pk-column-sole-detail-entry
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "list page (또는 _components/*-table.tsx) 첫 데이터 컬럼은 pkColumn()/PkLink 로 PK(id)+`#`bold underline 렌더 + detail [id] 링크. 이름/제목/번호판 등 비-PK 셀에 <Link href={xDetail(...)}> 있으면 위반 (진입은 PK 단일)"
+    glob_target: "src/app/(protected)/**/{page.tsx,_components/*-table.tsx}"
+
+  - id: sticky-table-header
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "DataTable thead className 에 'sticky top-0' + opaque bg(bg-muted/bg-card/bg-background, 반투명 /NN suffix 금지). DataTable 래퍼에 overflow-hidden/overflow-x-auto 로 sticky 무력화 금지"
+    glob_target: "src/components/admin/data-table/data-table.tsx"
+
+  - id: status-filter-colored
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "FilterChip 이 tone(StatusTone) prop 지원 + paramName==='status' 일 때 toneFor(value) 자동 색칠(컬러 dot + tint). 흑백 토글만이면 위반"
+    glob_target: "src/components/admin/data-table/data-toolbar.tsx"
+
+  - id: pk-cell-helper-present
+    section: 09-tables
+    layer: L2
+    severity: error
+    rule: "src/components/admin/data-table/pk-cell.tsx 가 존재하고 pkColumn + PkLink export (PK 단일 진입 공유 출구)"
+
+  # --- Detail page 의무 (2026-05-28 신규) ---
+  - id: detail-page-paired-with-list
+    section: 06-shell-pages
+    layer: L2
+    severity: fatal
+    rule: "every src/app/(protected)/<domain>/page.tsx (list) must have src/app/(protected)/<domain>/[id]/page.tsx (detail)"
+
+  - id: detail-page-required-sections
+    section: 06-shell-pages
+    layer: L2
+    severity: error
+    rule: "detail page renders PageHeader + Section(summary) + Section(detail); activity timeline when audit_logs exist"
+
+  - id: detail-page-not-found-boundary
+    section: 06-shell-pages
+    layer: L2
+    severity: error
+    rule: "detail page calls notFound() from 'next/navigation' on null record (or wraps in NotFoundState)"
+
+  # --- Forms ---
+  - id: zod-schema-presence
+    section: 10-forms
+    layer: L2
+    severity: error
+    rule: "form components must import a zod schema (z.object) used by zodResolver"
+
+  - id: submit-disabled-while-pending
+    section: 10-forms
+    layer: L3
+    severity: error
+    rule: "submit button has disabled={isPending}-equivalent — click during pending must not produce duplicate mutation"
+
+  - id: server-error-mapping
+    section: 10-forms
+    layer: L2
+    severity: warn
+    rule: "useMutation onError maps server error to user-safe message (no raw 500/stack passed to toast)"
+
+  # --- Routing/data ---
+  - id: structured-query-keys
+    section: 11-routing-data
+    layer: L2
+    severity: error
+    rule: "feature modules export a Keys factory (e.g. ordersKeys = {all, lists, list, detail})"
+
+  - id: route-permission-check
+    section: 11-routing-data
+    layer: L2
+    severity: error
+    rule: "protected route definitions reference RouteMeta.requiredPermission AND a PermissionGate or beforeLoad guard"
+
+  - id: validated-search-params
+    section: 11-routing-data
+    layer: L2
+    severity: warn
+    rule: "list route uses validateSearch (TanStack Router) or zod.parse for search params"
+
+  # --- RBAC / security (admin-security/ 와 동급) ---
+  - id: server-enforcement-paired
+    section: 12-rbac
+    layer: L3
+    severity: fatal
+    rule: "every UI PermissionGate-protected action has a paired server enforcement (API/server action/Edge Function/RLS)"
+    fixtures: ["owner", "ops", "viewer", "forbidden"]
+
+  - id: no-service-role-in-browser
+    section: 12-rbac
+    layer: L1
+    severity: fatal
+    grep: "SUPABASE_SERVICE_ROLE_KEY|service_role"
+    forbid_paths: ["src/components/**", "src/features/**/components/**", "app/**/page.tsx", "app/**/layout.tsx", "public/**"]
+
+  - id: forbidden-state-no-leak
+    section: 12-rbac
+    layer: L3
+    severity: error
+    rule: "ForbiddenState rendered without object id/name/email/sensitive field when role lacks read permission"
+
+  # --- Dashboard ---
+  - id: chart-card-border
+    section: 14-dashboard-analytics
+    layer: L2
+    severity: warn
+    rule: "ChartCard wraps charts with border border-border + bg-card; no shadow-2xl"
+
+  - id: date-range-control-present
+    section: 14-dashboard-analytics
+    layer: L2
+    severity: warn
+    rule: "dashboard route renders DateRange control"
+
+  # --- A11y / perf / org ---
+  - id: focus-ring-present
+    section: 16-a11y-perf-org
+    layer: L1
+    severity: error
+    grep: "focus:outline-none(?!\\s+focus-visible:|\\s+focus:ring)"
+    expect: 0
+    reason: "outline 제거 시 focus-visible:ring 대체 필수."
+
+  - id: no-unbounded-list
+    section: 16-a11y-perf-org
+    layer: L2
+    severity: error
+    rule: "useQuery for list endpoint must include page/pageSize or cursor; raw 'SELECT *' without limit forbidden"
+
+  - id: no-duplicate-date-lib
+    section: 16-a11y-perf-org
+    layer: L1
+    severity: warn
+    grep: "from \"moment\"|from 'moment'"
+    allow_if: "package.json has only one of {date-fns, dayjs, luxon}"
+
+  # --- Acceptance / engineering ---
+  - id: typecheck-passed
+    section: 17-llm-algorithm
+    layer: L1
+    severity: fatal
+    command: "pnpm typecheck || pnpm tsc --noEmit || npm run typecheck"
+
+  - id: build-passed
+    section: 17-llm-algorithm
+    layer: L1
+    severity: fatal
+    command: "pnpm build || npm run build"
+
+  - id: lint-passed
+    section: 17-llm-algorithm
+    layer: L1
+    severity: error
+    command: "pnpm lint || npm run lint"
+
+  - id: assumptions-logged
+    section: 17-llm-algorithm
+    layer: L2
+    severity: error
+    rule: ".admin-build/runs/<latest>/assumptions.md exists and non-empty if intake had missing inputs"
+
+  # --- Full acceptance composite ---
+  - id: full-acceptance-pass
+    section: 18-acceptance-prompt-contracts
+    layer: composite
+    severity: fatal
+    rule: "all applicable §27 items pass; final-verdict.md emitted"
