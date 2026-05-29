@@ -1,0 +1,53 @@
+# machine/viewport-matrix.yaml — Playwright/screenshot verifier 가 사용
+version: 1.0.0
+
+# L3/L4 verifier 는 모든 admin route 를 다음 viewport 에서 렌더 + capture.
+# horizontal overflow / 깨진 layout / a11y tab order / focus visibility 검증.
+
+viewports:
+  - id: tablet_834
+    width: 834
+    height: 1112
+    label: "11-inch iPad portrait"
+    expect_sidebar: drawer
+    expect_filter: sheet
+  - id: laptop_1280
+    width: 1280
+    height: 800
+    label: "13-inch laptop"
+    expect_sidebar: persistent-224-240
+    expect_filter: compact-inline
+  - id: laptop_1512
+    width: 1512
+    height: 982
+    label: "M-series MacBook Pro 14"
+    expect_sidebar: persistent-240
+    expect_filter: full-toolbar
+  - id: desktop_1728
+    width: 1728
+    height: 1117
+    label: "16-inch laptop"
+    expect_sidebar: persistent-256
+    expect_filter: full-toolbar
+    optional_inspector: true
+  - id: monitor_2560
+    width: 2560
+    height: 1440
+    label: "27-inch QHD"
+    expect_sidebar: persistent-256
+    optional_split_pane: true
+    content_max_width: 1600
+
+required_routes_to_test:
+  - "/(admin)/**/page"   # list/detail/create/edit
+  - "/login"
+  - "/dashboard"
+  - "/settings/users"
+  - "/audit-logs"
+
+fail_conditions:
+  - "horizontal scrollbar appears on tablet_834 for required columns only"
+  - "filter chips bleed past viewport"
+  - "modal width > viewport width - 32"
+  - "sidebar drawer doesn't close on backdrop click"
+  - "focus ring invisible on keyboard tab"

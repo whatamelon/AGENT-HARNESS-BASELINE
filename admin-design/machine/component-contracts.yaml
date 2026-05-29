@@ -1,0 +1,128 @@
+# machine/component-contracts.yaml — admin component required-props matrix
+# L2 AST verifier (ts-morph) 가 import/export/props 검증
+version: 1.0.0
+
+components:
+
+  PageHeader:
+    location: "src/components/admin/page-header.tsx"
+    required_props: [title]
+    optional_props: [description, badge, breadcrumbs, primaryAction, secondaryActions, actions, metadata]
+    visual: "flex items-start justify-between gap-4 border-b border-border pb-4"
+    must_not_use_class: ["text-center", "bg-primary", "shadow-2xl"]
+
+  StatusBadge:
+    location: "src/components/admin/status-badge.tsx"
+    required_props: [status]
+    optional_props: [tone, withDot]
+    tones: [neutral, info, success, warning, danger, muted]
+    must_use_in_table_status_column: true
+
+  ConfirmDialog:
+    location: "src/components/admin/confirm-dialog.tsx"
+    required_props: [title, description, confirmLabel, onConfirm]
+    optional_props: [cancelLabel, destructive]
+    must_focus_cancel_by_default_unless_destructive_explicit: true
+
+  EmptyState:
+    location: "src/components/admin/empty-state.tsx"
+    required_props: [title]
+    optional_props: [description, action]
+    must_check_create_permission_before_rendering_cta: true
+
+  ErrorState:
+    location: "src/components/admin/error-state.tsx"
+    required_props: [title]
+    optional_props: [description, onRetry, detail]
+    must_not_expose_raw_stack: true
+
+  ForbiddenState:
+    location: "src/components/admin/forbidden-state.tsx"
+    required_props: []
+    optional_props: [message]
+    must_not_render_sensitive_object_details: true
+
+  NotFoundState:
+    location: "src/components/admin/not-found-state.tsx"
+    required_props: []
+    optional_props: [message, onBack]
+
+  LoadingState:
+    location: "src/components/admin/loading-state.tsx"
+    required_props: []
+    must_be_skeleton_shaped_not_only_spinner: true
+
+  PermissionGate:
+    location: "src/components/admin/permission-gate.tsx"
+    required_props: [permission]
+    optional_props: [fallback, children]
+    must_have_server_paired_enforcement: true
+
+  DataTable:
+    location: "src/components/admin/data-table/data-table.tsx"
+    required_props: [columns, data]
+    optional_props: [isLoading, isError, error, empty, toolbar, pagination, onRetry]
+    must_handle_states: [loading, empty, error]
+    must_support_url_state_sync: true
+    column_meta_keys: [label, description, priority, align, isNumeric, isCurrency, isDate, canHide]
+    must_use_tanstack_table: true
+    must_not_use_native_table_in_list_pages: true
+
+  DataToolbar:
+    location: "src/components/admin/data-table/data-toolbar.tsx"
+    required_props: [searchPlaceholder]
+    optional_props: [filterSlot, rightSlot, paramName]
+    must_sync_url_param: "q"
+    must_debounce_ms: 300
+    required_subcomponents: [FilterChip, FilterChipGroup]
+
+  FilterChip:
+    location: "src/components/admin/data-table/data-toolbar.tsx"
+    required_props: [label, paramName, value]
+    must_sync_url_param: true
+    toggle_on_active_click: true
+
+  PaginationLinks:
+    location: "src/components/admin/data-table/pagination-links.tsx"
+    required_props: [page, pageSize, total]
+    optional_props: [pageParamName]
+    must_render: [from_to_total, prev_button, next_button, page_indicator]
+    page_size_default: 25
+    page_size_options: [10, 25, 50, 100]
+
+  BulkActionBar:
+    location: "src/components/admin/data-table/bulk-action-bar.tsx"
+    required_props: [selectedCount, actions, onClear]
+    visibility_rule: "selectedCount > 0"
+
+  # Detail page 강제 컴포넌트 (2026-05-28 신규)
+  DetailShell:
+    location: "src/components/admin/detail/detail-shell.tsx"
+    required_props: [main]
+    optional_props: [inspector, className]
+    layout: "grid lg:grid-cols-[1fr_360px]"
+    inspector_purpose: "ActivityTimeline (W7) or related records"
+
+  ActivityTimeline:
+    location: "src/components/admin/detail/activity-timeline.tsx"
+    required_props: [events]
+    optional_props: [emptyHint]
+    event_kinds: [audit, crm_sync, status_change, memo]
+    must_render_relative_time: true
+    must_link_to_audit_detail_when_available: true
+
+  AdminShell:
+    location: "src/components/admin/admin-shell.tsx"
+    required_props: [children]
+    children_layout: "Sidebar + Topbar + Main"
+
+  SidebarNav:
+    location: "src/components/admin/sidebar-nav.tsx"
+    required_width_px: { default: 240, large_desktop: 256, collapsed: 64 }
+    must_not_use_primary_background: true
+    icons_default_gray: true
+
+  Topbar:
+    location: "src/components/admin/topbar.tsx"
+    required_height_px: 56
+    must_include_breadcrumb_unless_top_level: true

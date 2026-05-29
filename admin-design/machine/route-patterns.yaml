@@ -1,0 +1,44 @@
+# machine/route-patterns.yaml — TanStack Router / Next.js (admin) route group 규칙
+version: 1.0.0
+
+route_groups:
+  tanstack_router:
+    base_segments:
+      - /login
+      - /
+      - /dashboard
+      - /{domain}
+      - /{domain}/new
+      - /{domain}/$id
+      - /{domain}/$id/edit
+      - /settings
+      - /settings/users
+      - /settings/roles
+      - /audit-logs
+    file_convention: "src/routes/**"
+  next_app_router:
+    admin_group: "app/(admin)/**"
+    public_group: "app/(public)/**"
+    base_segments: "동일 (next 14+ app router 문법으로 변환)"
+
+route_meta:
+  schema:
+    title: string
+    requiredPermission: Permission | undefined
+    navGroup: string | undefined
+    showInSidebar: boolean | undefined
+
+required_route_guards:
+  - "protected routes must define requiredPermission OR wrap content in PermissionGate"
+  - "every list route uses validateSearch (or zod.parse) for search params"
+  - "every detail route handles notFound + forbidden boundaries"
+
+search_param_keys:
+  required: [q, page, pageSize, sort, order]
+  optional: [filters, dateFrom, dateTo, view, columns, density]
+  forbidden: [row_selection_state, session_token, internal_state]
+
+search_param_rules:
+  - "unknown params must fall back safely (no crash, no leak)"
+  - "URL must be shareable — no encrypted blobs unless namespaced"
+  - "browser back/forward must restore state"

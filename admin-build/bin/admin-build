@@ -1,0 +1,351 @@
+#!/usr/bin/env python3
+"""
+admin-build — external orchestrator for one-shot admin construction.
+
+Subcommands:
+  attest     Create .admin-build/runs/<ts>/ssot_attestation.json (gate for hooks)
+  verify     Run 4-layer verifier (L1 grep + L2 AST + L3 runtime + L4 visual)
+  run        intake → ralplan → goal/team → verify loop (placeholder; orchestration entry)
+  replay     re-run a previous run (.admin-build/runs/<id>/) for reproducibility
+  status     show latest run status + manifest version
+
+Loop budget is enforced HERE (not in Claude/Codex Stop hook).
+Stop hook 8회 cap 가능 — orchestrator 가 reset + resume.
+
+Reads SSOT from:
+  $ADMIN_DESIGN_ROOT (default: ~/.config/agent-harness-baseline/admin-design)
+  $ADMIN_SECURITY_ROOT (default: ~/.config/agent-harness-baseline/admin-security)
+
+Run artifact tree:
+  .admin-build/runs/<YYYYmmddTHHMMSS>/
+    input.yaml
+    ssot_attestation.json   (multi — per worker)
+    plan.md / critic.md
+    worker-logs/<lane>.jsonl
+    changed-files.txt
+    verifier-report.json
+    rbac-report.json
+    screenshots/<route>-<viewport>.png
+    exceptions.yaml
+    assumptions.md
+    final-verdict.md
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+HOME = Path.home()
+SSOT_ROOT = Path(os.environ.get("ADMIN_DESIGN_ROOT",
+                                HOME / ".config/agent-harness-baseline/admin-design"))
+SEC_ROOT = Path(os.environ.get("ADMIN_SECURITY_ROOT",
+                               HOME / ".config/agent-harness-baseline/admin-security"))
+BUILD_ROOT = Path(os.environ.get("ADMIN_BUILD_ROOT",
+                                 HOME / ".config/agent-harness-baseline/admin-build"))
+
+
+def sha256_file(p: Path) -> str:
+    h = hashlib.sha256()
+    with p.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def now_ts() -> str:
+    return time.strftime("%Y%m%dT%H%M%S")
+
+
+def repo_root_from_cwd() -> Path:
+    cwd = Path(os.getcwd())
+    for d in [cwd, *cwd.parents]:
+        if (d / ".git").exists() or (d / "package.json").exists():
+            return d
+    return cwd
+
+
+def load_manifest() -> dict:
+    p = SSOT_ROOT / "manifest.json"
+    return json.loads(p.read_text())
+
+
+def sections_for_task(task: str) -> list[str]:
+    m = load_manifest()
+    sections = m.get("task_router", {}).get(task)
+    if sections is None:
+        sys.stderr.write(f"[admin-build] unknown task '{task}'. Known: {sorted(m['task_router'].keys())}\n")
+        sys.exit(2)
+    return sections
+
+
+# ---------- attest ----------
+
+def cmd_attest(args) -> int:
+    repo = repo_root_from_cwd()
+    ts = now_ts()
+    run_dir = repo / ".admin-build" / "runs" / ts
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    m = load_manifest()
+    sections = sections_for_task(args.task)
+
+    loaded = []
+    always = ["index.md", "00-non-negotiable.md", "02-ssot-protocol.md"]
+    seen = set()
+    for name in always + [f"{s}.md" if not s.endswith(".md") else s for s in sections]:
+        if name in seen:
+            continue
+        seen.add(name)
+        p = SSOT_ROOT / name
+        if not p.exists():
+            sys.stderr.write(f"[admin-build] missing section: {name}\n")
+            continue
+        loaded.append({"file": name, "sha256": sha256_file(p)})
+
+    manifest_path = SSOT_ROOT / "manifest.json"
+    local_override = repo / "admin" / "admin-design" / "local.md"
+    local_info = None
+    if local_override.exists():
+        local_info = f"admin/admin-design/local.md@sha256:{sha256_file(local_override)}"
+
+    attestation = {
+        "ssot_version": f"admin-design@{m.get('version', '0.0.0')}",
+        "manifest_hash": f"sha256:{sha256_file(manifest_path)}",
+        "loaded_sections": loaded,
+        "task": args.task,
+        "task_to_section_map": {args.task: sections},
+        "local_override_applied": local_info,
+        "exceptions": [],
+        "worker_id": args.worker or "main",
+        "agent_cli": args.agent or "unknown",
+        "created_at": ts,
+    }
+    out = run_dir / "ssot_attestation.json"
+    out.write_text(json.dumps(attestation, indent=2, ensure_ascii=False))
+    print(json.dumps({"attestation": str(out), "task": args.task, "sections": sections}, ensure_ascii=False, indent=2))
+    return 0
+
+
+# ---------- verify ----------
+
+def run_layer(name: str, cmd: list[str], cwd: Path) -> dict:
+    t0 = time.time()
+    try:
+        proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=900)
+        status = "pass" if proc.returncode == 0 else "fail"
+        return {
+            "layer": name,
+            "command": " ".join(cmd),
+            "status": status,
+            "exit": proc.returncode,
+            "stdout": proc.stdout[-4000:],
+            "stderr": proc.stderr[-4000:],
+            "duration_s": round(time.time() - t0, 2),
+        }
+    except FileNotFoundError as e:
+        return {"layer": name, "command": " ".join(cmd), "status": "skip",
+                "exit": 127, "stderr": str(e), "duration_s": 0}
+    except subprocess.TimeoutExpired:
+        return {"layer": name, "command": " ".join(cmd), "status": "timeout",
+                "exit": 124, "duration_s": round(time.time() - t0, 2)}
+
+
+def cmd_verify(args) -> int:
+    repo = repo_root_from_cwd()
+    ts = now_ts()
+    runs_root = repo / ".admin-build" / "runs"
+    runs_root.mkdir(parents=True, exist_ok=True)
+    # reuse latest run dir if present; otherwise new
+    if args.run_id:
+        run_dir = runs_root / args.run_id
+    else:
+        existing = sorted([p for p in runs_root.iterdir() if p.is_dir()], key=lambda p: p.name)
+        run_dir = existing[-1] if existing else runs_root / ts
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+    layers = []
+    verifiers = BUILD_ROOT / "verifiers"
+
+    # L1 — static grep (always available, Python)
+    layers.append(run_layer("L1-static-grep",
+                            ["python3", str(verifiers / "static-grep.py"), str(repo)],
+                            cwd=repo))
+
+    # L2 — AST/TSX check (requires Node + ts-morph)
+    if (verifiers / "tsx-ast-check.mjs").exists():
+        layers.append(run_layer("L2-tsx-ast",
+                                ["node", str(verifiers / "tsx-ast-check.mjs"), str(repo)],
+                                cwd=repo))
+
+    if not args.fast:
+        # L3 — runtime (Playwright)
+        if (verifiers / "playwright-smoke.mjs").exists():
+            layers.append(run_layer("L3-playwright",
+                                    ["node", str(verifiers / "playwright-smoke.mjs"), str(repo)],
+                                    cwd=repo))
+        # L3 — RBAC runtime check
+        if (verifiers / "rbac-runtime-check.mjs").exists():
+            layers.append(run_layer("L3-rbac",
+                                    ["node", str(verifiers / "rbac-runtime-check.mjs"), str(repo)],
+                                    cwd=repo))
+        # L4 — axe + screenshot
+        if (verifiers / "axe-check.mjs").exists():
+            layers.append(run_layer("L4-axe",
+                                    ["node", str(verifiers / "axe-check.mjs"), str(repo)],
+                                    cwd=repo))
+        if (verifiers / "screenshot-matrix.mjs").exists():
+            layers.append(run_layer("L4-screenshot",
+                                    ["node", str(verifiers / "screenshot-matrix.mjs"), str(repo)],
+                                    cwd=repo))
+
+    failed = [l for l in layers if l["status"] in {"fail", "timeout"}]
+    overall = "pass" if not failed else "fail"
+
+    report = {
+        "run_dir": str(run_dir),
+        "ssot_root": str(SSOT_ROOT),
+        "manifest_version": load_manifest().get("version"),
+        "overall": overall,
+        "layers": layers,
+        "completed_at": ts,
+        "fast_mode": args.fast,
+    }
+    (run_dir / "verifier-report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False))
+
+    marker = repo / ".admin-build" / "VERIFIER_FAIL"
+    if overall == "fail":
+        marker.write_text(json.dumps({"run": run_dir.name, "failed": [l['layer'] for l in failed]}))
+    elif marker.exists():
+        marker.unlink()
+
+    # Final verdict
+    verdict = run_dir / "final-verdict.md"
+    lines = [f"# Verifier Verdict — {ts}", "", f"**Overall:** {overall.upper()}", ""]
+    for l in layers:
+        lines.append(f"- {l['layer']}: **{l['status']}** ({l['duration_s']}s) — exit {l['exit']}")
+    verdict.write_text("\n".join(lines))
+
+    print(json.dumps({"overall": overall, "run_dir": str(run_dir),
+                      "report": str(run_dir / "verifier-report.json")}, indent=2))
+    return 0 if overall == "pass" else 1
+
+
+# ---------- run ----------
+
+def cmd_run(args) -> int:
+    """
+    intake → research → ralplan → goal/team → verify (loop).
+    placeholder: orchestrate via Claude/Codex skill (`/admin-build`). this CLI is the
+    durable wrapper; in practice it shells out to claude/codex/team with prompt templates.
+    """
+    repo = repo_root_from_cwd()
+    ts = now_ts()
+    run_dir = repo / ".admin-build" / "runs" / ts
+    run_dir.mkdir(parents=True, exist_ok=True)
+    intake = Path(args.intake)
+    if not intake.exists():
+        sys.stderr.write(f"[admin-build] intake file missing: {intake}\n")
+        return 2
+    shutil.copy2(intake, run_dir / "input.yaml")
+
+    print(json.dumps({
+        "run_dir": str(run_dir),
+        "intake": str(run_dir / "input.yaml"),
+        "next_steps": [
+            "1. claude/codex picks up intake and follows /admin-build skill phases",
+            "2. each worker emits its own ssot_attestation.json",
+            "3. orchestrator calls `admin-build verify` per iteration",
+            "4. on verifier fail: produce repair prompt, resume same session, loop",
+            "5. on pass OR budget exhaustion: emit final-verdict.md + return",
+        ],
+        "budget": {"max_iterations": args.max_iterations, "max_wall_clock_h": args.max_wall_clock_h},
+    }, indent=2, ensure_ascii=False))
+    return 0
+
+
+# ---------- replay ----------
+
+def cmd_replay(args) -> int:
+    repo = repo_root_from_cwd()
+    src = repo / ".admin-build" / "runs" / args.run_id
+    if not src.is_dir():
+        sys.stderr.write(f"[admin-build] run not found: {src}\n")
+        return 2
+    intake = src / "input.yaml"
+    if not intake.exists():
+        sys.stderr.write(f"[admin-build] no input.yaml in {src}\n")
+        return 2
+    print(f"[admin-build] replay {args.run_id} → invoking `run --intake {intake}`")
+    args2 = argparse.Namespace(intake=str(intake), max_iterations=args.max_iterations,
+                               max_wall_clock_h=args.max_wall_clock_h)
+    return cmd_run(args2)
+
+
+# ---------- status ----------
+
+def cmd_status(args) -> int:
+    repo = repo_root_from_cwd()
+    runs_root = repo / ".admin-build" / "runs"
+    m = load_manifest()
+    info = {
+        "ssot_version": m.get("version"),
+        "ssot_root": str(SSOT_ROOT),
+        "repo": str(repo),
+        "runs_root": str(runs_root) if runs_root.exists() else None,
+        "latest_run": None,
+        "marker_verifier_fail": (repo / ".admin-build/VERIFIER_FAIL").exists(),
+    }
+    if runs_root.exists():
+        entries = sorted([p for p in runs_root.iterdir() if p.is_dir()], key=lambda p: p.name)
+        if entries:
+            latest = entries[-1]
+            verdict = latest / "final-verdict.md"
+            info["latest_run"] = {
+                "id": latest.name,
+                "has_attestation": (latest / "ssot_attestation.json").exists(),
+                "has_verifier_report": (latest / "verifier-report.json").exists(),
+                "final_verdict": verdict.read_text().splitlines()[0] if verdict.exists() else None,
+            }
+    print(json.dumps(info, indent=2, ensure_ascii=False))
+    return 0
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(prog="admin-build")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    sp = sub.add_parser("attest", help="emit ssot_attestation.json for a task")
+    sp.add_argument("--task", required=True, help="task router key (e.g. list-page, form-page, dashboard-page)")
+    sp.add_argument("--worker", default=None)
+    sp.add_argument("--agent", default=None)
+
+    sv = sub.add_parser("verify", help="run 4-layer verifier")
+    sv.add_argument("--fast", action="store_true", help="L1+L2 only (skip Playwright/axe/screenshot)")
+    sv.add_argument("--run-id", default=None)
+
+    sr = sub.add_parser("run", help="orchestrate one-shot admin build")
+    sr.add_argument("--intake", required=True, help="path to intake.yaml")
+    sr.add_argument("--max-iterations", type=int, default=12)
+    sr.add_argument("--max-wall-clock-h", type=int, default=12)
+
+    sp2 = sub.add_parser("replay", help="re-run a previous run")
+    sp2.add_argument("run_id")
+    sp2.add_argument("--max-iterations", type=int, default=12)
+    sp2.add_argument("--max-wall-clock-h", type=int, default=12)
+
+    sub.add_parser("status", help="show latest run + manifest version")
+
+    args = p.parse_args()
+    return {"attest": cmd_attest, "verify": cmd_verify, "run": cmd_run,
+            "replay": cmd_replay, "status": cmd_status}[args.cmd](args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

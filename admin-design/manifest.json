@@ -1,0 +1,199 @@
+{
+  "$schema_version": "admin-design/manifest@1.0.0",
+  "version": "1.0.0",
+  "name": "Neutral Admin Design System",
+  "source": "neutral_admin_design_system_for_coding_llm_v1.md (2026-05-27)",
+  "last_updated": "2026-05-27",
+  "ssot_root": "~/.config/agent-harness-baseline/admin-design/",
+  "load_order": [
+    "index.md",
+    "00-non-negotiable.md",
+    "02-ssot-protocol.md"
+  ],
+  "files": {
+    "index.md": {
+      "sha256": "58f30b961e6bf589ab0604f8da3e9faf146f27bd95a3eb40b7612fb70811466d",
+      "bytes": 4573,
+      "role": "router",
+      "tier": null,
+      "applies_to": ["all"],
+      "always_load": true
+    },
+    "00-non-negotiable.md": {
+      "sha256": "e2032debf06e3a4f551436044ec82763fa4c632b5fa3442abe7a8cc00758f8e0",
+      "bytes": 3421,
+      "tier": 0,
+      "applies_to": ["all"],
+      "always_load": true
+    },
+    "01-stack.md": {
+      "sha256": "448e2e4a71e7091d7a8151aa7968066fe29234d8f5fa61c51fd345bf6697d105",
+      "bytes": 3099,
+      "tier": 1,
+      "applies_to": ["new-project", "repo-bootstrap"]
+    },
+    "02-ssot-protocol.md": {
+      "sha256": "4a8c9b7521198ce473a5d12f9af36d9920e511de0cf7b97dfffb14e32e70ebcd",
+      "bytes": 3924,
+      "tier": 1,
+      "applies_to": ["all"],
+      "always_load": true
+    },
+    "03-philosophy.md": {
+      "sha256": "d2dbd549d29dfd0ad34948c6a4d0ae308a997983f89aeed991f69cc300b36194",
+      "bytes": 1259,
+      "tier": 1,
+      "applies_to": ["all", "visual-review"]
+    },
+    "04-tokens.md": {
+      "sha256": "e8785a1ae751ec8946834a42c14c2135f3312ab3e2118d541cf193c1eb7a7288",
+      "bytes": 5006,
+      "tier": 1,
+      "applies_to": ["foundation", "theme", "all-styling"]
+    },
+    "05-spacing-type-grid.md": {
+      "sha256": "3ed5d5dd5b89eeb8b68abc588ed6b7392e842b3faed620f7ff08bf6ddaa3728c",
+      "bytes": 4937,
+      "tier": 1,
+      "applies_to": ["layout", "typography", "responsive"]
+    },
+    "06-shell-pages.md": {
+      "sha256": "c617eeaf96c9806db87978e695d5a7e09b3b278a522084c1c376b2164bcdb42b",
+      "bytes": 4039,
+      "tier": 1,
+      "applies_to": ["shell", "page"]
+    },
+    "07-states.md": {
+      "sha256": "6c6c19c8876a79c663de1e6bf98f651667e1d285f6141b137cc844040782abe5",
+      "bytes": 3250,
+      "tier": 1,
+      "applies_to": ["all"]
+    },
+    "08-components.md": {
+      "sha256": "c943f91362098fdb3bd40a21619348bd6135a44dfd1034938dc452323e162010",
+      "bytes": 1755,
+      "tier": 1,
+      "applies_to": ["components"]
+    },
+    "09-tables.md": {
+      "sha256": "fa47d85db8bb98c7e058467cbced56066405ff751f69d0e2addfd5e0987412f4",
+      "bytes": 3677,
+      "tier": 1,
+      "applies_to": ["list-page", "data-grid"]
+    },
+    "10-forms.md": {
+      "sha256": "84aeca1aec878f4f38d683d45ea6c020e459d38b1505af423e69727cc6764b43",
+      "bytes": 2247,
+      "tier": 1,
+      "applies_to": ["form-page", "create-edit"]
+    },
+    "11-routing-data.md": {
+      "sha256": "6ac997b26e15bf0a374c89c82e7697e8cf5dd42a3aea0569da63404487d9045f",
+      "bytes": 2601,
+      "tier": 1,
+      "applies_to": ["routing", "server-state"]
+    },
+    "12-rbac.md": {
+      "sha256": "2678ea91d7067af6bdd4a64cb211f28f657530288fff90c28ce4d9344c04f94a",
+      "bytes": 3055,
+      "tier": 1,
+      "applies_to": ["all", "security-boundary"]
+    },
+    "13-feedback-overlay.md": {
+      "sha256": "84a25d2d5056d3d77c7f2e43f0b583e3e40e22fb039d6d15e24c3bcf7175b6e7",
+      "bytes": 3067,
+      "tier": 1,
+      "applies_to": ["feedback", "modal", "drawer", "popover"]
+    },
+    "14-dashboard-analytics.md": {
+      "sha256": "5d561b324e65f33138a65e73d22b9fd46bcd280d521626f7df509313277d5b47",
+      "bytes": 1448,
+      "tier": 1,
+      "applies_to": ["dashboard-page", "chart", "kpi"]
+    },
+    "15-domain-patterns.md": {
+      "sha256": "7f4339ab6534f02827ead309637b8abcf7b6e0bf6e2968cf908c4ee20de1bfe1",
+      "bytes": 1614,
+      "tier": 1,
+      "applies_to": ["domain-specific"]
+    },
+    "16-a11y-perf-org.md": {
+      "sha256": "d5db5594604a71fe5009951a09d97acb3b3e03d86587a4c1c67fb5207eb60a48",
+      "bytes": 3439,
+      "tier": 1,
+      "applies_to": ["all", "code-organization"]
+    },
+    "17-llm-algorithm.md": {
+      "sha256": "12e13f4a0179c550b1cc32b66d0a1b741bc4d2c401e2294c82e711b691de3caa",
+      "bytes": 3565,
+      "tier": 1,
+      "applies_to": ["all", "orchestration"]
+    },
+    "18-acceptance-prompt-contracts.md": {
+      "sha256": "b826c3853908f90155d6ba2cb1617f3992b2ff4b1b41b442f7fa76129239649b",
+      "bytes": 7707,
+      "tier": 1,
+      "applies_to": ["verification", "intake", "completion"]
+    }
+  },
+  "machine_specs": {
+    "checklist.yaml": "machine/checklist.yaml",
+    "tokens.schema.json": "machine/tokens.schema.json",
+    "component-contracts.yaml": "machine/component-contracts.yaml",
+    "state-taxonomy.yaml": "machine/state-taxonomy.yaml",
+    "route-patterns.yaml": "machine/route-patterns.yaml",
+    "viewport-matrix.yaml": "machine/viewport-matrix.yaml",
+    "rbac-matrix.yaml": "machine/rbac-matrix.yaml"
+  },
+  "task_router": {
+    "admin-bootstrap":      ["00-non-negotiable", "01-stack", "02-ssot-protocol", "04-tokens", "06-shell-pages", "16-a11y-perf-org", "17-llm-algorithm"],
+    "list-page":            ["00-non-negotiable", "04-tokens", "07-states", "09-tables", "11-routing-data", "12-rbac"],
+    "detail-page":          ["00-non-negotiable", "06-shell-pages", "07-states", "09-tables", "12-rbac"],
+    "form-page":            ["00-non-negotiable", "07-states", "10-forms", "12-rbac", "13-feedback-overlay"],
+    "modal-or-drawer":      ["00-non-negotiable", "07-states", "13-feedback-overlay"],
+    "dashboard-page":       ["00-non-negotiable", "04-tokens", "07-states", "12-rbac", "14-dashboard-analytics"],
+    "rbac-implementation":  ["00-non-negotiable", "12-rbac", "17-llm-algorithm"],
+    "domain-erp":           ["09-tables", "12-rbac", "15-domain-patterns"],
+    "domain-commerce":      ["09-tables", "13-feedback-overlay", "14-dashboard-analytics", "15-domain-patterns"],
+    "domain-finance":       ["09-tables", "11-routing-data", "14-dashboard-analytics", "15-domain-patterns"],
+    "domain-crm":           ["09-tables", "10-forms", "13-feedback-overlay", "15-domain-patterns"],
+    "domain-marketing":     ["14-dashboard-analytics", "15-domain-patterns"],
+    "acceptance-check":     ["18-acceptance-prompt-contracts", "00-non-negotiable", "12-rbac", "16-a11y-perf-org"]
+  },
+  "override_precedence": {
+    "tier_0": {
+      "scope": "00-non-negotiable.md",
+      "override": "forbidden",
+      "reason": "non-negotiable rules. local.md cannot relax."
+    },
+    "tier_1": {
+      "scope": "01-18 sections (global)",
+      "override": "via local.md only with explicit rationale"
+    },
+    "tier_2": {
+      "scope": "repo admin/admin-design/local.md",
+      "permission": "additive_and_specific_only",
+      "forbidden_overrides": [
+        "enable dark mode",
+        "skip loading state",
+        "skip empty state",
+        "skip error state",
+        "primary tint card",
+        "tinted full-row table background",
+        "AG Grid Enterprise without license decision",
+        "expose service_role in browser",
+        "frontend-only security",
+        "fake audit log",
+        "mock data in production paths"
+      ]
+    },
+    "tier_3": {
+      "scope": "task prompt (intake.yaml)",
+      "permission": "domain/business/db/permission inputs only",
+      "forbidden_overrides": "any UI/UX/design rule from tier 0-1"
+    }
+  },
+  "attestation_required": true,
+  "attestation_path": ".admin-build/runs/<ts>/ssot_attestation.json",
+  "verifier_entrypoint": "~/.config/agent-harness-baseline/admin-build/bin/admin-design-verify"
+}
