@@ -55,6 +55,12 @@ table lane worker 에 무조건 명시. `admin-build verify` 가 probe(`pk-colum
 1. **PK 단일 진입.** 1번 데이터 컬럼 = PK(`id`) `#`+bold+underline (`pkColumn()`/`PkLink`). 상세 이동은 PK 클릭만. 이름/제목/번호판 등 비-PK 셀은 평문(`<Link>` 금지). 구 `primary_identifier_links_to_detail` 폐기.
 2. **Sticky 헤더.** `thead` = `sticky top-0 z-10` + opaque bg. 래퍼 `overflow-hidden` 금지.
 3. **상태 필터 의미색.** `FilterChip` tone 지원 + `paramName==='status'` 자동 `toneFor()` 색칠. 흑백 토글만 금지.
+4. **페이지네이션 param 보존.** page link 는 `new URLSearchParams(sp.toString())` clone. bare `{query:{page}}` href 금지(필터 소실).
+5. **컬럼 정렬 opt-in server-side.** `meta.sortKey` 있는 헤더만 클릭 정렬 + URL sort/order rewrite. computed 컬럼 비-sortable. `getSortedRowModel` 금지.
+6. **Date 셀 tooltip.** 공유 `DateCell`(title=정확 timestamp). 셀 직접 `formatDate` 금지.
+7. **Clear-all + fake affordance.** active param 시 "필터 초기화" 노출. 비-link 셀 `hover:underline` 금지.
+
+probe: `pagination-preserves-params`/`column-sort-opt-in`/`date-cell-tooltip`/`clear-all-filters`/`no-fake-hover-underline` (2026-05-29 audit, POSTMORTEM-2026-05-29).
 
 ## Worker lane (mixed CLI)
 

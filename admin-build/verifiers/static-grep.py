@@ -396,6 +396,62 @@ def check_shared_table_components(repo: Path) -> list[dict]:
             hits.append({"id": "pk-cell-helper-present", "severity": "error",
                          "path": str(pk.relative_to(repo)),
                          "reason": "pk-cell.tsx 가 pkColumn + PkLink 를 export 하지 않음 (§12.9)"})
+
+    # 4. pagination preserves search params (2026-05-29 audit §12.12)
+    pl = repo / "src" / "components" / "admin" / "data-table" / "pagination-links.tsx"
+    if pl.exists():
+        txt = pl.read_text(errors="ignore")
+        clones = "useSearchParams" in txt and "URLSearchParams" in txt
+        # bare object href that replaces whole query: href={{ query: { ... } }}
+        bare = re.search(r"href=\{\{\s*query\s*:", txt)
+        if not clones or bare:
+            hits.append({"id": "pagination-preserves-params", "severity": "error",
+                         "path": str(pl.relative_to(repo)),
+                         "reason": "page link 가 현재 search param 을 clone(useSearchParams+URLSearchParams)하지 않거나 bare {query:{...}} href 사용 — 페이지 이동 시 필터/정렬 소실 (§12.12)"})
+
+    # 5. column sort opt-in server-side (§12.13)
+    if dt.exists():
+        dtx = dt.read_text(errors="ignore")
+        if "sortKey" not in dtx or "useSearchParams" not in dtx:
+            hits.append({"id": "column-sort-opt-in", "severity": "error",
+                         "path": str(dt.relative_to(repo)),
+                         "reason": "DataTable 에 sortKey opt-in + useSearchParams 기반 URL 정렬 부재 — 정렬 MUST 가 dead (§12.13)"})
+        if re.search(r"getSortedRowModel\s*\(", dtx):
+            hits.append({"id": "column-sort-opt-in", "severity": "warn",
+                         "path": str(dt.relative_to(repo)),
+                         "reason": "getSortedRowModel(클라이언트 정렬) 호출 — server-side 정렬(URL sort/order) 정책과 불일치 (§12.13)"})
+
+    # 6. DateCell tooltip helper (§12.14)
+    dc = repo / "src" / "components" / "admin" / "data-table" / "date-cell.tsx"
+    if not dc.exists():
+        hits.append({"id": "date-cell-tooltip", "severity": "error",
+                     "path": "src/components/admin/data-table/date-cell.tsx",
+                     "reason": "DateCell(title=정확 timestamp) 공유 컴포넌트 부재 — date 셀 tooltip 누락 (§12.14)"})
+    else:
+        dcx = dc.read_text(errors="ignore")
+        if "DateCell" not in dcx or "title" not in dcx:
+            hits.append({"id": "date-cell-tooltip", "severity": "error",
+                         "path": str(dc.relative_to(repo)),
+                         "reason": "date-cell.tsx 가 DateCell + title(exact timestamp) 미제공 (§12.14)"})
+
+    # 7. clear-all filters affordance (§12.15)
+    if tb.exists():
+        tbx = tb.read_text(errors="ignore")
+        if "필터 초기화" not in tbx and "clearAll" not in tbx and "clear-all" not in tbx:
+            hits.append({"id": "clear-all-filters", "severity": "warn",
+                         "path": str(tb.relative_to(repo)),
+                         "reason": "DataToolbar 에 clear-all(필터 초기화) affordance 부재 (§12.15)"})
+
+    # 8. fake hover:underline on non-link table cells (§12.15)
+    comp_glob = repo / "src" / "app" / "(protected)"
+    if comp_glob.exists():
+        for p in comp_glob.rglob("_components/*-table.tsx"):
+            t = p.read_text(errors="ignore")
+            if "hover:underline" in t:
+                hits.append({"id": "no-fake-hover-underline", "severity": "error",
+                             "path": str(p.relative_to(repo)),
+                             "reason": "비-link 셀 hover:underline = fake affordance. 행 underline 은 PkLink 만 (§12.15)"})
+
     return hits
 
 
