@@ -16,6 +16,40 @@ getdesign doctor          # verify shared entrypoint symlinks
 
 `getdesign` is an alias for `~/.config/agent-harness-baseline/bin/getdesign.sh`. With no arguments, it prints the active global design entrypoints and discovers project-local design files from the current directory upward.
 
+## ANDS preset selection (Flutter 디자인 하네스)
+
+디자인 톤은 **2개 독립 노브**로 선택한다. 둘을 혼동하지 말 것.
+
+| 노브 | 무엇을 정함 | 범위 | 메커니즘 |
+|---|---|---|---|
+| **① Foundation 프리셋** | radii·type·density·brand accent·state 색 (전체 톤) | **워크스페이스 공유** (`packages/ds/tokens/tokens.json` 1개) | `bin/ds-preset.sh <name>` |
+| **② brand_seed** | 앱의 Primary CTA 색 | **앱별** (런타임) | flutter_app 브릭 `brand_seed` var → `buildTheme(seed:)` |
+
+### ① 어떤 foundation 프리셋? (tone-fit 결정표)
+
+| 앱 성격 | 프리셋 | 문서 |
+|---|---|---|
+| 커머스·카탈로그·상품 다수·고밀도 그리드 (리테일/패션) | `uniqlo` | [`DESIGN-UNIQLO.md`](./DESIGN-UNIQLO.md) |
+| 에디토리얼·프리미엄·여백·콘텐츠 hero / 예약·금융·B2B 운영툴 | `ands` (기본) | [`DESIGN.md`](./DESIGN.md) |
+
+```bash
+ds-preset.sh list      # 사용 가능 프리셋 + 현재 활성(*) 표시
+ds-preset.sh status    # 현재 활성 프리셋
+ds-preset.sh uniqlo    # 활성화: tokens.json 교체 + Dart 재생성 + drift 검증 (원자적, 실패 시 복원)
+ds-preset.sh ands      # base ANDS 로 복귀
+ds-preset.sh uniqlo --test   # gen 후 flutter test 까지
+```
+(`bin/ds-preset.sh`. 새 프리셋은 `packages/ds/tokens/presets/<name>.json` 에 동일 스키마 드롭인으로 추가.)
+
+### ② brand_seed 규칙
+
+- **UNIQLO 톤이면 `brand_seed = 0xFF111114`(ink).** Primary CTA = 블랙. 레드는 brand accent(`state.brand`)지 Primary 가 아니다. 브랜드 레드를 seed 에 넣지 말 것(토큰 안티패턴).
+- 별도 브랜드 Primary 색이 정당한 앱만 그 색을 seed 로. 단 "액션색 ≠ 로고색"일 수 있음을 먼저 판단.
+
+### 캐비엇
+
+- 공유 ds(`path: ../../packages/ds`) = **워크스페이스당 foundation 1개.** 한 워크스페이스 안 앱들이 서로 다른 foundation 이 필요하면 ds 공유를 깨야 한다(per-app vendor 또는 별 워크스페이스). 같은 톤이면 그대로 공유.
+
 ## Retrieval order
 
 1. **User request** — explicit visual/product requirements in the current turn are highest priority.

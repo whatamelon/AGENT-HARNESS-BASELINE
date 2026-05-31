@@ -1,0 +1,115 @@
+{
+  "$schema": "ands-tokens@2.0.0",
+  "meta": {
+    "designSystem": "ANDS@2.0.0",
+    "preset": "uniqlo",
+    "mode": "light",
+    "font": "Pretendard",
+    "reference": "UNIQLO app — LifeWear 기능미, 무채색 캔버스 + ink Primary CTA + 레드는 brand accent 한정, 고밀도 카탈로그 그리드",
+    "note": "ANDS v2.0 드롭인 프리셋. 활성화 시 이 파일을 tokens/tokens.json 으로 복사 후 `dart run tool/gen_tokens.dart`. 핵심 결정(리서치 확증): UNIQLO 레드는 '브랜드/로고색'이지 UI Primary CTA 가 아니다 — 기본 액션 버튼은 블랙/ink. 따라서 brand≠primary≠danger 3분리: primary.seed=ink(블랙 CTA), state.brand=시그니처 레드(로고/세일/프로모션 accent 한정), state.danger=별도 딥레드(에러). 브랜드색을 primary seed 에 직접 바인딩하는 것은 토큰 안티패턴(brand 변경 시 의미 붕괴). neutral ramp/typography/space 는 베이스 ANDS 상속, radii(각진 기능형)와 price 스케일만 override. 레드 정확값은 미공개(Pantone 근사) — 브랜드 가이드로 state.brand override 가능."
+  },
+  "primitive": {
+    "neutral": {
+      "0": { "light": "#FFFFFF", "dark": "#0B0B0C" },
+      "50": { "light": "#FAFAFA", "dark": "#0F0F11" },
+      "100": { "light": "#F4F4F5", "dark": "#161618" },
+      "150": { "light": "#ECECEE", "dark": "#1C1C1F" },
+      "200": { "light": "#E4E4E7", "dark": "#26262A" },
+      "300": { "light": "#D4D4D8", "dark": "#34343A" },
+      "400": { "light": "#A1A1AA", "dark": "#52525B" },
+      "500": { "light": "#8E8E93", "dark": "#71717A" },
+      "600": { "light": "#6B6B70", "dark": "#A1A1AA" },
+      "700": { "light": "#48484C", "dark": "#C4C4C9" },
+      "800": { "light": "#2C2C30", "dark": "#E4E4E7" },
+      "900": { "light": "#1A1A1D", "dark": "#F2F2F4" },
+      "ink": { "light": "#111114", "dark": "#FAFAFA" }
+    },
+    "textSubtle": { "light": "#9E9EA4", "dark": "#71717A" },
+    "state": {
+      "info": { "light": "#2E6FF2", "dark": "#5B8DEF" },
+      "success": { "light": "#16A34A", "dark": "#34D399" },
+      "warning": { "light": "#E08600", "dark": "#F59E0B" },
+      "danger": { "light": "#C2261D", "dark": "#F87171" },
+      "brand": { "light": "#E60012", "dark": "#FF3B30" }
+    },
+    "overlay": { "light": "rgba(17,17,20,0.45)", "dark": "rgba(0,0,0,0.6)" }
+  },
+  "primary": {
+    "seed": { "light": "#111114", "dark": "#FAFAFA" },
+    "derive": {
+      "pressedLightnessDelta": -0.07,
+      "softAlpha": 0.10,
+      "borderAlpha": 0.24,
+      "focusAlpha": 0.40,
+      "onPrimaryMinContrast": 4.5,
+      "onPrimaryRule": "pick = luminance(seed) < 0.5 ? neutral/0 : neutral/ink; if contrast(pick, seed) < 4.5 flip to the other neutral; if both neutrals still < 4.5 escalate to the pure WCAG endpoint (#000000/#FFFFFF) on the higher-contrast side. onPrimary is text color only — seed is never altered.",
+      "onPrimaryTiers": [
+        "luminance(seed) < 0.5 ? neutral/0 : neutral/ink",
+        "flip to opposite neutral if first < onPrimaryMinContrast",
+        "pure #000000/#FFFFFF (higher-contrast side) if both neutrals < onPrimaryMinContrast"
+      ]
+    }
+  },
+  "semantic": {
+    "bg": { "ref": "neutral/0" },
+    "bgSubtle": { "ref": "neutral/50" },
+    "surface": { "light": { "ref": "neutral/0" }, "dark": { "ref": "neutral/100" } },
+    "surfaceAlt": { "ref": "neutral/100" },
+    "surfaceInset": { "light": { "ref": "neutral/150" }, "dark": { "ref": "neutral/50" } },
+    "border": { "ref": "neutral/200" },
+    "borderStrong": { "ref": "neutral/300" },
+    "text": { "ref": "neutral/ink" },
+    "textMuted": { "ref": "neutral/600" },
+    "textSubtle": { "light": { "ref": "textSubtle" }, "dark": { "ref": "neutral/500" } },
+    "onPrimary": { "ref": "primary/onPrimary" },
+    "overlay": { "ref": "overlay" },
+    "info": { "ref": "state/info" },
+    "success": { "ref": "state/success" },
+    "warning": { "ref": "state/warning" },
+    "danger": { "ref": "state/danger" },
+    "brandAccent": { "ref": "state/brand" },
+    "infoSoft": { "deriveFrom": "state/info", "alpha": 0.12 },
+    "successSoft": { "deriveFrom": "state/success", "alpha": 0.12 },
+    "warningSoft": { "deriveFrom": "state/warning", "alpha": 0.12 },
+    "dangerSoft": { "deriveFrom": "state/danger", "alpha": 0.12 }
+  },
+  "typography": {
+    "fontFamily": "Pretendard",
+    "weights": { "regular": 400, "medium": 500, "semibold": 600, "bold": 700 },
+    "scale": {
+      "display": { "size": 34, "lineHeight": 1.10, "weight": 700, "letterSpacing": -1.0 },
+      "title1": { "size": 26, "lineHeight": 1.18, "weight": 700, "letterSpacing": -0.6 },
+      "title2": { "size": 22, "lineHeight": 1.24, "weight": 700, "letterSpacing": -0.4 },
+      "title3": { "size": 18, "lineHeight": 1.30, "weight": 600, "letterSpacing": -0.3 },
+      "bodyLg": { "size": 16, "lineHeight": 1.55, "weight": 400, "letterSpacing": -0.16 },
+      "body": { "size": 15, "lineHeight": 1.55, "weight": 400, "letterSpacing": -0.15 },
+      "bodySm": { "size": 14, "lineHeight": 1.50, "weight": 400, "letterSpacing": 0 },
+      "label": { "size": 13, "lineHeight": 1.40, "weight": 600, "letterSpacing": 0 },
+      "caption": { "size": 12, "lineHeight": 1.35, "weight": 500, "letterSpacing": 0 },
+      "micro": { "size": 11, "lineHeight": 1.30, "weight": 600, "letterSpacing": 0.11 },
+      "price": { "size": 17, "lineHeight": 1.20, "weight": 700, "letterSpacing": -0.3 }
+    }
+  },
+  "space": { "x1": 4, "x2": 8, "x3": 12, "x4": 16, "x5": 20, "x6": 24, "x8": 32, "x10": 40, "x12": 48 },
+  "radii": { "sm": 4, "md": 8, "lg": 12, "sheet": 16, "full": 999 },
+  "elevation": {
+    "0": null,
+    "1": { "x": 0, "y": 1, "blur": 2, "color": "rgba(0,0,0,0.04)" },
+    "2": { "x": 0, "y": 4, "blur": 16, "color": "rgba(0,0,0,0.08)" },
+    "3": { "x": 0, "y": 8, "blur": 32, "color": "rgba(0,0,0,0.12)" }
+  },
+  "motion": {
+    "fast": { "ms": 120, "curve": "easeOutCubic" },
+    "base": { "ms": 180, "curve": "easeOutCubic" },
+    "slow": { "ms": 280, "curve": "easeOutQuart" },
+    "page": { "ms": 300, "curve": "easeOutQuart" }
+  },
+  "state": {
+    "pressedInkOverlay": 0.12,
+    "pressScale": 0.98,
+    "softAlpha": 0.10,
+    "borderAlpha": 0.24,
+    "focusAlpha": 0.40,
+    "stateSoftAlpha": 0.12
+  }
+}

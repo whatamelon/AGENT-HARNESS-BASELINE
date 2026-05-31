@@ -6,6 +6,8 @@
 >
 > **Stack:** Flutter (Dart, Material 3 위에 ThemeExtension 토큰 레이어) · **Font:** Pretendard · **Fundamentals 매핑:** Tailwind/shadcn 토큰 어휘를 Flutter로 변환.
 > 본 시스템의 강제 게이트는 [`DESIGN-HARNESS.md`](./DESIGN-HARNESS.md), 컴포넌트 불변 규칙은 [`DESIGN-COMPONENTS.md`](./DESIGN-COMPONENTS.md), 상태별 구현 예시는 [`DESIGN-STATES.md`](./DESIGN-STATES.md).
+>
+> **프리셋(레퍼런스 톤 교체 레이어):** [`DESIGN-UNIQLO.md`](./DESIGN-UNIQLO.md) — UNIQLO 기능미(LifeWear) 톤. 무채색 + 단일 시그니처 레드 + 고밀도 카탈로그 그리드. 토큰 드롭인 `flutter/packages/ds/tokens/presets/uniqlo.json`. 포크 아닌 상속 프리셋.
 
 ---
 
