@@ -30,7 +30,7 @@ dependencies:
   kakao_flutter_sdk_user: ^1.9.7
   local_auth: ^2.3.0
   meta: ^1.15.0
-  shared_preferences: ^2.5.5
+  shared_preferences: ^2.5.5 # NON-SENSITIVE state only (e.g. guest cart, wishlist). NEVER session tokens — use flutter_secure_storage instead.
   sign_in_with_apple: ^7.0.1
   supabase_flutter: ^2.12.0
   tosspayments_widget_sdk_flutter: ^2.2.0

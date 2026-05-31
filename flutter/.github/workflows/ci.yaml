@@ -126,6 +126,7 @@ jobs:
         with:
           scan-args: |-
             --lockfile=./packages/core/pubspec.lock
+            --lockfile=./packages/app_kit/pubspec.lock
             --lockfile=./apps/reference_app/pubspec.lock
 
   verify:
