@@ -1,0 +1,4 @@
+# Mason hook build caches (regenerated on `mason make`)
+*/hooks/.dart_tool/
+*/hooks/build/
+*/hooks/pubspec.lock

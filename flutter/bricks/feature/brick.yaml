@@ -1,0 +1,49 @@
+name: feature
+description: >-
+  Scaffolds a feature-first slice for a harness Flutter app: a ds-based screen,
+  a Riverpod controller, and (optionally) a domain + data layer (entity,
+  repository over ApiClient/Supabase). Pick a screen `archetype` — `list`
+  (DsList + 3 async states), `detail` (single entity + sticky single CTA), or
+  `form` (multi-field DsTextField + per-field validation + submit). Drop it
+  under an app's lib/ and register the route per the printed snippet.
+version: 0.3.0
+
+environment:
+  mason: ">=0.1.0 <1.0.0"
+
+vars:
+  package_name:
+    type: string
+    description: >-
+      The host app's package name (snake_case, e.g. park_app) — used for
+      `package:` imports between the slice's files. Must match the app's
+      pubspec `name`.
+    prompt: Host app package name (snake_case)
+    default: app
+  feature_name:
+    type: string
+    description: Feature / route segment name (snake_case, e.g. reservation).
+    prompt: Feature name (snake_case)
+    default: orders
+  archetype:
+    type: enum
+    values:
+      - list
+      - detail
+      - form
+    description: >-
+      Screen archetype. `list` = DsList over a collection with loading/empty/
+      error states + retry (AsyncNotifier). `detail` = single entity, header +
+      DsCard body + one sticky bottom CTA (AsyncNotifier). `form` = multi-field
+      DsTextField screen with per-field validation status + submit returning a
+      Result (Notifier). For list/detail, `with_domain` adds the domain entity
+      + repository; for form it adds a submit-side repository.
+    prompt: Screen archetype
+    default: list
+  with_domain:
+    type: boolean
+    description: >-
+      When true, add domain/ (entity + usecase) and data/ (repository) layers
+      (light clean architecture). When false, a 2-layer presentation slice.
+    prompt: Include domain + data layers?
+    default: false

@@ -1,0 +1,25 @@
+name: ds_widgetbook
+description: Widgetbook catalog for the ds design system (tokens + P1-a).
+version: 0.1.0
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: '^3.6.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  ds:
+    path: ../
+  flutter:
+    sdk: flutter
+  widgetbook: ^3.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.0.0
+
+flutter:
+  uses-material-design: true

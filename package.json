@@ -1,0 +1,29 @@
+{
+  "name": "agent-harness-baseline",
+  "version": "1.0.0",
+  "description": "두 맥북(개인/회사) 간 Claude Code + Codex + 셸 + 프로젝트 시크릿 + GUI 앱 설정을 git으로 동기화하는 SSOT. **1Password 통합** + **launchd 자동 sync** + **휘황찬란한 mac-setup 마법사 (14단계)**.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whatamelon/AGENT-HARNESS-BASELINE.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/whatamelon/AGENT-HARNESS-BASELINE/issues"
+  },
+  "homepage": "https://github.com/whatamelon/AGENT-HARNESS-BASELINE#readme",
+  "dependencies": {
+    "js-yaml": "^4.1.1",
+    "ts-morph": "^28.0.0"
+  }
+}

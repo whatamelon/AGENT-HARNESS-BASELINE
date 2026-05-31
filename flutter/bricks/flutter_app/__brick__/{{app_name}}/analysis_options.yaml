@@ -1,0 +1,16 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+linter:
+  rules:
+    # The skeleton documents APIs inline rather than with /// on every member.
+    public_member_api_docs: false
+    # The app package name is chosen at scaffold time, so its `package:` import
+    # cannot be pre-sorted relative to third-party imports in the templates.
+    # Run `dart fix --apply` after `melos bootstrap` to auto-sort, then re-enable
+    # this rule if you want it enforced.
+    directives_ordering: false

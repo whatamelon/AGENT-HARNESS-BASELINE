@@ -1,0 +1,47 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+# Generated files (committed) are excluded from analysis; very_good would
+# otherwise flag style rules in machine output.
+analyzer:
+  # Async-state-consistency reinforcement (state-management lock, see
+  # docs/STATE_MANAGEMENT.md). These lints already ship enabled in
+  # very_good_analysis; here we *escalate their severity* so a dropped Future
+  # in a Notifier/AsyncNotifier is a hard failure rather than an info hint —
+  # the most common async-state drift an AI agent introduces. Verified to
+  # produce 0 new violations on the current packages/* + apps/* code.
+  errors:
+    discarded_futures: error
+    unawaited_futures: error
+    # Riverpod/AsyncValue code that leaks `dynamic` defeats AsyncValue<T>
+    # typing; surface it as a warning (not yet an error — gradual adoption).
+    avoid_dynamic_calls: warning
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    # Token codegen output (committed machine output, like *.g.dart). The
+    # generator (tool/gen_tokens.dart) emits double literals and a fixed import
+    # order; style lints there are noise. Drift is enforced via `tokens:check`.
+    - "packages/ds/lib/src/gen/**"
+    # Build-time codegen script (not shipped library code); its string-building
+    # logic intentionally exceeds the 80-col library style.
+    - "packages/ds/tool/**"
+    # Mason brick templates: `__brick__` files contain `{{mustache}}`
+    # placeholders and are NOT valid standalone Dart, so the analyzer
+    # mis-parses them (e.g. `StatelessWidget` read as a variable) and emits
+    # ~1100 spurious issues. They are rendered+analyzed only after generation
+    # in a real app. Excluding them lets the workspace analyze clean.
+    - "bricks/**"
+
+linter:
+  rules:
+    # public_member_api_docs is valuable for shipped libraries, but the P0
+    # harness skeleton intentionally documents APIs inline rather than with
+    # /// doc comments on every member. Re-enable in P2 when the API stabilizes.
+    public_member_api_docs: false
+
+    # FutureOr<void> erases whether a call awaits; in Notifier/AsyncNotifier
+    # method signatures it hides async-state transitions. Not in very_good's
+    # set; added here as part of the state-management lock. Verified 0 new
+    # violations on current code. (No new dev_dependency — analysis_options
+    # only; custom_lint/riverpod_lint deferred per the 7/2 build-freeze.)
+    avoid_futureor_void: true

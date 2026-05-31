@@ -1,0 +1,31 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID_PLACEHOLDER.BUNDLEID_PLACEHOLDER"],
+        "components": [
+          {
+            "/": "/l/*",
+            "comment": "Short share/referral links handled by the app."
+          },
+          {
+            "/": "/onyu/referral/*",
+            "comment": "Onyu referral acceptance deep links."
+          },
+          {
+            "/": "/park/contract/*",
+            "comment": "Yongin Park contract deep links."
+          },
+          {
+            "/": "/*",
+            "exclude": true,
+            "comment": "Everything else stays in the browser (not claimed by the app)."
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID_PLACEHOLDER.BUNDLEID_PLACEHOLDER"]
+  }
+}
