@@ -1,0 +1,154 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.44.0'
+
+jobs:
+  tokens-check:
+    name: tokens-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Drift gate: committed ds/lib/src/gen/*.dart must match tokens.json.
+      - run: dart run packages/ds/tool/gen_tokens.dart --check
+
+  guards:
+    name: guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Pure shell/grep gates — no Flutter toolchain needed, so this stays fast.
+      # State-management drift gate (Riverpod 3.x lock).
+      - run: bash tool/guard_state_mgmt.sh
+      # §5.1 P0 security gate: Supabase.initialize must live only in
+      # auth_wiring.dart (the secure init). Blocks the plaintext-token path.
+      - run: bash tool/guard_supabase_init.sh
+
+  analyze:
+    name: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: dart pub global activate melos
+      - run: flutter pub get
+      - name: codegen (envied)
+        run: |
+          cp packages/core/.env.example packages/core/.env
+          dart run build_runner build --delete-conflicting-outputs
+        working-directory: packages/core
+      - run: flutter analyze
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: codegen (envied)
+        run: |
+          cp packages/core/.env.example packages/core/.env
+          dart run build_runner build --delete-conflicting-outputs
+        working-directory: packages/core
+      - run: flutter test
+        working-directory: packages/core
+      - run: flutter test
+        working-directory: packages/ds
+      - run: flutter test
+        working-directory: packages/ds/widgetbook
+      - run: flutter test
+        working-directory: apps/reference_app
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: codegen (envied)
+        run: |
+          cp packages/core/.env.example packages/core/.env
+          dart run build_runner build --delete-conflicting-outputs
+        working-directory: packages/core
+      # Web build is codesign-free and runs on Linux runners — proves the
+      # reference_app + all three entrypoints compile. Mobile flavor builds
+      # are added in P1 once flavor build configs land.
+      - run: flutter build web --target lib/main_prod.dart
+        working-directory: apps/reference_app
+      # Widgetbook catalog compiles to web (token + P1-a component coverage).
+      - run: flutter build web
+        working-directory: packages/ds/widgetbook
+
+  osv-scan:
+    name: osv-scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      # Generate lockfiles so the scanner has something to inspect
+      # (pubspec.lock is git-ignored in this baseline repo).
+      - run: flutter pub get
+      - name: osv-scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        with:
+          scan-args: |-
+            --lockfile=./packages/core/pubspec.lock
+            --lockfile=./apps/reference_app/pubspec.lock
+
+  verify:
+    name: verify
+    needs: [guards, tokens-check, analyze, test, build, osv-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: aggregate results
+        run: |
+          if [ "${{ needs.guards.result }}" != "success" ] || \
+             [ "${{ needs.tokens-check.result }}" != "success" ] || \
+             [ "${{ needs.analyze.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.osv-scan.result }}" != "success" ]; then
+            echo "::error::One or more verify jobs failed."
+            echo "guards:       ${{ needs.guards.result }}"
+            echo "tokens-check: ${{ needs.tokens-check.result }}"
+            echo "analyze:      ${{ needs.analyze.result }}"
+            echo "test:         ${{ needs.test.result }}"
+            echo "build:        ${{ needs.build.result }}"
+            echo "osv-scan:     ${{ needs.osv-scan.result }}"
+            exit 1
+          fi
+          echo "All verify jobs passed."

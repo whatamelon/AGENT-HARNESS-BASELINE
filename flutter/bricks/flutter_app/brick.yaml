@@ -1,0 +1,67 @@
+name: flutter_app
+description: >-
+  Scaffolds a new Flutter app inside the harness workspace, wired to the
+  core / ds / app_kit packages. Generates the flavor entrypoints, bootstrap,
+  MaterialApp.router shell (go_router StatefulShellRoute), a route -> chrome
+  policy map, a deep-link/push route whitelist, and one minimal screen per tab
+  (ds components, Korean labels). Wiring seams (Supabase / Toss / Firebase) are
+  placeholders only — zero real keys. Haptics are wired ON by default
+  (ThrottlingHaptics(PlatformHaptics)) via a bootstrap ProviderScope override.
+version: 0.3.0
+
+environment:
+  mason: ">=0.1.0 <1.0.0"
+
+vars:
+  app_name:
+    type: string
+    description: Package / directory name (snake_case, e.g. park_app).
+    prompt: App package name (snake_case)
+    default: example_app
+  app_title:
+    type: string
+    description: Korean display title shown in the OS task switcher / MaterialApp.
+    prompt: App display title (Korean)
+    default: 예시앱
+  brand_seed:
+    type: string
+    description: ARGB hex seed for buildTheme (e.g. 0xFF0095A9).
+    prompt: Brand seed color (0xAARRGGBB)
+    default: "0xFF0095A9"
+  org_domain:
+    type: string
+    description: Reverse-DNS org root used for the deep-link whitelist note.
+    prompt: Org domain (e.g. example.com)
+    default: example.com
+  bundle_id:
+    type: string
+    description: Application/bundle id (e.g. com.example.app).
+    prompt: Bundle id
+    default: com.example.app
+  tabs:
+    type: array
+    description: >-
+      Bottom-nav tabs. Each item is an object {key, label, icon} where key is a
+      snake_case route segment, label is the Korean nav label, and icon is a
+      Material icon base name (e.g. home, event, person).
+    prompt: Tabs (key/label/icon)
+    default:
+      - key: home
+        label: 홈
+        icon: home
+      - key: services
+        label: 서비스
+        icon: grid_view
+      - key: mypage
+        label: 마이
+        icon: person
+  haptics_enabled:
+    type: boolean
+    description: >-
+      Wire haptic feedback ON at boot. When true the bootstrap ProviderScope
+      overrides hapticsProvider with ThrottlingHaptics(PlatformHaptics) so
+      ds/app call sites get real taptic feedback out of the box. When false no
+      override is added and the core default (NoopHaptics) stays in place — the
+      app boots silent with zero haptics code paths (not a greyed stub).
+    prompt: Wire haptics ON at boot?
+    default: true

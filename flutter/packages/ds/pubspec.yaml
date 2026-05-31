@@ -1,0 +1,41 @@
+name: ds
+description: ANDS v2.0 design system — tokens, theme, adaptive primary, P1-a components.
+version: 0.1.0
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: '^3.6.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  core:
+    path: ../core
+  flutter:
+    sdk: flutter
+  # Read-only consumption of core's hapticsProvider from interactive components
+  # (ProviderScope.containerOf). Riverpod 3.x is the locked state foundation.
+  flutter_riverpod: ^3.0.0
+  meta: ^1.15.0
+
+dev_dependencies:
+  alchemist: ^0.12.0
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.0.0
+  widgetbook: ^3.8.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700

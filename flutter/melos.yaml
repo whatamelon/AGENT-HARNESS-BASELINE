@@ -1,0 +1,4 @@
+# Melos 7 + Dart pub workspaces: the authoritative workspace config and scripts
+# live under the `melos:` key in the root `pubspec.yaml`. This file is kept only
+# as a discoverability pointer; do NOT add config here (it would be ignored and
+# cause drift). Run scripts with e.g. `melos run analyze`, `melos run test`.

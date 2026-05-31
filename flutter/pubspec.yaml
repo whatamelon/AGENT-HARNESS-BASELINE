@@ -1,0 +1,51 @@
+name: flutter_harness_workspace
+publish_to: none
+
+environment:
+  sdk: '^3.6.0'
+
+# Dart pub workspace (Dart 3.6+). Member packages opt in via `resolution: workspace`.
+workspace:
+  - packages/cache
+  - packages/core
+  - packages/ds
+  - packages/ds/widgetbook
+  - packages/app_kit
+  - apps/reference_app
+  - apps/example_app
+
+dev_dependencies:
+  melos: ^7.0.0
+
+# Melos 7 reads workspace config from this `melos` key (melos.yaml is legacy).
+melos:
+  name: flutter_harness
+
+  scripts:
+    analyze:
+      description: Run `flutter analyze` across the whole workspace.
+      run: flutter analyze
+
+    guard:state:
+      description: Fail if legacy Riverpod / 2nd state-DI library leaks into lib/.
+      run: bash tool/guard_state_mgmt.sh
+
+    tokens:gen:
+      description: Regenerate ds tokens (tokens.json -> lib/src/gen/*.dart).
+      run: dart run packages/ds/tool/gen_tokens.dart
+
+    tokens:check:
+      description: Fail if generated ds tokens drift from tokens.json.
+      run: dart run packages/ds/tool/gen_tokens.dart --check
+
+    test:
+      description: Run tests in every package that has a `test/` directory.
+      exec: flutter test
+      packageFilters:
+        dirExists: test
+
+    codegen:
+      description: Run build_runner codegen where needed.
+      exec: dart run build_runner build --delete-conflicting-outputs
+      packageFilters:
+        dependsOn: build_runner

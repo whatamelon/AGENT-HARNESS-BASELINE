@@ -1,0 +1,27 @@
+name: core
+description: Core harness primitives — flavor, env, Result, logger, observability.
+version: 0.1.0
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: '^3.6.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  dio: ^5.9.0
+  envied: ^1.2.0
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.0.0
+  meta: ^1.15.0
+  sentry_flutter: ^9.6.0
+  supabase_flutter: ^2.12.0
+
+dev_dependencies:
+  build_runner: ^2.5.0
+  envied_generator: ^1.2.0
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.0.0

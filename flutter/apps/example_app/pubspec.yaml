@@ -1,0 +1,30 @@
+name: example_app
+description: 예시앱 — Flutter app on the harness (core/ds/app_kit).
+version: 0.1.0
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: '^3.6.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  app_kit:
+    path: ../../packages/app_kit
+  core:
+    path: ../../packages/core
+  ds:
+    path: ../../packages/ds
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.0.0
+  go_router: ^17.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.0.0
+
+flutter:
+  uses-material-design: true

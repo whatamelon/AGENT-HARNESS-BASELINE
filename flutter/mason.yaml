@@ -1,0 +1,13 @@
+# Mason brick registry for the Flutter harness.
+#
+#   dart pub global activate mason_cli   # once
+#   mason get                            # resolve bricks (run from repo root)
+#   mason make flutter_app -o apps/ ...  # scaffold a new app
+#   mason make feature -o apps/<app>/lib ...  # scaffold a feature slice
+#
+# See bricks/README.md for variables and the workspace-registration step.
+bricks:
+  flutter_app:
+    path: bricks/flutter_app
+  feature:
+    path: bricks/feature
